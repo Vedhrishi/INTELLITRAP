@@ -63,3 +63,30 @@ Network firewalling, packet inspection, real IP-layer blocking and malware
 sandboxing are out of scope and are **not** simulated as real. IntelliTrap
 implements the application-layer equivalents only: request scoring, session
 diversion, application-level IP blocklisting, and MIME/magic-byte upload checks.
+
+## Phase 2 — Authentication & Roles
+
+**Database.** `app_role` enum (`admin` | `analyst` | `user`), `public.profiles`
+(1:1 with the auth user), and `public.user_roles` (roles are **never** stored on
+the profile, to prevent privilege escalation). `public.has_role(uuid, app_role)`
+is a `SECURITY DEFINER` function used by every RLS policy to avoid recursive
+policy evaluation. `public.handle_new_user()` creates the profile and assigns the
+default `user` role on signup. RLS is enabled everywhere; users see only their own
+rows, admins see all.
+
+**Conventions chosen where the brief was silent**
+- Email confirmation is auto-confirm (signup signs the user straight in) and
+  leaked-password protection (HIBP) is enabled.
+- `has_role` keeps `EXECUTE` for `authenticated` because RLS policies depend on it;
+  `handle_new_user` / `set_updated_at` are revoked from all client roles.
+- Forgot-password always returns the same neutral confirmation so account
+  existence can't be enumerated.
+- Raw backend auth errors are mapped to friendly copy in `src/lib/auth/auth-errors.ts`.
+- Protected routes live under `src/routes/_authenticated/` (`ssr: false`, since the
+  session lives in browser storage). `ProtectedRoute` renders an app-shaped skeleton
+  while the session resolves, so there is no flash of the login screen, and preserves
+  the intended path in a validated same-origin `?redirect=` param.
+- `RoleGuard` is UX only — the real boundary is RLS plus `has_role()`.
+
+**Files**: `src/lib/auth/*`, `src/components/auth/*`, `src/components/layout/user-menu.tsx`,
+`src/components/layout/app-layout.tsx`, `src/routes/auth.*`, `src/routes/_authenticated/*`.
