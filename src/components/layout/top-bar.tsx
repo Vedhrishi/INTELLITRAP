@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { UserMenu } from "./user-menu";
 
 export function TopBar({ children }: { children?: ReactNode }) {
   return (
@@ -9,7 +10,9 @@ export function TopBar({ children }: { children?: ReactNode }) {
       <div className="min-w-0">{children}</div>
       <div className="flex shrink-0 items-center gap-1">
         <ThemeToggle />
+        <UserMenu />
       </div>
     </header>
   );
 }
+
