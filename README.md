@@ -90,3 +90,59 @@ rows, admins see all.
 
 **Files**: `src/lib/auth/*`, `src/components/auth/*`, `src/components/layout/user-menu.tsx`,
 `src/components/layout/app-layout.tsx`, `src/routes/auth.*`, `src/routes/_authenticated/*`.
+
+## Phase 3 — Data model, RLS, storage, seed data
+
+**Tables**: `folders`, `files`, `file_shares`, `notifications`, `sessions`,
+`detection_rules`, `attacker_profiles`, `threat_events`, `honeypot_sessions`,
+`ai_reports`, `audit_log` — created exactly as specified in the brief.
+
+**Ownership vs. security split.** Content tables (`folders`, `files`,
+`file_shares`, `notifications`) are owner-scoped via `auth.uid()`. Security
+tables are **read-only** for staff (`admin`/`analyst` through `has_role()`) and
+have *no* user-facing insert policy: every write to `sessions`, `threat_events`,
+`attacker_profiles`, `honeypot_sessions`, `ai_reports` and `audit_log` must go
+through a server function using the service-role key. Never insert into these
+from the browser — if that looks necessary, a server function is missing.
+`audit_log` has no update and no delete policy for any role, so entries are
+append-only and tamper-evident.
+
+**Deviations, and why**
+- Every table also has explicit `GRANT`s (the Data API grants nothing by
+  default on `public`); RLS still decides row visibility.
+- `audit insert only` uses `with check (auth.uid() is not null)` instead of
+  `true`, so anonymous callers cannot append noise. Behaviour for signed-in
+  users is identical, and it keeps the linter free of `USING (true)` policies.
+- Storage buckets are created through the platform's bucket API rather than
+  `insert into storage.buckets` (direct SQL writes to that table are rejected).
+- All new `SECURITY DEFINER` helpers (`recalc_storage`, `files_after_change`,
+  `enforce_quota`) are revoked from `anon`/`authenticated` — they only ever run
+  as triggers. `prevent_folder_cycle` runs `SECURITY INVOKER` with a pinned
+  `search_path`.
+
+**Quota and accounting.** `files_storage_sync` recalculates
+`profiles.storage_used` after any file insert/update/delete; `files_quota_guard`
+raises `STORAGE_QUOTA_EXCEEDED` before an insert that would exceed
+`storage_quota` (5 GB default). `folders_no_cycle` raises `FOLDER_CYCLE_DETECTED`.
+
+**Storage.** Two private buckets: `user-files` (owner-scoped policies, path
+convention `{user_id}/{file_id}-{sanitised_filename}`) and `decoy-files`
+(no policies at all — service-role only, wired up in Phase 6).
+
+**Seed data.** The 12 detection rules are seeded and enabled. `sessions`,
+`threat_events`, `attacker_profiles`, `honeypot_sessions` and `ai_reports` are
+intentionally empty until Phase 6.
+
+**Types and config.** `src/types/db.ts` re-exports aliases derived from the
+generated Supabase types (never hand-written). `src/config/security.ts` is the
+only place risk thresholds live: ALLOW &lt; 30, CHALLENGE 30–59, TRAP 60–84,
+BLOCK ≥ 85 (`decideRisk()`), plus byte formatting and the default quota.
+
+**Roles at runtime.** `AuthProvider` refetches roles on every auth state change
+and exposes `refreshRoles()`, so a role granted in the database appears after a
+refresh without restarting the app. The sidebar "Security" section renders only
+for admins.
+
+> ⚠️ **Email confirmation is disabled (auto-confirm) for development.** It must
+> be re-enabled in the backend auth settings before any public deployment,
+> otherwise anyone can register with an address they do not own.
