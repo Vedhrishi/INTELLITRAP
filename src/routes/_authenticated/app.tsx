@@ -1,8 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "@/components/primitives/page-header";
 import { EmptyState } from "@/components/primitives/empty-state";
-import { FolderOpen } from "lucide-react";
+import { StatCard } from "@/components/primitives/stat-card";
+import { Progress } from "@/components/ui/progress";
+import { FolderOpen, HardDrive } from "lucide-react";
 import { useAuth } from "@/lib/auth/auth-context";
+import { DEFAULT_STORAGE_QUOTA_BYTES, formatBytes } from "@/config/security";
+
 
 const title = "Your workspace";
 const description = "Your encrypted files, shares and activity in IntelliTrap.";
