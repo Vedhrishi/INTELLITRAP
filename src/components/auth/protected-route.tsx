@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import { Navigate, useRouterState } from "@tanstack/react-router";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/lib/auth/auth-context";
@@ -34,9 +34,13 @@ function ShellSkeleton() {
 
 export function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
-  const href = useRouterState({ select: (state) => state.location.href });
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  // Capture the intended destination once: re-reading the live location while
+  // the redirect is in flight nests /auth?redirect=... inside itself forever.
+  const intended = useRef<string | null>(null);
+  if (!intended.current && !pathname.startsWith("/auth")) intended.current = pathname;
 
   if (loading) return <ShellSkeleton />;
-  if (!user) return <Navigate to="/auth" search={{ redirect: href }} replace />;
+  if (!user) return <Navigate to="/auth" search={{ redirect: intended.current ?? "/app" }} replace />;
   return <>{children}</>;
 }

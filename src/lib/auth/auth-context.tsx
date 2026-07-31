@@ -39,6 +39,7 @@ type AuthContextValue = {
   signUp: (email: string, password: string, fullName: string) => Promise<AuthResult>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<AuthResult>;
+  refreshRoles: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -66,6 +67,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setRoles(((rolesResult.data ?? []) as { role: AppRole }[]).map((row) => row.role));
   }, []);
 
+  const loadRoles = useCallback(async (userId: string) => {
+    const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
+    if (!mounted.current) return;
+    setRoles(((data ?? []) as { role: AppRole }[]).map((row) => row.role));
+  }, []);
+
+  const refreshRoles = useCallback(async () => {
+    const { data } = await supabase.auth.getSession();
+    const userId = data.session?.user?.id;
+    if (!userId) {
+      setRoles([]);
+      return;
+    }
+    await loadRoles(userId);
+  }, [loadRoles]);
+
   useEffect(() => {
     mounted.current = true;
 
@@ -77,6 +94,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (nextSession?.user) {
         const userId = nextSession.user.id;
+        // Roles are refetched on every identity transition (SIGNED_IN,
+        // USER_UPDATED, TOKEN_REFRESHED) so grants apply without a restart.
         setTimeout(() => {
           void loadAccount(userId);
         }, 0);
@@ -149,8 +168,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signUp,
       signOut,
       resetPassword,
+      refreshRoles,
     }),
-    [user, session, profile, roles, loading, signIn, signUp, signOut, resetPassword],
+    [user, session, profile, roles, loading, signIn, signUp, signOut, resetPassword, refreshRoles],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
