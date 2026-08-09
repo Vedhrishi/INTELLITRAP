@@ -121,25 +121,22 @@ export function TrackingProvider({ children }: { children: ReactNode }) {
     return () => window.clearInterval(interval);
   }, [sessionToken, pathname, blocked]);
 
-  const logEvent = useCallback(
-    async (type: EventType, data: Record<string, unknown> = {}) => {
-      if (!identity.current) return;
-      try {
-        await logVisitorEvent({
-          data: {
-            session_token: identity.current.session,
-            visitor_id: identity.current.visitor,
-            event_type: type,
-            page_path: window.location.pathname,
-            event_data: data,
-          },
-        });
-      } catch {
-        /* non-critical */
-      }
-    },
-    [],
-  );
+  const logEvent = useCallback(async (type: EventType, data: Record<string, unknown> = {}) => {
+    if (!identity.current) return;
+    try {
+      await logVisitorEvent({
+        data: {
+          session_token: identity.current.session,
+          visitor_id: identity.current.visitor,
+          event_type: type,
+          page_path: window.location.pathname,
+          event_data: data,
+        },
+      });
+    } catch {
+      /* non-critical */
+    }
+  }, []);
 
   const assessRisk = useCallback(async (): Promise<RiskAssessment | null> => {
     if (!identity.current) return null;

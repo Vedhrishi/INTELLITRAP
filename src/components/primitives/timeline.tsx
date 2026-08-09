@@ -33,7 +33,9 @@ export function Timeline({ items, className }: { items: TimelineItem[]; classNam
           />
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
             <p className="min-w-0 font-medium">{item.title}</p>
-            <time className="font-mono-data shrink-0 text-xs text-muted-foreground">{item.timestamp}</time>
+            <time className="font-mono-data shrink-0 text-xs text-muted-foreground">
+              {item.timestamp}
+            </time>
           </div>
           {item.description ? (
             <p className="mt-1 text-sm text-muted-foreground">{item.description}</p>

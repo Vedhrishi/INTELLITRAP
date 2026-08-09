@@ -12,6 +12,14 @@ function colorFor(mimeType: string): string {
   return "text-[#94a3b8]";
 }
 
-export function FileTypeIcon({ mimeType, name, className }: { mimeType: string; name: string; className?: string }) {
+export function FileTypeIcon({
+  mimeType,
+  name,
+  className,
+}: {
+  mimeType: string;
+  name: string;
+  className?: string;
+}) {
   return <FileIcon mimeType={mimeType} name={name} className={cn(colorFor(mimeType), className)} />;
 }

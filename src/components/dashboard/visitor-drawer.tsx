@@ -205,11 +205,17 @@ export function VisitorDrawer({
             </Section>
 
             <Section title="Device">
-              <Row label="Browser" value={`${visitor.browser ?? "?"} ${visitor.browser_version ?? ""}`} />
+              <Row
+                label="Browser"
+                value={`${visitor.browser ?? "?"} ${visitor.browser_version ?? ""}`}
+              />
               <Row label="OS" value={`${visitor.os ?? "?"} ${visitor.os_version ?? ""}`} />
               <Row label="Screen" value={visitor.screen_resolution} />
               <Row label="CPU cores" value={visitor.hardware_concurrency} />
-              <Row label="Memory" value={visitor.device_memory ? `${visitor.device_memory} GB` : null} />
+              <Row
+                label="Memory"
+                value={visitor.device_memory ? `${visitor.device_memory} GB` : null}
+              />
               <Row label="Touch" value={visitor.touch_support ? "Yes" : "No"} />
               <pre className="mt-2 max-h-24 overflow-auto rounded-md bg-muted/40 p-2 font-mono text-[10px] leading-relaxed">
                 {visitor.user_agent ?? "No user agent"}

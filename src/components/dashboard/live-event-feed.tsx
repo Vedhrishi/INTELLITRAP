@@ -1,6 +1,11 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Radio } from "lucide-react";
-import { EVENT_COLOR, EVENT_LABEL, timeAgo, type VisitorEvent } from "@/lib/tracking/dashboard-data";
+import {
+  EVENT_COLOR,
+  EVENT_LABEL,
+  timeAgo,
+  type VisitorEvent,
+} from "@/lib/tracking/dashboard-data";
 import { cn } from "@/lib/utils";
 
 export function LiveEventFeed({ events }: { events: VisitorEvent[] }) {

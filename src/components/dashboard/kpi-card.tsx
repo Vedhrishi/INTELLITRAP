@@ -10,6 +10,7 @@ export function KpiCard({
   accent,
   isLive = false,
   index = 0,
+  sublabel,
 }: {
   label: string;
   value: number;
@@ -17,6 +18,7 @@ export function KpiCard({
   accent: string;
   isLive?: boolean;
   index?: number;
+  sublabel?: string;
 }) {
   const display = useCountUp(value);
 
@@ -50,6 +52,7 @@ export function KpiCard({
         {display}
       </p>
       <p className="mt-1 text-xs text-muted-foreground">{label}</p>
+      {sublabel ? <p className="mt-0.5 text-xs text-slate-400">{sublabel}</p> : null}
     </motion.div>
   );
 }

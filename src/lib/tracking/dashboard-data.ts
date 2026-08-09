@@ -39,11 +39,7 @@ export function freshHeartbeatIso(): string {
 /** Start of the current day in IST, as an ISO timestamp. */
 export function startOfIstDayIso(): string {
   const nowIst = new Date(Date.now() + 5.5 * 3600 * 1000);
-  const midnightIst = Date.UTC(
-    nowIst.getUTCFullYear(),
-    nowIst.getUTCMonth(),
-    nowIst.getUTCDate(),
-  );
+  const midnightIst = Date.UTC(nowIst.getUTCFullYear(), nowIst.getUTCMonth(), nowIst.getUTCDate());
   return new Date(midnightIst - 5.5 * 3600 * 1000).toISOString();
 }
 
@@ -54,11 +50,12 @@ export type DashboardStats = {
   highRisk: number;
   inHoneypot: number;
   blocked: number;
+  autoBlocksToday: number;
 };
 
 export async function fetchDashboardStats(): Promise<DashboardStats> {
   const fresh = freshHeartbeatIso();
-  const [online, today, ips, highRisk, honeypot, blocked] = await Promise.all([
+  const [online, today, ips, highRisk, honeypot, blocked, autoBlocksToday] = await Promise.all([
     supabase
       .from("visitors")
       .select("id", { count: "exact", head: true })
@@ -76,6 +73,11 @@ export async function fetchDashboardStats(): Promise<DashboardStats> {
       .eq("in_honeypot", true)
       .is("honeypot_exited_at", null),
     supabase.from("blocked_ips").select("id", { count: "exact", head: true }).eq("is_active", true),
+    supabase
+      .from("blocked_ips")
+      .select("id", { count: "exact", head: true })
+      .eq("block_type", "auto")
+      .gte("blocked_at", startOfIstDayIso()),
   ]);
 
   const distinctToday = new Set((today.data ?? []).map((row) => row.visitor_id)).size;
@@ -87,6 +89,7 @@ export async function fetchDashboardStats(): Promise<DashboardStats> {
     highRisk: highRisk.count ?? 0,
     inHoneypot: honeypot.count ?? 0,
     blocked: blocked.count ?? 0,
+    autoBlocksToday: autoBlocksToday.count ?? 0,
   };
 }
 

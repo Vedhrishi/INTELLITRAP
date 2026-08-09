@@ -4,9 +4,21 @@ import { Logo } from "@/components/primitives/logo";
 
 const steps = [
   { step: "01", title: "Observe", body: "Each request is scored against enabled detection rules." },
-  { step: "02", title: "Score", body: "Risk accumulates per session: allow, challenge, trap or block." },
-  { step: "03", title: "Divert", body: "At the trap threshold the session is silently served decoy data." },
-  { step: "04", title: "Analyse", body: "Telemetry becomes an AI report with tactics and next actions." },
+  {
+    step: "02",
+    title: "Score",
+    body: "Risk accumulates per session: allow, challenge, trap or block.",
+  },
+  {
+    step: "03",
+    title: "Divert",
+    body: "At the trap threshold the session is silently served decoy data.",
+  },
+  {
+    step: "04",
+    title: "Analyse",
+    body: "Telemetry becomes an AI report with tactics and next actions.",
+  },
 ];
 
 export function LandingHow() {

@@ -1,4 +1,11 @@
-import { FileText, FileImage, FileArchive, FileSpreadsheet, FileVideo, File as FileIcon } from "lucide-react";
+import {
+  FileText,
+  FileImage,
+  FileArchive,
+  FileSpreadsheet,
+  FileVideo,
+  File as FileIcon,
+} from "lucide-react";
 import { formatFileSize } from "@/lib/share/format";
 
 export function fileIconFor(mimeType: string) {

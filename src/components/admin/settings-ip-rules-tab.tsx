@@ -69,7 +69,11 @@ export function SettingsIpRulesTab() {
       <section className="glass rounded-xl p-4">
         <h3 className="mb-3 text-sm font-semibold">Manually block an IP</h3>
         <div className="grid gap-3 sm:grid-cols-[1fr_2fr_auto]">
-          <Input placeholder="IP address" value={ip} onChange={(event) => setIp(event.target.value)} />
+          <Input
+            placeholder="IP address"
+            value={ip}
+            onChange={(event) => setIp(event.target.value)}
+          />
           <Textarea
             placeholder="Reason"
             className="min-h-9"
@@ -86,13 +90,17 @@ export function SettingsIpRulesTab() {
       </section>
 
       <section className="glass overflow-hidden rounded-xl">
-        <header className="border-b border-border/60 px-4 py-3 text-sm font-semibold">Active blocks</header>
+        <header className="border-b border-border/60 px-4 py-3 text-sm font-semibold">
+          Active blocks
+        </header>
         <table className="w-full text-left text-xs">
           <tbody>
             {(blocks.data ?? []).map((block) => (
               <tr key={block.id} className="border-t border-border/40">
                 <td className="px-4 py-2 font-mono">{block.ip_address}</td>
-                <td className="max-w-xs truncate px-4 py-2 text-muted-foreground">{block.reason}</td>
+                <td className="max-w-xs truncate px-4 py-2 text-muted-foreground">
+                  {block.reason}
+                </td>
                 <td className="px-4 py-2 font-mono text-[10px] text-muted-foreground">
                   {toIST(block.blocked_at)}
                 </td>

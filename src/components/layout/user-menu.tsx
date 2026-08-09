@@ -1,6 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
-import { LogOut, ShieldCheck, User as UserIcon } from "lucide-react";
+import { Copy, Crown, LogOut, ShieldCheck, User as UserIcon } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,12 +32,22 @@ export function UserMenu() {
   const email = profile?.email ?? user.email ?? null;
   const displayName = profile?.full_name ?? email;
   const primaryRole = isAdmin ? "admin" : (roles[0] ?? "user");
+  const secretCode = profile?.user_secret_code ?? null;
 
   const handleSignOut = async () => {
     await queryClient.cancelQueries();
     queryClient.clear();
     await signOut();
     void navigate({ to: "/auth", replace: true });
+  };
+
+  const copyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(secretCode ?? "");
+      toast.success("Secret code copied!");
+    } catch {
+      toast.error("Could not copy the code.");
+    }
   };
 
   return (
@@ -50,11 +61,33 @@ export function UserMenu() {
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-60">
+      <DropdownMenuContent align="end" className="w-64">
         <DropdownMenuLabel className="space-y-1">
-          <p className="truncate text-sm font-medium">{displayName}</p>
+          <div className="flex items-center gap-1.5">
+            <p className="truncate text-sm font-medium">{displayName}</p>
+            {isAdmin ? <Crown aria-hidden className="size-3.5 shrink-0 text-amber-400" /> : null}
+          </div>
           <p className="truncate text-xs font-normal text-muted-foreground">{email}</p>
-          <Badge variant="secondary" className="mt-1 gap-1">
+
+          <p className="mb-1 mt-3 text-xs text-slate-500">Your Secret Code</p>
+          <div className="flex items-center gap-2">
+            <span className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 font-mono text-sm tracking-wider text-blue-400">
+              {secretCode ?? "—"}
+            </span>
+            <button
+              type="button"
+              aria-label="Copy secret code"
+              onClick={(event) => {
+                event.preventDefault();
+                void copyCode();
+              }}
+              className="cursor-pointer text-slate-400 transition-colors hover:text-white"
+            >
+              <Copy aria-hidden className="size-3.5" />
+            </button>
+          </div>
+
+          <Badge variant="secondary" className="mt-3 gap-1">
             {primaryRole === "admin" ? (
               <ShieldCheck aria-hidden className="size-3" />
             ) : (

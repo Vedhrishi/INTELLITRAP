@@ -1,7 +1,12 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { toISTTime } from "@/lib/share/format";
-import { DECISION_LABEL, RISK_TEXT_CLASS, type RiskLevel, type Visitor } from "@/lib/tracking/dashboard-data";
+import {
+  DECISION_LABEL,
+  RISK_TEXT_CLASS,
+  type RiskLevel,
+  type Visitor,
+} from "@/lib/tracking/dashboard-data";
 import { cn } from "@/lib/utils";
 
 const DECISION_BADGE: Record<string, string> = {
@@ -16,7 +21,9 @@ export function LiveAccessMonitor({ visitors }: { visitors: Visitor[] }) {
     <section className="glass flex h-[420px] flex-col overflow-hidden rounded-xl">
       <header className="flex items-center justify-between border-b border-border/60 px-4 py-3">
         <h2 className="text-sm font-semibold">Live access monitor</h2>
-        <span className="font-mono text-[10px] text-muted-foreground">{visitors.length} visitors</span>
+        <span className="font-mono text-[10px] text-muted-foreground">
+          {visitors.length} visitors
+        </span>
       </header>
       <div className="flex-1 overflow-y-auto">
         <table className="w-full text-left text-xs">
@@ -32,9 +39,10 @@ export function LiveAccessMonitor({ visitors }: { visitors: Visitor[] }) {
           <tbody>
             <AnimatePresence initial={false}>
               {visitors.slice(0, 60).map((visitor) => {
-                const level = (visitor.risk_level as RiskLevel) in RISK_TEXT_CLASS
-                  ? (visitor.risk_level as RiskLevel)
-                  : "low";
+                const level =
+                  (visitor.risk_level as RiskLevel) in RISK_TEXT_CLASS
+                    ? (visitor.risk_level as RiskLevel)
+                    : "low";
                 return (
                   <motion.tr
                     key={visitor.id}

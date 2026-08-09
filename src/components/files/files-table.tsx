@@ -10,7 +10,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { EmptyState } from "@/components/primitives/empty-state";
 import { supabase } from "@/integrations/supabase/client";
 import { formatFileSize, toIST } from "@/lib/share/format";
@@ -41,7 +48,9 @@ export function FilesTable({
   };
 
   const handleDownload = async (file: FileRow) => {
-    const { data, error } = await supabase.storage.from("user-files").createSignedUrl(file.storage_path, 60);
+    const { data, error } = await supabase.storage
+      .from("user-files")
+      .createSignedUrl(file.storage_path, 60);
     if (error || !data?.signedUrl) {
       toast.error("Could not generate download link");
       return;
@@ -55,7 +64,10 @@ export function FilesTable({
   };
 
   const handleRevoke = async (file: FileRow) => {
-    const { error } = await supabase.from("files").update({ share_revoked: true }).eq("id", file.id);
+    const { error } = await supabase
+      .from("files")
+      .update({ share_revoked: true })
+      .eq("id", file.id);
     if (error) {
       toast.error("Could not revoke sharing");
       return;
@@ -65,7 +77,9 @@ export function FilesTable({
   };
 
   const handleDelete = async (file: FileRow) => {
-    const { error: storageError } = await supabase.storage.from("user-files").remove([file.storage_path]);
+    const { error: storageError } = await supabase.storage
+      .from("user-files")
+      .remove([file.storage_path]);
     if (storageError && import.meta.env.DEV) console.warn(storageError.message);
     const { error } = await supabase.from("files").delete().eq("id", file.id);
     if (error) {
@@ -102,12 +116,16 @@ export function FilesTable({
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <FileTypeIcon mimeType={file.mime_type} name={file.name} />
-                    <span className="max-w-[220px] truncate font-semibold text-slate-100">{file.name}</span>
+                    <span className="max-w-[220px] truncate font-semibold text-slate-100">
+                      {file.name}
+                    </span>
                     {file.is_shared ? <span title="Secret-shared">🔑</span> : null}
                   </div>
                 </TableCell>
                 <TableCell className="text-[#94a3b8]">{formatFileSize(file.size_bytes)}</TableCell>
-                <TableCell className="whitespace-nowrap text-[#94a3b8]">{toIST(file.created_at)}</TableCell>
+                <TableCell className="whitespace-nowrap text-[#94a3b8]">
+                  {toIST(file.created_at)}
+                </TableCell>
                 <TableCell className="text-[#94a3b8]">{file.download_count}</TableCell>
                 <TableCell>
                   <Badge variant="outline" className={statusBadgeClass[status]}>
@@ -122,14 +140,23 @@ export function FilesTable({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => void handleDownload(file)}>Download</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => void handleDownload(file)}>
+                        Download
+                      </DropdownMenuItem>
                       {file.is_shared ? (
-                        <DropdownMenuItem onClick={() => setShareFile(file)}>Share Info</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setShareFile(file)}>
+                          Share Info
+                        </DropdownMenuItem>
                       ) : null}
                       {file.is_shared && !file.share_revoked ? (
-                        <DropdownMenuItem onClick={() => setRevokeFile(file)}>Revoke</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setRevokeFile(file)}>
+                          Revoke
+                        </DropdownMenuItem>
                       ) : null}
-                      <DropdownMenuItem className="text-red-400" onClick={() => setDeleteFile(file)}>
+                      <DropdownMenuItem
+                        className="text-red-400"
+                        onClick={() => setDeleteFile(file)}
+                      >
                         Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>

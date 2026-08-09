@@ -36,7 +36,11 @@ export function ShareInfoDialog({
           <div className="space-y-3 rounded-lg border border-[#334155] bg-[#1e293b] p-4 text-center">
             <p className="text-xs font-medium tracking-wide text-[#94a3b8]">YOUR SECRET CODE</p>
             <p className="font-mono text-4xl font-black text-[#3b82f6]">{code}</p>
-            <Button variant="outline" className="w-full border-[#334155]" onClick={() => copy(code)}>
+            <Button
+              variant="outline"
+              className="w-full border-[#334155]"
+              onClick={() => copy(code)}
+            >
               <Copy className="mr-2 size-4" />
               Copy code
             </Button>
@@ -54,7 +58,9 @@ export function ShareInfoDialog({
           <div className="space-y-2 rounded-lg border border-[#334155] bg-[#1e293b] p-4">
             <p className="text-xs font-medium tracking-wide text-[#94a3b8]">FILE PASSWORD</p>
             <p className="text-sm text-[#94a3b8]">The password was shown once when you uploaded.</p>
-            <p className="text-sm text-[#94a3b8]">If you&apos;ve lost it, revoke this file and re-upload.</p>
+            <p className="text-sm text-[#94a3b8]">
+              If you&apos;ve lost it, revoke this file and re-upload.
+            </p>
             <Button
               variant="outline"
               size="sm"

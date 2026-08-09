@@ -4,7 +4,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth/auth-context";
-import { PLATFORM_SETTING_KEYS, upsertPlatformSettings, type PlatformSetting } from "@/lib/admin/admin-data";
+import {
+  PLATFORM_SETTING_KEYS,
+  upsertPlatformSettings,
+  type PlatformSetting,
+} from "@/lib/admin/admin-data";
 
 function settingValue(settings: PlatformSetting[], key: string, fallback: number): number {
   const row = settings.find((setting) => setting.key === key);
@@ -39,7 +43,8 @@ export function SettingsThresholdsTab({ settings }: { settings: PlatformSetting[
       void queryClient.invalidateQueries({ queryKey: ["admin-platform-settings"] });
       toast.success("Risk thresholds saved");
     },
-    onError: (error) => toast.error(error instanceof Error ? error.message : "Failed to save thresholds"),
+    onError: (error) =>
+      toast.error(error instanceof Error ? error.message : "Failed to save thresholds"),
   });
 
   return (

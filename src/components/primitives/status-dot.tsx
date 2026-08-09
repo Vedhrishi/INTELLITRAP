@@ -28,10 +28,16 @@ export function StatusDot({
         {pulse ? (
           <span
             aria-hidden
-            className={cn("absolute inline-flex size-full animate-ping rounded-full opacity-60", toneClass[tone])}
+            className={cn(
+              "absolute inline-flex size-full animate-ping rounded-full opacity-60",
+              toneClass[tone],
+            )}
           />
         ) : null}
-        <span aria-hidden className={cn("relative inline-flex size-2.5 rounded-full", toneClass[tone])} />
+        <span
+          aria-hidden
+          className={cn("relative inline-flex size-2.5 rounded-full", toneClass[tone])}
+        />
       </span>
       <span className="min-w-0 truncate">{label}</span>
     </span>

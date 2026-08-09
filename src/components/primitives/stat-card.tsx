@@ -24,10 +24,18 @@ export function StatCard({
   className?: string;
 }) {
   const deltaTone =
-    delta === undefined ? "" : delta > 0 ? "text-warning" : delta < 0 ? "text-success" : "text-muted-foreground";
+    delta === undefined
+      ? ""
+      : delta > 0
+        ? "text-warning"
+        : delta < 0
+          ? "text-success"
+          : "text-muted-foreground";
 
   return (
-    <Card className={cn("bg-gradient-card transition-shadow duration-150 hover:shadow-md", className)}>
+    <Card
+      className={cn("bg-gradient-card transition-shadow duration-150 hover:shadow-md", className)}
+    >
       <CardContent className="p-5">
         <div className="flex items-center justify-between gap-3">
           <p className="min-w-0 truncate text-sm text-muted-foreground">{label}</p>

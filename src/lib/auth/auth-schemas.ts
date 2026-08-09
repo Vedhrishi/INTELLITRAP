@@ -2,7 +2,11 @@ import { z } from "zod";
 
 export const passwordRules = [
   { id: "length", label: "At least 8 characters", test: (v: string) => v.length >= 8 },
-  { id: "case", label: "Upper and lower case", test: (v: string) => /[a-z]/.test(v) && /[A-Z]/.test(v) },
+  {
+    id: "case",
+    label: "Upper and lower case",
+    test: (v: string) => /[a-z]/.test(v) && /[A-Z]/.test(v),
+  },
   { id: "digit", label: "A number", test: (v: string) => /\d/.test(v) },
   { id: "symbol", label: "A symbol", test: (v: string) => /[^A-Za-z0-9]/.test(v) },
 ] as const;

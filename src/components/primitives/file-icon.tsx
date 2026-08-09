@@ -19,7 +19,10 @@ function pickIcon(mimeType: string, name: string): LucideIcon {
   if (mimeType.startsWith("audio/")) return FileAudio;
   if (/zip|tar|gzip|rar|7z/.test(mimeType)) return FileArchive;
   if (/sheet|csv|excel/.test(mimeType) || /\.(csv|xlsx|xls)$/i.test(name)) return FileSpreadsheet;
-  if (/json|javascript|typescript|xml|sql|x-sh/.test(mimeType) || /\.(sql|json|ts|tsx|js|sh)$/i.test(name))
+  if (
+    /json|javascript|typescript|xml|sql|x-sh/.test(mimeType) ||
+    /\.(sql|json|ts|tsx|js|sh)$/i.test(name)
+  )
     return FileCode;
   if (mimeType.startsWith("text/") || mimeType === "application/pdf") return FileText;
   return File;

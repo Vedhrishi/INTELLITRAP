@@ -30,9 +30,19 @@ export const RULE_ACTION_DECISION: Record<RuleAction, RiskDecision> = {
   block: "block",
 };
 
-export const RISK_BANDS: { decision: RiskDecision; label: string; min: number; max: number | null }[] = [
+export const RISK_BANDS: {
+  decision: RiskDecision;
+  label: string;
+  min: number;
+  max: number | null;
+}[] = [
   { decision: "allow", label: "Allow", min: 0, max: RISK_THRESHOLDS.allowMax },
-  { decision: "challenge", label: "Challenge", min: RISK_THRESHOLDS.challengeMin, max: RISK_THRESHOLDS.challengeMax },
+  {
+    decision: "challenge",
+    label: "Challenge",
+    min: RISK_THRESHOLDS.challengeMin,
+    max: RISK_THRESHOLDS.challengeMax,
+  },
   { decision: "trap", label: "Trap", min: RISK_THRESHOLDS.trapMin, max: RISK_THRESHOLDS.trapMax },
   { decision: "block", label: "Block", min: RISK_THRESHOLDS.blockMin, max: null },
 ];

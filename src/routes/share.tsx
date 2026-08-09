@@ -19,17 +19,29 @@ import { useTracking } from "@/components/tracking/tracking-provider";
 import {
   findShareOwner,
   verifyFilePassword,
-  getDecoyFiles,
   logHoneypotAction,
+  applyRiskVerdict,
+  checkSelfBlocked,
 } from "@/lib/tracking/tracking.functions";
-import { formatFileSize, hashPassword } from "@/lib/share/format";
+import { formatFileSize } from "@/lib/share/format";
+import { behaviorTracker } from "@/lib/tracking/tracker";
+import {
+  buildFeatures,
+  runRandomForest,
+  DECISION_SEVERITY,
+  type RiskResult,
+  type RiskDecision,
+} from "@/lib/riskEngine";
+import { generateDecoySet, type GeneratedDecoy } from "@/lib/decoyGenerator";
+import { SecurityAnalysisPanel } from "@/components/share/security-analysis";
 import { AnimatedCheckmark } from "@/components/share/animated-checkmark";
 import { ProgressSteps, type ShareStep } from "@/components/share/progress-steps";
 import { FileCard } from "@/components/share/file-card";
 import { OtpBoxes } from "@/components/share/otp-boxes";
 
 const title = "Secure File Access — IntelliTrap";
-const description = "Enter the secure share code and password to access a file protected by IntelliTrap.";
+const description =
+  "Enter the secure share code and password to access a file protected by IntelliTrap.";
 
 export const Route = createFileRoute("/share")({
   head: () => ({
@@ -54,14 +66,7 @@ type ShareState =
   | "blocked"
   | "download_complete";
 
-type DecoyTemplate = {
-  id: string;
-  file_name: string;
-  content: string;
-  mime_type: string;
-  category: string | null;
-  lure_score: number | null;
-};
+type DecoyTemplate = GeneratedDecoy;
 
 type DecoyItem = {
   template: DecoyTemplate;
@@ -88,18 +93,9 @@ function randomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function pickDecoy(templates: DecoyTemplate[]): DecoyTemplate | null {
-  if (templates.length === 0) return null;
-  const minServed = Math.min(...templates.map((template) => 0));
-  const candidates = templates.length > 0 ? templates : [];
-  const index = randomInt(0, candidates.length - 1);
-  return candidates[index] ?? null;
-}
-
 function buildDecoyItem(template: DecoyTemplate): DecoyItem {
-  const size = randomInt(200 * 1024, 4 * 1024 * 1024);
   const date = new Date(Date.now() - randomInt(0, 30) * 24 * 60 * 60 * 1000);
-  return { template, size, date };
+  return { template, size: template.fake_size, date };
 }
 
 function SharePage() {
@@ -136,6 +132,9 @@ function SharePage() {
   const [otpError, setOtpError] = useState(false);
   const [otpFailures, setOtpFailures] = useState(0);
   const [demoOtp, setDemoOtp] = useState("");
+  const [invalidCodes, setInvalidCodes] = useState(0);
+  const [rfResult, setRfResult] = useState<RiskResult | null>(null);
+  const requestTimestamps = useRef<number[]>([]);
 
   const siteKey = import.meta.env["VITE_RECAPTCHA_SITE_KEY"] as string | undefined;
 
@@ -149,7 +148,8 @@ function SharePage() {
 
   const step: ShareStep = useMemo(() => {
     if (shareState === "enter_code") return 0;
-    if (shareState === "enter_password" || shareState === "analyzing" || shareState === "challenge") return 1;
+    if (shareState === "enter_password" || shareState === "analyzing" || shareState === "challenge")
+      return 1;
     return 2;
   }, [shareState]);
 
@@ -157,6 +157,7 @@ function SharePage() {
     event.preventDefault();
     if (!sessionToken || !visitorId || codeLoading) return;
     setCodeLoading(true);
+    requestTimestamps.current = [...requestTimestamps.current, Date.now()].slice(-60);
     setCodeError("");
     await logEvent("secret_code_attempt", { code });
     try {
@@ -171,6 +172,7 @@ function SharePage() {
         setOwnerName(result.ownerName);
         setShareState("enter_password");
       } else {
+        setInvalidCodes((value) => value + 1);
         triggerCodeShake("No files found for this code. Double-check with the owner.");
       }
     } catch {
@@ -198,10 +200,16 @@ function SharePage() {
     if (!sessionToken || !visitorId || passwordLoading) return;
     if (failedAttempts >= 3 && !captchaToken) return;
     setPasswordLoading(true);
+    requestTimestamps.current = [...requestTimestamps.current, Date.now()].slice(-60);
     setPasswordError("");
     try {
       const result = await verifyFilePassword({
-        data: { secret_code: code.trim(), password, session_token: sessionToken, visitor_id: visitorId },
+        data: {
+          secret_code: code.trim(),
+          password,
+          session_token: sessionToken,
+          visitor_id: visitorId,
+        },
       });
       if (result.blocked) {
         setShareState("blocked");
@@ -233,12 +241,52 @@ function SharePage() {
     if (shareState !== "analyzing") return;
     let cancelled = false;
     void (async () => {
-      const result = await assessRisk();
+      const server = await assessRisk();
+      const behavior = behaviorTracker.snapshot();
+      const features = buildFeatures({
+        failedPasswords: failedAttempts,
+        failedCodes: invalidCodes,
+        mouseMovements: behavior.mouseMovements,
+        keystrokeAvgMs: behavior.avgKeystrokeMs,
+        scrollEvents: behavior.scrolls,
+        pageViews: 1,
+        timeOnPageSeconds: behavior.timeOnSite,
+        userAgent: navigator.userAgent,
+        requestTimestamps: requestTimestamps.current,
+      });
+      const forest = runRandomForest(features);
+      setRfResult(forest);
+
+      // The server verdict always wins when it is stricter — the client can
+      // never talk itself into access.
+      const serverDecision = (server?.decision ?? "granted") as RiskDecision;
+      const decision: RiskDecision =
+        DECISION_SEVERITY[serverDecision] > DECISION_SEVERITY[forest.decision]
+          ? serverDecision
+          : forest.decision;
+
+      if (sessionToken && visitorId) {
+        try {
+          await applyRiskVerdict({
+            data: {
+              session_token: sessionToken,
+              visitor_id: visitorId,
+              decision,
+              score: forest.score,
+              confidence: forest.confidence,
+              tree_votes: forest.treeVotes,
+              top_signals: forest.topSignals,
+              breakdown: forest.breakdown,
+            },
+          });
+        } catch {
+          /* enforcement must never break the page */
+        }
+      }
+
       window.setTimeout(() => {
         if (cancelled) return;
-        const decision = result?.decision ?? "granted";
-        if (decision === "granted") setShareState("granted");
-        else if (decision === "captcha_mfa") setShareState("challenge");
+        if (decision === "captcha_mfa") setShareState("challenge");
         else if (decision === "honeypot") setShareState("honeypot");
         else if (decision === "blocked") setShareState("blocked");
         else setShareState("granted");
@@ -247,7 +295,23 @@ function SharePage() {
     return () => {
       cancelled = true;
     };
-  }, [shareState, assessRisk]);
+  }, [shareState, assessRisk, failedAttempts, invalidCodes, sessionToken, visitorId]);
+
+  // Repeat visitors who were already auto-blocked never see the form again.
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const result = await checkSelfBlocked();
+        if (!cancelled && result?.blocked) setShareState("blocked");
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (shareState !== "honeypot") return;
@@ -256,18 +320,11 @@ function SharePage() {
       if (!sessionToken) return;
       await logEvent("honeypot_entered");
       try {
-        const result = await getDecoyFiles({ data: { session_token: sessionToken } });
+        // Decoys are generated locally, so the trap can never fail on an
+        // empty template table.
+        const decoys = generateDecoySet(3);
         if (cancelled) return;
-        const templates = (result.files ?? []) as DecoyTemplate[];
-        if (templates.length === 0) return;
-        const minServed = Math.min(...templates.map(() => 0));
-        void minServed;
-        const primary = pickDecoy(templates);
-        const rest = templates.filter((template) => template.id !== primary?.id);
-        const extraCount = Math.min(rest.length, randomInt(1, 2));
-        const extras = rest.slice(0, extraCount);
-        const items = [primary, ...extras].filter((value): value is DecoyTemplate => Boolean(value));
-        setDecoyItems(items.map(buildDecoyItem));
+        setDecoyItems(decoys.map(buildDecoyItem));
       } catch {
         /* honeypot must never surface errors */
       }
@@ -318,7 +375,6 @@ function SharePage() {
             visitor_id: visitorId,
             action: "download_decoy",
             decoy_file_name: item.template.file_name,
-            decoy_id: item.template.id,
           },
         });
         await logEvent("file_download_decoy", { file: item.template.file_name });
@@ -347,6 +403,8 @@ function SharePage() {
     setOtpValues(Array(6).fill(""));
     setOtpFailures(0);
     setDemoOtp("");
+    setInvalidCodes(0);
+    setRfResult(null);
   }
 
   async function sendOtp() {
@@ -399,9 +457,14 @@ function SharePage() {
     <div className="relative min-h-screen overflow-x-hidden bg-[#020817]">
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-[600px]"
-        style={{ background: "radial-gradient(circle at top, rgba(59,130,246,0.06), transparent 60%)" }}
+        style={{
+          background: "radial-gradient(circle at top, rgba(59,130,246,0.06), transparent 60%)",
+        }}
       />
-      <div className="scanline pointer-events-none fixed inset-x-0 top-0 z-0 h-px bg-[#3b82f6]" style={{ opacity: 0.1 }} />
+      <div
+        className="scanline pointer-events-none fixed inset-x-0 top-0 z-0 h-px bg-[#3b82f6]"
+        style={{ opacity: 0.1 }}
+      />
 
       {effectiveState !== "blocked" ? (
         <div className="fixed right-4 top-4 z-30 rounded-full border border-[#334155] bg-[#1e293b]/70 px-3 py-1.5 text-xs text-[#94a3b8] backdrop-blur-md">
@@ -539,7 +602,11 @@ function SharePage() {
                       className="overflow-hidden"
                     >
                       {siteKey ? (
-                        <ReCAPTCHA sitekey={siteKey} theme="dark" onChange={(value) => setCaptchaToken(value)} />
+                        <ReCAPTCHA
+                          sitekey={siteKey}
+                          theme="dark"
+                          onChange={(value) => setCaptchaToken(value)}
+                        />
                       ) : (
                         <button
                           type="button"
@@ -677,6 +744,7 @@ function SharePage() {
                   </FileCard>
                 </motion.div>
               ) : null}
+              {rfResult ? <SecurityAnalysisPanel result={rfResult} /> : null}
             </motion.div>
           ) : null}
 
@@ -730,7 +798,9 @@ function SharePage() {
                   </FileCard>
                   {decoyItems.length > 1 ? (
                     <div className="mt-6 text-left">
-                      <p className="mb-2 text-sm text-[#94a3b8]">Related files you may also need:</p>
+                      <p className="mb-2 text-sm text-[#94a3b8]">
+                        Related files you may also need:
+                      </p>
                       <div className="space-y-2">
                         {decoyItems.slice(1).map((item) => (
                           <div
@@ -738,7 +808,9 @@ function SharePage() {
                             className="flex items-center justify-between rounded-lg border border-[#334155] bg-[#0f172a] px-3 py-2"
                           >
                             <div className="min-w-0">
-                              <p className="truncate text-sm text-white">{item.template.file_name}</p>
+                              <p className="truncate text-sm text-white">
+                                {item.template.file_name}
+                              </p>
                               <p className="text-xs text-[#64748b]">{formatFileSize(item.size)}</p>
                             </div>
                             <button
@@ -755,6 +827,7 @@ function SharePage() {
                   ) : null}
                 </motion.div>
               ) : null}
+              {rfResult ? <SecurityAnalysisPanel result={rfResult} /> : null}
             </motion.div>
           ) : null}
 
@@ -781,7 +854,12 @@ function SharePage() {
               {challengeStep === 1 ? (
                 <div className="mt-6 flex justify-center">
                   {siteKey ? (
-                    <ReCAPTCHA sitekey={siteKey} theme="dark" onChange={(value) => void onChallengeCaptcha(value)} onExpired={() => void onChallengeCaptcha(null)} />
+                    <ReCAPTCHA
+                      sitekey={siteKey}
+                      theme="dark"
+                      onChange={(value) => void onChallengeCaptcha(value)}
+                      onExpired={() => void onChallengeCaptcha(null)}
+                    />
                   ) : (
                     <button
                       type="button"
@@ -809,12 +887,18 @@ function SharePage() {
                       disabled={!email || resendCountdown > 0}
                       className="shrink-0 rounded-md bg-amber-500 px-3 py-1.5 text-xs font-semibold text-black disabled:opacity-50"
                     >
-                      {resendCountdown > 0 ? `Resend (${resendCountdown}s)` : otpSent ? "Resend Code" : "Send Code"}
+                      {resendCountdown > 0
+                        ? `Resend (${resendCountdown}s)`
+                        : otpSent
+                          ? "Resend Code"
+                          : "Send Code"}
                     </button>
                   </div>
                   {otpSent ? (
                     <div>
-                      <p className="mb-3 text-center text-sm text-[#94a3b8]">Enter the 6-digit code sent to your email</p>
+                      <p className="mb-3 text-center text-sm text-[#94a3b8]">
+                        Enter the 6-digit code sent to your email
+                      </p>
                       <OtpBoxes
                         values={otpValues}
                         onChange={setOtpValues}
@@ -830,7 +914,7 @@ function SharePage() {
           ) : null}
 
           {effectiveState === "blocked" ? (
-            <BlockedState key="blocked" sessionToken={sessionToken} />
+            <BlockedState key="blocked" sessionToken={sessionToken} result={rfResult} />
           ) : null}
 
           {effectiveState === "download_complete" ? (
@@ -849,7 +933,10 @@ function SharePage() {
                   This one-time file has now been permanently removed from the server.
                 </p>
               ) : null}
-              <button onClick={resetAll} className="mt-6 text-sm font-medium text-[#3b82f6] hover:underline">
+              <button
+                onClick={resetAll}
+                className="mt-6 text-sm font-medium text-[#3b82f6] hover:underline"
+              >
                 Access another file →
               </button>
             </motion.div>
@@ -860,7 +947,13 @@ function SharePage() {
   );
 }
 
-function BlockedState({ sessionToken }: { sessionToken: string | null }) {
+function BlockedState({
+  sessionToken,
+  result,
+}: {
+  sessionToken: string | null;
+  result: RiskResult | null;
+}) {
   const particles = useRef(
     Array.from({ length: 20 }, () => ({
       left: `${randomInt(0, 100)}%`,
@@ -900,8 +993,24 @@ function BlockedState({ sessionToken }: { sessionToken: string | null }) {
           strokeDasharray={600}
           className="draw-shield"
         />
-        <line x1="35" y1="40" x2="65" y2="65" stroke="#ef4444" strokeWidth={4} strokeLinecap="round" />
-        <line x1="65" y1="40" x2="35" y2="65" stroke="#ef4444" strokeWidth={4} strokeLinecap="round" />
+        <line
+          x1="35"
+          y1="40"
+          x2="65"
+          y2="65"
+          stroke="#ef4444"
+          strokeWidth={4}
+          strokeLinecap="round"
+        />
+        <line
+          x1="65"
+          y1="40"
+          x2="35"
+          y2="65"
+          stroke="#ef4444"
+          strokeWidth={4}
+          strokeLinecap="round"
+        />
       </svg>
 
       <motion.h1
@@ -915,14 +1024,20 @@ function BlockedState({ sessionToken }: { sessionToken: string | null }) {
       </motion.h1>
 
       <p className="mt-6 max-w-md text-sm text-[#94a3b8]">
-        Suspicious activity was detected by our AI security system. This incident has been logged and
-        reported to the security team.
+        Suspicious activity was detected by our AI security system. This incident has been logged
+        and reported to the security team.
       </p>
 
       {sessionToken ? (
         <p className="mt-4 font-mono text-xs text-[#64748b]">
           Reference: {sessionToken.slice(0, 8).toUpperCase()}
         </p>
+      ) : null}
+
+      {result ? (
+        <div className="w-full max-w-md">
+          <SecurityAnalysisPanel result={result} />
+        </div>
       ) : null}
     </motion.div>
   );

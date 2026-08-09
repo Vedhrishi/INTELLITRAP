@@ -21,7 +21,13 @@ export function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
     formState: { errors, isSubmitting },
   } = useForm<RegisterValues>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { fullName: "", email: "", password: "", confirmPassword: "", terms: false as true },
+    defaultValues: {
+      fullName: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      terms: false as true,
+    },
   });
 
   const password = watch("password") ?? "";
@@ -48,7 +54,9 @@ export function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
           aria-invalid={Boolean(errors.fullName)}
           {...register("fullName")}
         />
-        {errors.fullName ? <p className="text-xs text-destructive">{errors.fullName.message}</p> : null}
+        {errors.fullName ? (
+          <p className="text-xs text-destructive">{errors.fullName.message}</p>
+        ) : null}
       </div>
 
       <div className="space-y-2">
@@ -74,7 +82,9 @@ export function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
           {...register("password")}
         />
         <PasswordStrength value={password} />
-        {errors.password ? <p className="text-xs text-destructive">{errors.password.message}</p> : null}
+        {errors.password ? (
+          <p className="text-xs text-destructive">{errors.password.message}</p>
+        ) : null}
       </div>
 
       <div className="space-y-2">

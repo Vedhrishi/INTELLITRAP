@@ -86,31 +86,30 @@ function DashboardPage() {
         title={title}
         description="Every visitor, scored and mapped the moment they arrive."
         actions={
-        <span
-          className={cn(
-            "flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider",
-            status === "live"
-              ? "border-emerald-500/40 text-emerald-400"
-              : status === "connecting"
-                ? "border-amber-500/40 text-amber-400"
-                : "border-border text-muted-foreground",
-          )}
-        >
           <span
             className={cn(
-              "size-1.5 rounded-full",
+              "flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider",
               status === "live"
-                ? "bg-emerald-400"
+                ? "border-emerald-500/40 text-emerald-400"
                 : status === "connecting"
-                  ? "bg-amber-400"
-                  : "bg-muted-foreground",
+                  ? "border-amber-500/40 text-amber-400"
+                  : "border-border text-muted-foreground",
             )}
-          />
-          {status === "live" ? "Realtime" : status === "connecting" ? "Connecting" : "Polling"}
+          >
+            <span
+              className={cn(
+                "size-1.5 rounded-full",
+                status === "live"
+                  ? "bg-emerald-400"
+                  : status === "connecting"
+                    ? "bg-amber-400"
+                    : "bg-muted-foreground",
+              )}
+            />
+            {status === "live" ? "Realtime" : status === "connecting" ? "Connecting" : "Polling"}
           </span>
         }
       />
-
 
       {stats.isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
@@ -159,6 +158,7 @@ function DashboardPage() {
           <KpiCard
             index={5}
             label="Blocked IPs"
+            sublabel={`${s?.autoBlocksToday ?? 0} auto-blocked today`}
             value={s?.blocked ?? 0}
             icon={Ban}
             accent="bg-red-500/15 text-red-400"
@@ -192,11 +192,7 @@ function DashboardPage() {
         )}
       </section>
 
-      <VisitorDrawer
-        visitor={selected}
-        onClose={() => setSelected(null)}
-        onChanged={refreshAll}
-      />
+      <VisitorDrawer visitor={selected} onClose={() => setSelected(null)} onChanged={refreshAll} />
     </>
   );
 }

@@ -35,8 +35,7 @@ export function clientIp(): string {
   return candidate || "0.0.0.0";
 }
 
-const PRIVATE_IP =
-  /^(0\.|10\.|127\.|169\.254\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|::1|fc|fd)/i;
+const PRIVATE_IP = /^(0\.|10\.|127\.|169\.254\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|::1|fc|fd)/i;
 
 /** Geo/ASN enrichment. Never throws — tracking must not fail on lookup errors. */
 export async function lookupGeo(ip: string): Promise<GeoInfo> {
@@ -184,7 +183,13 @@ export async function hashSharePassword(password: string): Promise<string> {
 /** Notifies every admin in-app when an IP is auto-blocked. */
 export async function alertAdmins(
   admin: Admin,
-  payload: { ip: string; score: number; signals: string[]; city?: string | null; country?: string | null },
+  payload: {
+    ip: string;
+    score: number;
+    signals: string[];
+    city?: string | null;
+    country?: string | null;
+  },
 ): Promise<void> {
   const { data: admins } = await admin.from("user_roles").select("user_id").eq("role", "admin");
   if (!admins?.length) return;

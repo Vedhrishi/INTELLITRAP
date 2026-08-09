@@ -1,12 +1,7 @@
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,19 +13,26 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { toIST } from "@/lib/share/format";
-import { REMOVAL_REASONS, removeUser, type Profile, type RemovalReason } from "@/lib/admin/admin-data";
+import {
+  REMOVAL_REASONS,
+  removeUser,
+  type Profile,
+  type RemovalReason,
+} from "@/lib/admin/admin-data";
 import { useAuth } from "@/lib/auth/auth-context";
 
 const CONFIRM_PHRASE = "CONFIRM REMOVE";
 
 function initials(profile: Profile): string {
   const source = profile.full_name ?? profile.email ?? "?";
-  return source
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("") || "?";
+  return (
+    source
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() ?? "")
+      .join("") || "?"
+  );
 }
 
 export function RemoveUserDialog({

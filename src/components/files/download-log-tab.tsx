@@ -1,6 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { EmptyState } from "@/components/primitives/empty-state";
 import { supabase } from "@/integrations/supabase/client";
 import { toIST } from "@/lib/share/format";
@@ -56,7 +63,12 @@ export function DownloadLogTab({ userId }: { userId: string }) {
   }
 
   if (!entries || entries.length === 0) {
-    return <EmptyState title="No download activity yet" description="Downloads of your shared files will appear here." />;
+    return (
+      <EmptyState
+        title="No download activity yet"
+        description="Downloads of your shared files will appear here."
+      />
+    );
   }
 
   return (
@@ -81,13 +93,18 @@ export function DownloadLogTab({ userId }: { userId: string }) {
               <TableCell>
                 <Badge
                   variant="outline"
-                  className={OUTCOME_STYLES[entry.outcome ?? ""] ?? "bg-[#334155]/40 text-[#94a3b8] border-[#334155]"}
+                  className={
+                    OUTCOME_STYLES[entry.outcome ?? ""] ??
+                    "bg-[#334155]/40 text-[#94a3b8] border-[#334155]"
+                  }
                 >
                   {entry.outcome ?? "unknown"}
                 </Badge>
               </TableCell>
               <TableCell className="text-[#94a3b8]">{entry.risk_score_at_access ?? "—"}</TableCell>
-              <TableCell className="whitespace-nowrap text-[#94a3b8]">{toIST(entry.created_at)}</TableCell>
+              <TableCell className="whitespace-nowrap text-[#94a3b8]">
+                {toIST(entry.created_at)}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

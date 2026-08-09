@@ -27,7 +27,12 @@ export function MyFilesTab({
         </Button>
       </div>
 
-      <FilesTable files={files} userId={userId} userSecretCode={userSecretCode} onReupload={() => setUploadOpen(true)} />
+      <FilesTable
+        files={files}
+        userId={userId}
+        userSecretCode={userSecretCode}
+        onReupload={() => setUploadOpen(true)}
+      />
 
       <UploadDialog
         open={uploadOpen}
@@ -36,7 +41,6 @@ export function MyFilesTab({
         existingFiles={files}
         onUploaded={onRefresh}
       />
-
     </div>
   );
 }

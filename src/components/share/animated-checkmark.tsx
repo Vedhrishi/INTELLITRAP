@@ -5,7 +5,10 @@ export function AnimatedCheckmark({ color = "#22c55e" }: { color?: string }) {
       width={80}
       height={80}
       className="mx-auto"
-      style={{ filter: `drop-shadow(0 0 0px ${color})`, animation: "checkGlow 1s ease-out 1s forwards" }}
+      style={{
+        filter: `drop-shadow(0 0 0px ${color})`,
+        animation: "checkGlow 1s ease-out 1s forwards",
+      }}
     >
       <style>{`
         @keyframes checkGlow {

@@ -6,7 +6,11 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { toIST } from "@/lib/share/format";
 import { useAuth } from "@/lib/auth/auth-context";
-import { PLATFORM_SETTING_KEYS, upsertPlatformSettings, type PlatformSetting } from "@/lib/admin/admin-data";
+import {
+  PLATFORM_SETTING_KEYS,
+  upsertPlatformSettings,
+  type PlatformSetting,
+} from "@/lib/admin/admin-data";
 
 const TOGGLES = [
   { key: PLATFORM_SETTING_KEYS.registrationEnabled, label: "Registration Enabled" },
@@ -39,7 +43,8 @@ export function SettingsPlatformTab({ settings }: { settings: PlatformSetting[] 
       void queryClient.invalidateQueries({ queryKey: ["admin-platform-settings"] });
       toast.success("Platform settings saved");
     },
-    onError: (error) => toast.error(error instanceof Error ? error.message : "Failed to save settings"),
+    onError: (error) =>
+      toast.error(error instanceof Error ? error.message : "Failed to save settings"),
   });
 
   return (

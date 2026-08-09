@@ -28,7 +28,9 @@ export function ProgressSteps({ current }: { current: ShareStep }) {
               </div>
               <span
                 className={
-                  state === "pending" ? "text-xs text-[#64748b]" : "text-xs font-medium text-[#e2e8f0]"
+                  state === "pending"
+                    ? "text-xs text-[#64748b]"
+                    : "text-xs font-medium text-[#e2e8f0]"
                 }
               >
                 {label}
@@ -39,7 +41,9 @@ export function ProgressSteps({ current }: { current: ShareStep }) {
                 <motion.div
                   className="absolute inset-y-0 left-0 bg-[#3b82f6]"
                   initial={false}
-                  animate={{ width: `${index === 0 ? Math.min(fillPercent * 2, 100) : Math.max(fillPercent * 2 - 100, 0)}%` }}
+                  animate={{
+                    width: `${index === 0 ? Math.min(fillPercent * 2, 100) : Math.max(fillPercent * 2 - 100, 0)}%`,
+                  }}
                   transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                 />
               </div>

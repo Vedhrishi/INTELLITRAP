@@ -79,12 +79,48 @@ function AdminDashboardContent() {
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-          <KpiCard index={0} label="Total users" value={k?.totalUsers ?? 0} icon={Users} accent="bg-sky-500/15 text-sky-400" />
-          <KpiCard index={1} label="Visitors today" value={k?.visitorsToday ?? 0} icon={UserCheck} accent="bg-emerald-500/15 text-emerald-400" />
-          <KpiCard index={2} label="Auto-blocks today" value={k?.autoBlocksToday ?? 0} icon={Ban} accent="bg-red-500/15 text-red-400" />
-          <KpiCard index={3} label="Active honeypots" value={k?.activeHoneypots ?? 0} icon={Bug} accent="bg-orange-500/15 text-orange-400" />
-          <KpiCard index={4} label="Critical risk now" value={k?.criticalRiskNow ?? 0} icon={ShieldAlert} accent="bg-red-500/15 text-red-400" />
-          <KpiCard index={5} label="Platform health" value={k?.platformHealth ?? 100} icon={HeartPulse} accent="bg-emerald-500/15 text-emerald-400" />
+          <KpiCard
+            index={0}
+            label="Total users"
+            value={k?.totalUsers ?? 0}
+            icon={Users}
+            accent="bg-sky-500/15 text-sky-400"
+          />
+          <KpiCard
+            index={1}
+            label="Visitors today"
+            value={k?.visitorsToday ?? 0}
+            icon={UserCheck}
+            accent="bg-emerald-500/15 text-emerald-400"
+          />
+          <KpiCard
+            index={2}
+            label="Auto-blocks today"
+            value={k?.autoBlocksToday ?? 0}
+            icon={Ban}
+            accent="bg-red-500/15 text-red-400"
+          />
+          <KpiCard
+            index={3}
+            label="Active honeypots"
+            value={k?.activeHoneypots ?? 0}
+            icon={Bug}
+            accent="bg-orange-500/15 text-orange-400"
+          />
+          <KpiCard
+            index={4}
+            label="Critical risk now"
+            value={k?.criticalRiskNow ?? 0}
+            icon={ShieldAlert}
+            accent="bg-red-500/15 text-red-400"
+          />
+          <KpiCard
+            index={5}
+            label="Platform health"
+            value={k?.platformHealth ?? 100}
+            icon={HeartPulse}
+            accent="bg-emerald-500/15 text-emerald-400"
+          />
         </div>
       )}
 

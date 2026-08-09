@@ -92,27 +92,28 @@ function VisitorMarker({
   );
 }
 
-function GeoBadge({ children, tone = "blue" }: { children: string; tone?: "blue" | "red" | "amber" }) {
+function GeoBadge({
+  children,
+  tone = "blue",
+}: {
+  children: string;
+  tone?: "blue" | "red" | "amber";
+}) {
   const tones = {
     blue: "border-[#3b82f6]/40 text-[#93c5fd] bg-[#3b82f6]/10",
     red: "border-red-500/40 text-red-300 bg-red-500/10",
     amber: "border-amber-500/40 text-amber-300 bg-amber-500/10",
   } as const;
   return (
-    <span className={cn("rounded border px-1.5 py-0.5 text-[9px] font-semibold uppercase", tones[tone])}>
+    <span
+      className={cn("rounded border px-1.5 py-0.5 text-[9px] font-semibold uppercase", tones[tone])}
+    >
       {children}
     </span>
   );
 }
 
-
-function VisitorInfo({
-  visitor,
-  onOpenProfile,
-}: {
-  visitor: Visitor;
-  onOpenProfile: () => void;
-}) {
+function VisitorInfo({ visitor, onOpenProfile }: { visitor: Visitor; onOpenProfile: () => void }) {
   const color = riskColor(visitor);
   return (
     <div
@@ -240,7 +241,9 @@ function MapCanvas({
       {visitors.map((visitor) => (
         <VisitorMarker key={visitor.id} visitor={visitor} onSelect={setSelectedVisitor} />
       ))}
-      {selectedVisitor && selectedVisitor.latitude !== null && selectedVisitor.longitude !== null ? (
+      {selectedVisitor &&
+      selectedVisitor.latitude !== null &&
+      selectedVisitor.longitude !== null ? (
         <InfoWindow
           position={{
             lat: Number(selectedVisitor.latitude),
@@ -314,7 +317,6 @@ export default function LiveVisitorMap({
           </APIProvider>
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-2 bg-[#0b1220] p-6 text-center">
-
             <ShieldCheck className="size-7 text-[#3b82f6]" />
             <p className="text-sm font-semibold text-white">Google Maps key missing</p>
             <p className="max-w-xs text-xs text-[#94a3b8]">

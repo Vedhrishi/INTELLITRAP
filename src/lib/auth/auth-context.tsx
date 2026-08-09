@@ -24,6 +24,7 @@ export type Profile = {
   storage_quota: number;
   status: string;
   risk_score: number;
+  user_secret_code: string | null;
 };
 
 type AuthResult = { error: string | null };
@@ -58,7 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       supabase
         .from("profiles")
         .select(
-          "id, email, full_name, display_name, avatar_url, storage_used, storage_quota, status, risk_score",
+          "id, email, full_name, display_name, avatar_url, storage_used, storage_quota, status, risk_score, user_secret_code",
         )
         .eq("id", userId)
         .maybeSingle(),
@@ -81,7 +82,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(nextProfile);
     setRoles(((rolesResult.data ?? []) as { role: AppRole }[]).map((row) => row.role));
   }, []);
-
 
   const loadRoles = useCallback(async (userId: string) => {
     const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
