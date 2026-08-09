@@ -313,36 +313,8 @@ export default function LiveVisitorMap({
             <MapCanvas visitors={filtered} onSelect={onSelect} />
           </APIProvider>
         ) : (
-
-              <ProtectedZoneMarker />
-              {filtered.map((visitor) => (
-                <VisitorMarker
-                  key={visitor.id}
-                  visitor={visitor}
-                  onSelect={setSelectedVisitor}
-                />
-              ))}
-              {selectedVisitor && selectedVisitor.latitude !== null && selectedVisitor.longitude !== null ? (
-                <InfoWindow
-                  position={{
-                    lat: Number(selectedVisitor.latitude),
-                    lng: Number(selectedVisitor.longitude),
-                  }}
-                  onCloseClick={() => setSelectedVisitor(null)}
-                  headerDisabled
-                >
-                  <VisitorInfo
-                    visitor={selectedVisitor}
-                    onOpenProfile={() => {
-                      onSelect(selectedVisitor);
-                      setSelectedVisitor(null);
-                    }}
-                  />
-                </InfoWindow>
-              ) : null}
-            </Map>
-          </APIProvider>
         ) : (
+
           <div className="flex h-full flex-col items-center justify-center gap-2 bg-[#0b1220] p-6 text-center">
             <ShieldCheck className="size-7 text-[#3b82f6]" />
             <p className="text-sm font-semibold text-white">Google Maps key missing</p>
