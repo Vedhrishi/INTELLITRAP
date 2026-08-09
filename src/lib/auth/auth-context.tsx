@@ -24,6 +24,7 @@ export type Profile = {
   storage_quota: number;
   status: string;
   risk_score: number;
+  user_secret_code: string | null;
 };
 
 type AuthResult = { error: string | null };
@@ -58,7 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       supabase
         .from("profiles")
         .select(
-          "id, email, full_name, display_name, avatar_url, storage_used, storage_quota, status, risk_score",
+          "id, email, full_name, display_name, avatar_url, storage_used, storage_quota, status, risk_score, user_secret_code",
         )
         .eq("id", userId)
         .maybeSingle(),

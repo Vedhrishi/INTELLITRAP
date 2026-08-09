@@ -341,3 +341,28 @@
   transform: translateX(-120%);
 }
 .shimmer-btn:hover::after { animation: shimmerSweep 1.1s ease-in-out infinite; }
+
+/* ── Utility keyframes and scrollbars ───────────────────────────── */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
