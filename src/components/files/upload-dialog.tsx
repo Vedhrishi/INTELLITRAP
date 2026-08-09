@@ -167,6 +167,14 @@ export function UploadDialog({
 
   const startUpload = useCallback(async () => {
     if (!file || !user) return;
+    if (
+      existingFiles.length >= USER_MAX_FILES ||
+      usedBytes(existingFiles) + file.size > USER_STORAGE_QUOTA
+    ) {
+      toast.error("Storage full. Delete files to free space.");
+      return;
+    }
+
     setStep(3);
     setUploading(true);
     setProgress(0);
