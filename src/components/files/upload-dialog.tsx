@@ -14,7 +14,15 @@ import { useAuth } from "@/lib/auth/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { formatFileSize, hashPassword, passwordStrength } from "@/lib/share/format";
 import { FileTypeIcon } from "./file-type-icon";
-import { BLOCKED_EXTENSIONS, MAX_FILE_SIZE } from "./types";
+import {
+  BLOCKED_EXTENSIONS,
+  MAX_FILE_SIZE,
+  USER_MAX_FILES,
+  USER_STORAGE_QUOTA,
+  usedBytes,
+  type FileRow,
+} from "./types";
+
 
 const EXPIRY_OPTIONS = [
   { value: "never", label: "Never" },
