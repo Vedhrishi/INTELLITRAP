@@ -200,6 +200,68 @@ function EmptyOverlay() {
   );
 }
 
+function LoadFailure() {
+  return (
+    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[#0b1220] p-6 text-center">
+      <AlertTriangle className="size-7 text-amber-400" />
+      <p className="text-sm font-semibold text-white">Map could not load</p>
+      <p className="max-w-sm text-xs text-[#94a3b8]">
+        Google rejected the request for this key. Enable the Maps JavaScript API and add this
+        site&apos;s domain to the key&apos;s HTTP referrer allowlist.
+      </p>
+    </div>
+  );
+}
+
+function MapCanvas({
+  visitors,
+  onSelect,
+}: {
+  visitors: Visitor[];
+  onSelect: (visitor: Visitor) => void;
+}) {
+  const status = useApiLoadingStatus();
+  const [selectedVisitor, setSelectedVisitor] = useState<Visitor | null>(null);
+
+  if (status === APILoadingStatus.FAILED || status === APILoadingStatus.AUTH_FAILURE) {
+    return <LoadFailure />;
+  }
+
+  return (
+    <Map
+      defaultCenter={DEFAULT_CENTER}
+      defaultZoom={5}
+      colorScheme="DARK"
+      gestureHandling="greedy"
+      disableDefaultUI={false}
+      style={{ width: "100%", height: "100%" }}
+    >
+      <ProtectedZone />
+      {visitors.map((visitor) => (
+        <VisitorMarker key={visitor.id} visitor={visitor} onSelect={setSelectedVisitor} />
+      ))}
+      {selectedVisitor && selectedVisitor.latitude !== null && selectedVisitor.longitude !== null ? (
+        <InfoWindow
+          position={{
+            lat: Number(selectedVisitor.latitude),
+            lng: Number(selectedVisitor.longitude),
+          }}
+          onCloseClick={() => setSelectedVisitor(null)}
+          headerDisabled
+        >
+          <VisitorInfo
+            visitor={selectedVisitor}
+            onOpenProfile={() => {
+              onSelect(selectedVisitor);
+              setSelectedVisitor(null);
+            }}
+          />
+        </InfoWindow>
+      ) : null}
+    </Map>
+  );
+}
+
 export default function LiveVisitorMap({
   visitors,
   onSelect,
@@ -210,7 +272,6 @@ export default function LiveVisitorMap({
   height?: number;
 }) {
   const [filter, setFilter] = useState<FilterKey>("all");
-  const [selectedVisitor, setSelectedVisitor] = useState<Visitor | null>(null);
 
   const filtered = useMemo(() => {
     const placed = visitors.filter((v) => v.latitude !== null && v.longitude !== null);
@@ -249,15 +310,10 @@ export default function LiveVisitorMap({
       <div className="relative overflow-hidden rounded-xl border border-border" style={{ height }}>
         {MAPS_KEY ? (
           <APIProvider apiKey={MAPS_KEY}>
-            <Map
-              defaultCenter={DEFAULT_CENTER}
-              defaultZoom={5}
-              mapId="intellitrap-dark-map"
-              colorScheme="DARK"
-              gestureHandling="greedy"
-              disableDefaultUI={false}
-              style={{ width: "100%", height: "100%" }}
-            >
+            <MapCanvas visitors={filtered} onSelect={onSelect} />
+          </APIProvider>
+        ) : (
+
               <ProtectedZoneMarker />
               {filtered.map((visitor) => (
                 <VisitorMarker
