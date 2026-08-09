@@ -19,7 +19,7 @@ import {
 } from "@/lib/tracking/dashboard-data";
 import { cn } from "@/lib/utils";
 
-const VisitorMap = lazy(() => import("@/components/dashboard/visitor-map"));
+const VisitorMap = lazy(() => import("@/components/dashboard/LiveVisitorMap"));
 
 const title = "Live visitor intelligence";
 const description =
