@@ -233,7 +233,7 @@ export function UploadDialog({
     } finally {
       setUploading(false);
     }
-  }, [expiry, file, onOpenChange, onUploaded, oneTime, password, reset, sharingEnabled, user, userSecretCode]);
+  }, [existingFiles, expiry, file, onOpenChange, onUploaded, oneTime, password, reset, sharingEnabled, user, userSecretCode]);
 
   const closeSavedPasswordModal = useCallback(() => {
     setSavedPasswordModal(false);
