@@ -343,7 +343,11 @@ export async function addWhitelistIp(ip: string): Promise<void> {
 export function severityColor(eventType: string): string {
   if (eventType.includes("block") || eventType === "blocked") return "#ef4444";
   if (eventType.includes("honeypot")) return "#f97316";
-  if (eventType.includes("fail") || eventType.includes("suspicious") || eventType.includes("rate_limited"))
+  if (
+    eventType.includes("fail") ||
+    eventType.includes("suspicious") ||
+    eventType.includes("rate_limited")
+  )
     return "#f59e0b";
   return "#3b82f6";
 }
@@ -358,7 +362,9 @@ export async function fetchAllAuditLog(): Promise<AdminAuditLog[]> {
   return data ?? [];
 }
 
-export async function fetchTodayEventsByType(): Promise<{ event_type: string; created_at: string }[]> {
+export async function fetchTodayEventsByType(): Promise<
+  { event_type: string; created_at: string }[]
+> {
   const { data, error } = await supabase
     .from("visitor_events")
     .select("event_type, created_at")
@@ -409,12 +415,15 @@ export async function fetchLatestMlAnalysis(): Promise<MlAnalysis | null> {
 
   return {
     score: typeof payload["rf_score"] === "number" ? (payload["rf_score"] as number) : 0,
-    decision: typeof payload["rf_decision"] === "string" ? (payload["rf_decision"] as string) : "granted",
+    decision:
+      typeof payload["rf_decision"] === "string" ? (payload["rf_decision"] as string) : "granted",
     confidence: typeof payload["confidence"] === "number" ? (payload["confidence"] as number) : 0,
     treeVotes: readTreeVotes(payload["tree_votes"]),
     breakdown,
     topSignals: Array.isArray(payload["top_signals"])
-      ? (payload["top_signals"] as unknown[]).filter((item): item is string => typeof item === "string")
+      ? (payload["top_signals"] as unknown[]).filter(
+          (item): item is string => typeof item === "string",
+        )
       : [],
     ip: row.ip_address,
     at: row.created_at,

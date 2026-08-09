@@ -8,7 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/lib/auth/auth-context";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,7 +28,6 @@ import {
   usedBytes,
   type FileRow,
 } from "./types";
-
 
 const EXPIRY_OPTIONS = [
   { value: "never", label: "Never" },
@@ -90,7 +95,6 @@ export function UploadDialog({
   existingFiles?: FileRow[];
   onUploaded: () => void;
 }) {
-
   const { user } = useAuth();
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -148,7 +152,6 @@ export function UploadDialog({
     },
     [existingFiles],
   );
-
 
   const handleDrop = useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {
@@ -233,7 +236,19 @@ export function UploadDialog({
     } finally {
       setUploading(false);
     }
-  }, [existingFiles, expiry, file, onOpenChange, onUploaded, oneTime, password, reset, sharingEnabled, user, userSecretCode]);
+  }, [
+    existingFiles,
+    expiry,
+    file,
+    onOpenChange,
+    onUploaded,
+    oneTime,
+    password,
+    reset,
+    sharingEnabled,
+    user,
+    userSecretCode,
+  ]);
 
   const closeSavedPasswordModal = useCallback(() => {
     setSavedPasswordModal(false);
@@ -286,12 +301,21 @@ export function UploadDialog({
 
               {file ? (
                 <div className="flex items-center gap-3 rounded-lg border border-[#334155] bg-[#1e293b] p-3">
-                  <FileTypeIcon mimeType={file.type || "application/octet-stream"} name={file.name} className="size-6" />
+                  <FileTypeIcon
+                    mimeType={file.type || "application/octet-stream"}
+                    name={file.name}
+                    className="size-6"
+                  />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-slate-100">{file.name}</p>
                     <p className="text-xs text-[#94a3b8]">{formatFileSize(file.size)}</p>
                   </div>
-                  <Button variant="ghost" size="icon" className="size-7" onClick={() => setFile(null)}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-7"
+                    onClick={() => setFile(null)}
+                  >
                     <X className="size-4" />
                   </Button>
                 </div>
@@ -310,7 +334,9 @@ export function UploadDialog({
               <div className="flex items-center justify-between rounded-lg border border-[#334155] bg-[#1e293b] p-3">
                 <div>
                   <p className="text-sm font-medium text-slate-100">Enable Secret Sharing</p>
-                  <p className="text-xs text-[#94a3b8]">Protect this file with a code and password</p>
+                  <p className="text-xs text-[#94a3b8]">
+                    Protect this file with a code and password
+                  </p>
                 </div>
                 <Switch checked={sharingEnabled} onCheckedChange={setSharingEnabled} />
               </div>
@@ -341,7 +367,11 @@ export function UploadDialog({
                             onClick={() => setShowPassword((prev) => !prev)}
                             aria-label={showPassword ? "Hide password" : "Show password"}
                           >
-                            {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                            {showPassword ? (
+                              <EyeOff className="size-4" />
+                            ) : (
+                              <Eye className="size-4" />
+                            )}
                           </button>
                         </div>
                         <div className="flex gap-1 pt-1">
@@ -366,7 +396,9 @@ export function UploadDialog({
                             maxLength={20}
                             onChange={(event) => setConfirmPassword(event.target.value)}
                             className={`border-[#334155] bg-[#0f172a] pr-9 ${
-                              confirmPassword.length > 0 && !passwordsMatch ? "text-red-400 border-red-500" : ""
+                              confirmPassword.length > 0 && !passwordsMatch
+                                ? "text-red-400 border-red-500"
+                                : ""
                             }`}
                           />
                           {passwordsMatch ? (
@@ -386,14 +418,19 @@ export function UploadDialog({
                             <Label htmlFor="one-time" className="cursor-pointer">
                               One-Time Download
                             </Label>
-                            <p className="text-xs text-[#94a3b8]">Delete this file after first download. Cannot be undone.</p>
+                            <p className="text-xs text-[#94a3b8]">
+                              Delete this file after first download. Cannot be undone.
+                            </p>
                           </div>
                         </div>
                       </div>
 
                       <div className="space-y-1.5">
                         <Label>Expiry</Label>
-                        <Select value={expiry} onValueChange={(value) => setExpiry(value as ExpiryValue)}>
+                        <Select
+                          value={expiry}
+                          onValueChange={(value) => setExpiry(value as ExpiryValue)}
+                        >
                           <SelectTrigger className="border-[#334155] bg-[#0f172a]">
                             <SelectValue />
                           </SelectTrigger>
@@ -410,19 +447,24 @@ export function UploadDialog({
                       <div className="rounded-lg border border-[#334155] bg-[#1e293b] p-3">
                         <p className="text-xs text-[#94a3b8]">Your secret code</p>
                         <div className="mt-1 flex items-center justify-between gap-2">
-                          <code className="font-mono text-lg font-bold text-[#3b82f6]">{userSecretCode ?? "—"}</code>
+                          <code className="font-mono text-lg font-bold text-[#3b82f6]">
+                            {userSecretCode ?? "—"}
+                          </code>
                           <Button
                             variant="ghost"
                             size="icon"
                             className="size-7"
                             onClick={() => {
-                              if (userSecretCode) void navigator.clipboard.writeText(userSecretCode);
+                              if (userSecretCode)
+                                void navigator.clipboard.writeText(userSecretCode);
                             }}
                           >
                             <Copy className="size-4" />
                           </Button>
                         </div>
-                        <p className="mt-1 text-xs text-[#64748b]">Share this code AND the password separately</p>
+                        <p className="mt-1 text-xs text-[#64748b]">
+                          Share this code AND the password separately
+                        </p>
                       </div>
                     </div>
                   </motion.div>
@@ -470,7 +512,9 @@ export function UploadDialog({
               This password will not be shown again. Save it somewhere safe before continuing.
             </p>
             <div className="rounded-lg border border-amber-500/30 bg-[#0f172a] p-4 text-center">
-              <code className="break-all font-mono text-2xl font-black text-[#3b82f6]">{savedPasswordValue}</code>
+              <code className="break-all font-mono text-2xl font-black text-[#3b82f6]">
+                {savedPasswordValue}
+              </code>
             </div>
             <Button
               variant="outline"

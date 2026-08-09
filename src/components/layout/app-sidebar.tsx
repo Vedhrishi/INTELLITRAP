@@ -53,9 +53,7 @@ export function AppSidebar({
                         asChild
                         isActive={active}
                         tooltip={item.title}
-                        className={cn(
-                          active && "border-l-2 border-l-[#3b82f6] bg-blue-500/10",
-                        )}
+                        className={cn(active && "border-l-2 border-l-[#3b82f6] bg-blue-500/10")}
                       >
                         <Link to={item.url}>
                           <item.icon aria-hidden className={cn("size-4", item.iconClass)} />

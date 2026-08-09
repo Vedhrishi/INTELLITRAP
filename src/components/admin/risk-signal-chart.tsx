@@ -1,4 +1,13 @@
-import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { severityColor } from "@/lib/admin/admin-data";
 
 export function RiskSignalChart({ data }: { data: { signal: string; count: number }[] }) {
@@ -6,7 +15,9 @@ export function RiskSignalChart({ data }: { data: { signal: string; count: numbe
     <section className="glass rounded-xl p-4">
       <h2 className="mb-3 text-sm font-semibold">Risk-signal frequency (today)</h2>
       {data.length === 0 ? (
-        <p className="py-10 text-center text-xs text-muted-foreground">No signals recorded yet today</p>
+        <p className="py-10 text-center text-xs text-muted-foreground">
+          No signals recorded yet today
+        </p>
       ) : (
         <ResponsiveContainer width="100%" height={Math.max(180, data.length * 32)}>
           <BarChart data={data} layout="vertical" margin={{ left: 12, right: 24 }}>

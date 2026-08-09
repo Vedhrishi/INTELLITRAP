@@ -83,7 +83,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setRoles(((rolesResult.data ?? []) as { role: AppRole }[]).map((row) => row.role));
   }, []);
 
-
   const loadRoles = useCallback(async (userId: string) => {
     const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
     if (!mounted.current) return;

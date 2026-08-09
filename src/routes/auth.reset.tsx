@@ -54,7 +54,10 @@ function ResetPage() {
   });
 
   return (
-    <AuthLayout title="Set a new password" description="Choose a strong password you haven't used before.">
+    <AuthLayout
+      title="Set a new password"
+      description="Choose a strong password you haven't used before."
+    >
       <form onSubmit={onSubmit} className="space-y-4" noValidate>
         <div className="space-y-2">
           <Label htmlFor="reset-password">New password</Label>
@@ -66,7 +69,9 @@ function ResetPage() {
             {...register("password")}
           />
           <PasswordStrength value={password} />
-          {errors.password ? <p className="text-xs text-destructive">{errors.password.message}</p> : null}
+          {errors.password ? (
+            <p className="text-xs text-destructive">{errors.password.message}</p>
+          ) : null}
         </div>
         <div className="space-y-2">
           <Label htmlFor="reset-confirm">Confirm password</Label>

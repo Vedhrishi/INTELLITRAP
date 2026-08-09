@@ -1,7 +1,13 @@
 import { passwordRules, passwordScore } from "@/lib/auth/auth-schemas";
 import { cn } from "@/lib/utils";
 
-const toneByScore = ["bg-muted", "bg-destructive", "bg-warning", "bg-accent", "bg-success"] as const;
+const toneByScore = [
+  "bg-muted",
+  "bg-destructive",
+  "bg-warning",
+  "bg-accent",
+  "bg-success",
+] as const;
 const labelByScore = ["Too weak", "Weak", "Fair", "Good", "Strong"] as const;
 
 export function PasswordStrength({ value }: { value: string }) {

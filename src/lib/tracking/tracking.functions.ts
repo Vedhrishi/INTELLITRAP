@@ -40,7 +40,12 @@ const behaviorSchema = z
     scrolls: z.number().int().nonnegative().max(1_000_000).optional(),
     copies: z.number().int().nonnegative().max(100_000).optional(),
     tabSwitches: z.number().int().nonnegative().max(100_000).optional(),
-    timeOnSite: z.number().int().nonnegative().max(86_400 * 7).optional(),
+    timeOnSite: z
+      .number()
+      .int()
+      .nonnegative()
+      .max(86_400 * 7)
+      .optional(),
   })
   .partial();
 
@@ -506,19 +511,24 @@ export const verifyFilePassword = createServerFn({ method: "POST" })
       .limit(1)
       .maybeSingle();
 
-    if (!file)
-      return { success: false as const, error: "No shared file found for this code." };
+    if (!file) return { success: false as const, error: "No shared file found for this code." };
 
     if (file.expires_at && new Date(file.expires_at) < new Date()) {
-      await supabaseAdmin
-        .from("file_access_log")
-        .insert({ file_id: file.id, session_token: data.session_token, ip_address: ip, outcome: "expired" });
+      await supabaseAdmin.from("file_access_log").insert({
+        file_id: file.id,
+        session_token: data.session_token,
+        ip_address: ip,
+        outcome: "expired",
+      });
       return { success: false as const, error: "This link has expired." };
     }
     if (file.one_time && file.download_count > 0) {
-      await supabaseAdmin
-        .from("file_access_log")
-        .insert({ file_id: file.id, session_token: data.session_token, ip_address: ip, outcome: "consumed" });
+      await supabaseAdmin.from("file_access_log").insert({
+        file_id: file.id,
+        session_token: data.session_token,
+        ip_address: ip,
+        outcome: "consumed",
+      });
       return { success: false as const, error: "This file has already been downloaded." };
     }
 
@@ -531,9 +541,12 @@ export const verifyFilePassword = createServerFn({ method: "POST" })
         event_type: "password_fail",
         event_data: { code } as never,
       });
-      await supabaseAdmin
-        .from("file_access_log")
-        .insert({ file_id: file.id, session_token: data.session_token, ip_address: ip, outcome: "wrong_password" });
+      await supabaseAdmin.from("file_access_log").insert({
+        file_id: file.id,
+        session_token: data.session_token,
+        ip_address: ip,
+        outcome: "wrong_password",
+      });
       const { data: intel } = await supabaseAdmin
         .from("ip_intelligence")
         .select("total_failed_passwords")
@@ -555,9 +568,12 @@ export const verifyFilePassword = createServerFn({ method: "POST" })
       .from("files")
       .update({ download_count: file.download_count + 1 })
       .eq("id", file.id);
-    await supabaseAdmin
-      .from("file_access_log")
-      .insert({ file_id: file.id, session_token: data.session_token, ip_address: ip, outcome: "success" });
+    await supabaseAdmin.from("file_access_log").insert({
+      file_id: file.id,
+      session_token: data.session_token,
+      ip_address: ip,
+      outcome: "success",
+    });
     await supabaseAdmin.from("visitor_events").insert({
       session_token: data.session_token,
       visitor_id: data.visitor_id,

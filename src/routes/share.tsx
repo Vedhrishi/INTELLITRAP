@@ -40,7 +40,8 @@ import { FileCard } from "@/components/share/file-card";
 import { OtpBoxes } from "@/components/share/otp-boxes";
 
 const title = "Secure File Access — IntelliTrap";
-const description = "Enter the secure share code and password to access a file protected by IntelliTrap.";
+const description =
+  "Enter the secure share code and password to access a file protected by IntelliTrap.";
 
 export const Route = createFileRoute("/share")({
   head: () => ({
@@ -147,7 +148,8 @@ function SharePage() {
 
   const step: ShareStep = useMemo(() => {
     if (shareState === "enter_code") return 0;
-    if (shareState === "enter_password" || shareState === "analyzing" || shareState === "challenge") return 1;
+    if (shareState === "enter_password" || shareState === "analyzing" || shareState === "challenge")
+      return 1;
     return 2;
   }, [shareState]);
 
@@ -202,7 +204,12 @@ function SharePage() {
     setPasswordError("");
     try {
       const result = await verifyFilePassword({
-        data: { secret_code: code.trim(), password, session_token: sessionToken, visitor_id: visitorId },
+        data: {
+          secret_code: code.trim(),
+          password,
+          session_token: sessionToken,
+          visitor_id: visitorId,
+        },
       });
       if (result.blocked) {
         setShareState("blocked");
@@ -450,9 +457,14 @@ function SharePage() {
     <div className="relative min-h-screen overflow-x-hidden bg-[#020817]">
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-[600px]"
-        style={{ background: "radial-gradient(circle at top, rgba(59,130,246,0.06), transparent 60%)" }}
+        style={{
+          background: "radial-gradient(circle at top, rgba(59,130,246,0.06), transparent 60%)",
+        }}
       />
-      <div className="scanline pointer-events-none fixed inset-x-0 top-0 z-0 h-px bg-[#3b82f6]" style={{ opacity: 0.1 }} />
+      <div
+        className="scanline pointer-events-none fixed inset-x-0 top-0 z-0 h-px bg-[#3b82f6]"
+        style={{ opacity: 0.1 }}
+      />
 
       {effectiveState !== "blocked" ? (
         <div className="fixed right-4 top-4 z-30 rounded-full border border-[#334155] bg-[#1e293b]/70 px-3 py-1.5 text-xs text-[#94a3b8] backdrop-blur-md">
@@ -590,7 +602,11 @@ function SharePage() {
                       className="overflow-hidden"
                     >
                       {siteKey ? (
-                        <ReCAPTCHA sitekey={siteKey} theme="dark" onChange={(value) => setCaptchaToken(value)} />
+                        <ReCAPTCHA
+                          sitekey={siteKey}
+                          theme="dark"
+                          onChange={(value) => setCaptchaToken(value)}
+                        />
                       ) : (
                         <button
                           type="button"
@@ -782,7 +798,9 @@ function SharePage() {
                   </FileCard>
                   {decoyItems.length > 1 ? (
                     <div className="mt-6 text-left">
-                      <p className="mb-2 text-sm text-[#94a3b8]">Related files you may also need:</p>
+                      <p className="mb-2 text-sm text-[#94a3b8]">
+                        Related files you may also need:
+                      </p>
                       <div className="space-y-2">
                         {decoyItems.slice(1).map((item) => (
                           <div
@@ -790,7 +808,9 @@ function SharePage() {
                             className="flex items-center justify-between rounded-lg border border-[#334155] bg-[#0f172a] px-3 py-2"
                           >
                             <div className="min-w-0">
-                              <p className="truncate text-sm text-white">{item.template.file_name}</p>
+                              <p className="truncate text-sm text-white">
+                                {item.template.file_name}
+                              </p>
                               <p className="text-xs text-[#64748b]">{formatFileSize(item.size)}</p>
                             </div>
                             <button
@@ -834,7 +854,12 @@ function SharePage() {
               {challengeStep === 1 ? (
                 <div className="mt-6 flex justify-center">
                   {siteKey ? (
-                    <ReCAPTCHA sitekey={siteKey} theme="dark" onChange={(value) => void onChallengeCaptcha(value)} onExpired={() => void onChallengeCaptcha(null)} />
+                    <ReCAPTCHA
+                      sitekey={siteKey}
+                      theme="dark"
+                      onChange={(value) => void onChallengeCaptcha(value)}
+                      onExpired={() => void onChallengeCaptcha(null)}
+                    />
                   ) : (
                     <button
                       type="button"
@@ -862,12 +887,18 @@ function SharePage() {
                       disabled={!email || resendCountdown > 0}
                       className="shrink-0 rounded-md bg-amber-500 px-3 py-1.5 text-xs font-semibold text-black disabled:opacity-50"
                     >
-                      {resendCountdown > 0 ? `Resend (${resendCountdown}s)` : otpSent ? "Resend Code" : "Send Code"}
+                      {resendCountdown > 0
+                        ? `Resend (${resendCountdown}s)`
+                        : otpSent
+                          ? "Resend Code"
+                          : "Send Code"}
                     </button>
                   </div>
                   {otpSent ? (
                     <div>
-                      <p className="mb-3 text-center text-sm text-[#94a3b8]">Enter the 6-digit code sent to your email</p>
+                      <p className="mb-3 text-center text-sm text-[#94a3b8]">
+                        Enter the 6-digit code sent to your email
+                      </p>
                       <OtpBoxes
                         values={otpValues}
                         onChange={setOtpValues}
@@ -902,7 +933,10 @@ function SharePage() {
                   This one-time file has now been permanently removed from the server.
                 </p>
               ) : null}
-              <button onClick={resetAll} className="mt-6 text-sm font-medium text-[#3b82f6] hover:underline">
+              <button
+                onClick={resetAll}
+                className="mt-6 text-sm font-medium text-[#3b82f6] hover:underline"
+              >
                 Access another file →
               </button>
             </motion.div>
@@ -959,8 +993,24 @@ function BlockedState({
           strokeDasharray={600}
           className="draw-shield"
         />
-        <line x1="35" y1="40" x2="65" y2="65" stroke="#ef4444" strokeWidth={4} strokeLinecap="round" />
-        <line x1="65" y1="40" x2="35" y2="65" stroke="#ef4444" strokeWidth={4} strokeLinecap="round" />
+        <line
+          x1="35"
+          y1="40"
+          x2="65"
+          y2="65"
+          stroke="#ef4444"
+          strokeWidth={4}
+          strokeLinecap="round"
+        />
+        <line
+          x1="65"
+          y1="40"
+          x2="35"
+          y2="65"
+          stroke="#ef4444"
+          strokeWidth={4}
+          strokeLinecap="round"
+        />
       </svg>
 
       <motion.h1
@@ -974,8 +1024,8 @@ function BlockedState({
       </motion.h1>
 
       <p className="mt-6 max-w-md text-sm text-[#94a3b8]">
-        Suspicious activity was detected by our AI security system. This incident has been logged and
-        reported to the security team.
+        Suspicious activity was detected by our AI security system. This incident has been logged
+        and reported to the security team.
       </p>
 
       {sessionToken ? (

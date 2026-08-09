@@ -62,7 +62,8 @@ export function AutoBlocksTable({
       void queryClient.invalidateQueries({ queryKey: ["admin-blocks"] });
       toast.success("Block lifted");
     },
-    onError: (error) => toast.error(error instanceof Error ? error.message : "Failed to lift block"),
+    onError: (error) =>
+      toast.error(error instanceof Error ? error.message : "Failed to lift block"),
   });
 
   const exportJson = (block: BlockedIp) => {
@@ -112,94 +113,98 @@ export function AutoBlocksTable({
                 const rf = readRfMeta(block.device_snapshot);
                 return (
                   <Fragment key={block.id}>
-                  <tr className="border-t border-border/40 align-top">
-                    <td className="px-3 py-2 font-mono text-[10px] text-muted-foreground">
-                      {toIST(block.blocked_at)}
-                    </td>
-                    <td className="px-3 py-2 font-mono">{block.ip_address}</td>
-                    <td className="px-3 py-2">
-                      <span
-                        className={`font-mono text-xl font-semibold ${scoreTextClass(block.trigger_score)}`}
-                      >
-                        {block.trigger_score ?? "—"}
-                      </span>
-                      {rf.confidence !== null ? (
-                        <span className="ml-1 text-[10px] text-muted-foreground">
-                          {rf.confidence}%
-                        </span>
-                      ) : null}
-                    </td>
-                    <td
-                      className="max-w-[220px] cursor-pointer px-3 py-2 text-muted-foreground"
-                      onClick={() => setExpanded(isExpanded ? null : block.id)}
-                    >
-                      <span className={isExpanded ? "" : "line-clamp-1"}>{block.reason}</span>
-                    </td>
-                    <td className="px-3 py-2 text-muted-foreground">
-                      {geo.city ?? "—"} {geo.isp ? `· ${geo.isp}` : ""}
-                    </td>
-                    <td className="px-3 py-2">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="cursor-help underline decoration-dotted">
-                            {block.trigger_signals?.length ?? 0}
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          {block.trigger_signals?.length
-                            ? block.trigger_signals.join(", ")
-                            : "No signals recorded"}
-                        </TooltipContent>
-                      </Tooltip>
-                    </td>
-                    <td className="px-3 py-2">
-                      {block.admin_alerted ? (
-                        <CheckCircle2 className="size-4 text-emerald-400" />
-                      ) : (
-                        <X className="size-4 text-muted-foreground" />
-                      )}
-                    </td>
-                    <td className="px-3 py-2 text-right">
-                      <div className="flex justify-end gap-1.5">
-                        <Button variant="outline" size="sm" onClick={() => exportJson(block)}>
-                          Export JSON
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          disabled={liftMutation.isPending}
-                          onClick={() => liftMutation.mutate(block.id)}
+                    <tr className="border-t border-border/40 align-top">
+                      <td className="px-3 py-2 font-mono text-[10px] text-muted-foreground">
+                        {toIST(block.blocked_at)}
+                      </td>
+                      <td className="px-3 py-2 font-mono">{block.ip_address}</td>
+                      <td className="px-3 py-2">
+                        <span
+                          className={`font-mono text-xl font-semibold ${scoreTextClass(block.trigger_score)}`}
                         >
-                          Lift Block
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                  {isExpanded ? (
-                    <tr className="border-t border-border/20 bg-muted/20">
-                      <td colSpan={8} className="px-3 py-3">
-                        {rf.votes ? (
-                          <div className="grid grid-cols-2 gap-1.5 font-mono text-[11px] sm:grid-cols-4">
-                            <span className="text-green-400">✓ {rf.votes.granted} Safe</span>
-                            <span className="text-amber-400">⚠ {rf.votes.captcha_mfa} Caution</span>
-                            <span className="text-orange-400">🍯 {rf.votes.honeypot} Suspect</span>
-                            <span className="text-red-400">🚫 {rf.votes.blocked} Threat</span>
-                          </div>
-                        ) : null}
-                        <p className="mt-2 text-[11px] text-muted-foreground">
-                          Top signals:{" "}
-                          {block.trigger_signals?.length
-                            ? block.trigger_signals.join(", ")
-                            : "none recorded"}
-                        </p>
+                          {block.trigger_score ?? "—"}
+                        </span>
                         {rf.confidence !== null ? (
-                          <p className="text-[11px] text-muted-foreground">
-                            Model confidence: {rf.confidence}%
-                          </p>
+                          <span className="ml-1 text-[10px] text-muted-foreground">
+                            {rf.confidence}%
+                          </span>
                         ) : null}
                       </td>
+                      <td
+                        className="max-w-[220px] cursor-pointer px-3 py-2 text-muted-foreground"
+                        onClick={() => setExpanded(isExpanded ? null : block.id)}
+                      >
+                        <span className={isExpanded ? "" : "line-clamp-1"}>{block.reason}</span>
+                      </td>
+                      <td className="px-3 py-2 text-muted-foreground">
+                        {geo.city ?? "—"} {geo.isp ? `· ${geo.isp}` : ""}
+                      </td>
+                      <td className="px-3 py-2">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-help underline decoration-dotted">
+                              {block.trigger_signals?.length ?? 0}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {block.trigger_signals?.length
+                              ? block.trigger_signals.join(", ")
+                              : "No signals recorded"}
+                          </TooltipContent>
+                        </Tooltip>
+                      </td>
+                      <td className="px-3 py-2">
+                        {block.admin_alerted ? (
+                          <CheckCircle2 className="size-4 text-emerald-400" />
+                        ) : (
+                          <X className="size-4 text-muted-foreground" />
+                        )}
+                      </td>
+                      <td className="px-3 py-2 text-right">
+                        <div className="flex justify-end gap-1.5">
+                          <Button variant="outline" size="sm" onClick={() => exportJson(block)}>
+                            Export JSON
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            disabled={liftMutation.isPending}
+                            onClick={() => liftMutation.mutate(block.id)}
+                          >
+                            Lift Block
+                          </Button>
+                        </div>
+                      </td>
                     </tr>
-                  ) : null}
+                    {isExpanded ? (
+                      <tr className="border-t border-border/20 bg-muted/20">
+                        <td colSpan={8} className="px-3 py-3">
+                          {rf.votes ? (
+                            <div className="grid grid-cols-2 gap-1.5 font-mono text-[11px] sm:grid-cols-4">
+                              <span className="text-green-400">✓ {rf.votes.granted} Safe</span>
+                              <span className="text-amber-400">
+                                ⚠ {rf.votes.captcha_mfa} Caution
+                              </span>
+                              <span className="text-orange-400">
+                                🍯 {rf.votes.honeypot} Suspect
+                              </span>
+                              <span className="text-red-400">🚫 {rf.votes.blocked} Threat</span>
+                            </div>
+                          ) : null}
+                          <p className="mt-2 text-[11px] text-muted-foreground">
+                            Top signals:{" "}
+                            {block.trigger_signals?.length
+                              ? block.trigger_signals.join(", ")
+                              : "none recorded"}
+                          </p>
+                          {rf.confidence !== null ? (
+                            <p className="text-[11px] text-muted-foreground">
+                              Model confidence: {rf.confidence}%
+                            </p>
+                          ) : null}
+                        </td>
+                      </tr>
+                    ) : null}
                   </Fragment>
                 );
               })}

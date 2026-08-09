@@ -41,6 +41,7 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
   if (!intended.current && !pathname.startsWith("/auth")) intended.current = pathname;
 
   if (loading) return <ShellSkeleton />;
-  if (!user) return <Navigate to="/auth" search={{ redirect: intended.current ?? "/app" }} replace />;
+  if (!user)
+    return <Navigate to="/auth" search={{ redirect: intended.current ?? "/app" }} replace />;
   return <>{children}</>;
 }

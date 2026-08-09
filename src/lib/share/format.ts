@@ -13,7 +13,10 @@ export function formatFileSize(bytes: number): string {
 }
 
 /** Render an instant in Indian Standard Time. */
-export function toIST(value: string | number | Date | null | undefined, pattern = "dd MMM yyyy, HH:mm"): string {
+export function toIST(
+  value: string | number | Date | null | undefined,
+  pattern = "dd MMM yyyy, HH:mm",
+): string {
   if (value === null || value === undefined || value === "") return "—";
   const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) return "—";

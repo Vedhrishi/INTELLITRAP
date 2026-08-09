@@ -48,13 +48,16 @@ export function LandingFeatures() {
           Storage for your team. A trap for everyone else.
         </h2>
         <p className="mt-3 text-muted-foreground">
-          One product, two experiences — a fast file workspace for people, and a monitored
-          deception environment for intruders.
+          One product, two experiences — a fast file workspace for people, and a monitored deception
+          environment for intruders.
         </p>
       </div>
       <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {features.map((feature) => (
-          <Card key={feature.title} className="bg-gradient-card transition-shadow duration-150 hover:shadow-glow">
+          <Card
+            key={feature.title}
+            className="bg-gradient-card transition-shadow duration-150 hover:shadow-glow"
+          >
             <CardHeader>
               <span className="grid size-10 place-items-center rounded-lg bg-primary/10 text-primary">
                 <feature.icon aria-hidden className="size-5" />

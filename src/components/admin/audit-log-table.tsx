@@ -51,7 +51,9 @@ export function AuditLogTable({ entries }: { entries: AdminAuditLog[] }) {
                       className="flex items-center gap-1 text-muted-foreground hover:text-foreground"
                       onClick={() => setOpen(isOpen ? null : entry.id)}
                     >
-                      <ChevronDown className={cn("size-3.5 transition-transform", isOpen && "rotate-180")} />
+                      <ChevronDown
+                        className={cn("size-3.5 transition-transform", isOpen && "rotate-180")}
+                      />
                       Details
                     </button>
                   </td>

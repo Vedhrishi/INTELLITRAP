@@ -31,7 +31,9 @@ export function FirstRunBanner({ visible = true }: { visible?: boolean }) {
     <div className="mb-6 flex gap-4 rounded-xl border border-[#3b82f6]/30 bg-[#3b82f6]/10 p-5">
       <Radio className="mt-0.5 h-6 w-6 shrink-0 text-[#3b82f6]" />
       <div className="min-w-0 flex-1">
-        <p className="font-medium text-foreground">Your threat detection system is live and waiting.</p>
+        <p className="font-medium text-foreground">
+          Your threat detection system is live and waiting.
+        </p>
         <p className="mt-1 text-sm text-muted-foreground">
           Open your URL on your phone using mobile data. You will appear on the map as a real
           visitor with your ISP, city, and device profiled.

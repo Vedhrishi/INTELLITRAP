@@ -31,4 +31,3 @@ export const MAX_FILE_SIZE = USER_STORAGE_QUOTA;
 export function usedBytes(files: FileRow[]): number {
   return files.reduce((total, file) => total + file.size_bytes, 0);
 }
-

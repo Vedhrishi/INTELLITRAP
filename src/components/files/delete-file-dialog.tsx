@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel } from "@/components/ui/alert-dialog";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { FileRow } from "./types";
@@ -29,7 +37,8 @@ export function DeleteFileDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Delete file permanently?</AlertDialogTitle>
           <AlertDialogDescription>
-            This will remove &quot;{file?.name}&quot; from storage. This cannot be undone. Type DELETE to confirm.
+            This will remove &quot;{file?.name}&quot; from storage. This cannot be undone. Type
+            DELETE to confirm.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <Input

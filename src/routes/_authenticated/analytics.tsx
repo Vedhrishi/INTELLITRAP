@@ -38,7 +38,9 @@ function AnalyticsPage() {
 
   const rows = visitors.data ?? [];
   const online = rows.filter(isOnline).length;
-  const highRisk = rows.filter((v) => v.risk_level === "high" || v.risk_level === "critical").length;
+  const highRisk = rows.filter(
+    (v) => v.risk_level === "high" || v.risk_level === "critical",
+  ).length;
   const trapped = rows.filter((v) => v.in_honeypot).length;
 
   return (
@@ -53,10 +55,34 @@ function AnalyticsPage() {
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <KpiCard index={0} label="Sessions tracked" value={rows.length} icon={Users} accent="bg-sky-500/15 text-sky-400" />
-          <KpiCard index={1} label="Online now" value={online} icon={Activity} accent="bg-emerald-500/15 text-emerald-400" />
-          <KpiCard index={2} label="High risk" value={highRisk} icon={ShieldAlert} accent="bg-red-500/15 text-red-400" />
-          <KpiCard index={3} label="In honeypot" value={trapped} icon={Bug} accent="bg-orange-500/15 text-orange-400" />
+          <KpiCard
+            index={0}
+            label="Sessions tracked"
+            value={rows.length}
+            icon={Users}
+            accent="bg-sky-500/15 text-sky-400"
+          />
+          <KpiCard
+            index={1}
+            label="Online now"
+            value={online}
+            icon={Activity}
+            accent="bg-emerald-500/15 text-emerald-400"
+          />
+          <KpiCard
+            index={2}
+            label="High risk"
+            value={highRisk}
+            icon={ShieldAlert}
+            accent="bg-red-500/15 text-red-400"
+          />
+          <KpiCard
+            index={3}
+            label="In honeypot"
+            value={trapped}
+            icon={Bug}
+            accent="bg-orange-500/15 text-orange-400"
+          />
         </div>
       )}
 

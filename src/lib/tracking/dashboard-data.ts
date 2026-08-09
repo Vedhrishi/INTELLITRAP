@@ -39,11 +39,7 @@ export function freshHeartbeatIso(): string {
 /** Start of the current day in IST, as an ISO timestamp. */
 export function startOfIstDayIso(): string {
   const nowIst = new Date(Date.now() + 5.5 * 3600 * 1000);
-  const midnightIst = Date.UTC(
-    nowIst.getUTCFullYear(),
-    nowIst.getUTCMonth(),
-    nowIst.getUTCDate(),
-  );
+  const midnightIst = Date.UTC(nowIst.getUTCFullYear(), nowIst.getUTCMonth(), nowIst.getUTCDate());
   return new Date(midnightIst - 5.5 * 3600 * 1000).toISOString();
 }
 

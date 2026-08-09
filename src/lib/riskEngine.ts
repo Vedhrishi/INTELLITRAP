@@ -62,7 +62,8 @@ function tree2(f: RiskFeatures): RiskDecision {
 
 /** Behavioural biometrics. */
 function tree3(f: RiskFeatures): RiskDecision {
-  if (f.mouseMovements === 0 && f.keystrokeAvgMs !== null && f.keystrokeAvgMs < 50) return "blocked";
+  if (f.mouseMovements === 0 && f.keystrokeAvgMs !== null && f.keystrokeAvgMs < 50)
+    return "blocked";
   if (f.mouseMovements === 0 && f.pageViews > 2) return "honeypot";
   if (f.keystrokeAvgMs !== null && f.keystrokeAvgMs < 80) return "captcha_mfa";
   if (f.scrollEvents === 0 && f.pageViews > 3) return "captcha_mfa";

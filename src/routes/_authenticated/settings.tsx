@@ -247,7 +247,11 @@ function SecretCodeTab() {
           </p>
         </div>
 
-        <Button className="mt-4 w-full" variant={copied ? "secondary" : "default"} onClick={copyCode}>
+        <Button
+          className="mt-4 w-full"
+          variant={copied ? "secondary" : "default"}
+          onClick={copyCode}
+        >
           {copied ? <span className="text-green-500">✓ Copied!</span> : "Copy code"}
         </Button>
 

@@ -39,12 +39,15 @@ function HoneypotCard({ visitor }: { visitor: Visitor }) {
 
   useRealtimeTables(["honeypot_activity"], (table) => {
     if (table === "honeypot_activity") {
-      void queryClient.invalidateQueries({ queryKey: ["honeypot-activity", visitor.session_token] });
+      void queryClient.invalidateQueries({
+        queryKey: ["honeypot-activity", visitor.session_token],
+      });
     }
   });
 
   const escalate = useMutation({
-    mutationFn: () => escalateToBlock(visitor, { id: user?.id ?? null, email: user?.email ?? null }),
+    mutationFn: () =>
+      escalateToBlock(visitor, { id: user?.id ?? null, email: user?.email ?? null }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["admin-honeypots"] });
       void queryClient.invalidateQueries({ queryKey: ["admin-blocks"] });
@@ -128,7 +131,12 @@ function HoneypotCard({ visitor }: { visitor: Visitor }) {
         >
           <ShieldOff className="mr-1 size-3.5" /> Escalate to Block
         </Button>
-        <Button variant="outline" size="sm" disabled={release.isPending} onClick={() => release.mutate()}>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={release.isPending}
+          onClick={() => release.mutate()}
+        >
           <DoorOpen className="mr-1 size-3.5" /> Release
         </Button>
         <Button variant="outline" size="sm" onClick={exportIntel}>

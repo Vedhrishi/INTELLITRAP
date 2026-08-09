@@ -90,7 +90,11 @@ function AdminAuditLogContent() {
         This log is permanent and cannot be modified or deleted by anyone.
       </div>
 
-      {log.isLoading ? <Skeleton className="h-96 rounded-xl" /> : <AuditLogTable entries={log.data ?? []} />}
+      {log.isLoading ? (
+        <Skeleton className="h-96 rounded-xl" />
+      ) : (
+        <AuditLogTable entries={log.data ?? []} />
+      )}
     </>
   );
 }

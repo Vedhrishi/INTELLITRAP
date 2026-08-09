@@ -32,8 +32,7 @@ export function LandingHero() {
           Deception-based storage security
         </span>
         <h1 className="mt-6 text-4xl font-semibold tracking-tight sm:text-6xl">
-          Secure cloud storage with an{" "}
-          <span className="text-primary">AI deception layer</span>
+          Secure cloud storage with an <span className="text-primary">AI deception layer</span>
         </h1>
         <p className="mx-auto mt-5 max-w-xl text-balance text-base text-muted-foreground sm:text-lg">
           IntelliTrap stores your files with encryption, quotas and granular sharing — while
