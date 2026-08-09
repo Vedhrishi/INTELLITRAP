@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as BlockedRouteImport } from './routes/blocked'
 import { Route as ShareRouteImport } from './routes/share'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as AuthenticatedBlockedIpsRouteImport } from './routes/_authenticated/blocked-ips'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -53,6 +54,11 @@ const ShareRoute = ShareRouteImport.update({
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
@@ -145,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/blocked': typeof BlockedRoute
   '/share': typeof ShareRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/analytics': typeof AuthenticatedAnalyticsRoute
   '/app': typeof AuthenticatedAppRoute
   '/blocked-ips': typeof AuthenticatedBlockedIpsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -166,6 +173,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/blocked': typeof BlockedRoute
   '/share': typeof ShareRoute
+  '/analytics': typeof AuthenticatedAnalyticsRoute
   '/app': typeof AuthenticatedAppRoute
   '/blocked-ips': typeof AuthenticatedBlockedIpsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -190,6 +198,7 @@ export interface FileRoutesById {
   '/blocked': typeof BlockedRoute
   '/share': typeof ShareRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/app': typeof AuthenticatedAppRoute
   '/_authenticated/blocked-ips': typeof AuthenticatedBlockedIpsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -214,6 +223,7 @@ export interface FileRouteTypes {
     | '/blocked'
     | '/share'
     | '/admin'
+    | '/analytics'
     | '/app'
     | '/blocked-ips'
     | '/dashboard'
@@ -235,6 +245,7 @@ export interface FileRouteTypes {
     | '/'
     | '/blocked'
     | '/share'
+    | '/analytics'
     | '/app'
     | '/blocked-ips'
     | '/dashboard'
@@ -258,6 +269,7 @@ export interface FileRouteTypes {
     | '/blocked'
     | '/share'
     | '/_authenticated/admin'
+    | '/_authenticated/analytics'
     | '/_authenticated/app'
     | '/_authenticated/blocked-ips'
     | '/_authenticated/dashboard'
@@ -321,6 +333,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/analytics': {
+      id: '/_authenticated/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/app': {
@@ -459,6 +478,7 @@ const AuthenticatedAdminRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
+  AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedAppRoute: typeof AuthenticatedAppRoute
   AuthenticatedBlockedIpsRoute: typeof AuthenticatedBlockedIpsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -471,6 +491,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
+  AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedAppRoute: AuthenticatedAppRoute,
   AuthenticatedBlockedIpsRoute: AuthenticatedBlockedIpsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
