@@ -203,3 +203,17 @@ export async function alertAdmins(
     .update({ admin_alerted: true, alert_sent_at: new Date().toISOString() })
     .eq("ip_address", payload.ip);
 }
+
+/** ip_intelligence stores a narrower geo shape than visitors does. */
+export function intelGeo(geo: GeoInfo) {
+  return {
+    city: geo.city ?? null,
+    region: geo.region ?? null,
+    country: geo.country ?? null,
+    isp: geo.isp ?? null,
+    latitude: geo.latitude ?? null,
+    longitude: geo.longitude ?? null,
+    is_proxy: geo.is_proxy ?? false,
+    is_hosting: geo.is_hosting ?? false,
+  };
+}

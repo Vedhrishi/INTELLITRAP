@@ -4,6 +4,7 @@ import {
   alertAdmins,
   clientIp,
   hashSharePassword,
+  intelGeo,
   isIpBlocked,
   lookupGeo,
   scoreVisitor,
@@ -165,7 +166,7 @@ export const trackVisitor = createServerFn({ method: "POST" })
           total_page_views: (intel.total_page_views ?? 0) + 1,
           total_sessions: existing ? (intel.total_sessions ?? 1) : (intel.total_sessions ?? 0) + 1,
           browsers_used: browsers,
-          ...geo,
+          ...intelGeo(geo),
         })
         .eq("ip_address", ip);
     } else {
@@ -174,7 +175,7 @@ export const trackVisitor = createServerFn({ method: "POST" })
         total_sessions: 1,
         total_page_views: 1,
         browsers_used: device.browser ? [device.browser] : [],
-        ...geo,
+        ...intelGeo(geo),
       });
     }
 
