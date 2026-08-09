@@ -85,7 +85,7 @@ function DashboardPage() {
       <PageHeader
         title={title}
         description="Every visitor, scored and mapped the moment they arrive."
-      >
+        actions={
         <span
           className={cn(
             "flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider",
