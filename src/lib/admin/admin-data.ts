@@ -347,3 +347,22 @@ export function severityColor(eventType: string): string {
     return "#f59e0b";
   return "#3b82f6";
 }
+
+export async function fetchAllAuditLog(): Promise<AdminAuditLog[]> {
+  const { data, error } = await supabase
+    .from("admin_audit_log")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(2000);
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function fetchTodayEventsByType(): Promise<{ event_type: string; created_at: string }[]> {
+  const { data, error } = await supabase
+    .from("visitor_events")
+    .select("event_type, created_at")
+    .gte("created_at", startOfTodayIST());
+  if (error) throw error;
+  return data ?? [];
+}
