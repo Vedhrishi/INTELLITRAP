@@ -664,3 +664,147 @@ export const logHoneypotAction = createServerFn({ method: "POST" })
     }
     return { ok: true };
   });
+
+const treeVotesSchema = z.object({
+  granted: z.number().int().nonnegative().max(15),
+  captcha_mfa: z.number().int().nonnegative().max(15),
+  honeypot: z.number().int().nonnegative().max(15),
+  blocked: z.number().int().nonnegative().max(15),
+});
+
+/**
+ * Applies a client-side Random Forest verdict server-side: auto-blocks the IP,
+ * records the honeypot entry and writes the telemetry event. Security tables
+ * reject anonymous writes, so this must run through the admin client.
+ */
+export const applyRiskVerdict = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        session_token: token,
+        visitor_id: token,
+        decision: z.enum(["granted", "captcha_mfa", "honeypot", "blocked"]),
+        score: z.number().int().min(0).max(100),
+        confidence: z.number().int().min(0).max(100),
+        tree_votes: treeVotesSchema,
+        top_signals: z.array(z.string().max(80)).max(10).default([]),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const ip = clientIp();
+    const nowIso = new Date().toISOString();
+
+    const { data: visitor } = await supabaseAdmin
+      .from("visitors")
+      .select("city, region, country, isp, latitude, longitude, visitor_id")
+      .eq("session_token", data.session_token)
+      .maybeSingle();
+
+    const geoSnapshot = {
+      city: visitor?.city ?? null,
+      region: visitor?.region ?? null,
+      country: visitor?.country ?? null,
+      isp: visitor?.isp ?? null,
+      latitude: visitor?.latitude ?? null,
+      longitude: visitor?.longitude ?? null,
+    };
+
+    if (data.decision === "blocked") {
+      await supabaseAdmin.from("blocked_ips").upsert(
+        {
+          ip_address: ip,
+          session_token: data.session_token,
+          visitor_id: data.visitor_id,
+          reason: `AI auto-block: RF score ${data.score}/100`,
+          trigger_score: data.score,
+          trigger_signals: data.top_signals,
+          block_type: "auto",
+          geo_snapshot: geoSnapshot as never,
+          device_snapshot: {
+            rf_confidence: data.confidence,
+            tree_votes: data.tree_votes,
+          } as never,
+          is_active: true,
+          blocked_at: nowIso,
+          unblocked_at: null,
+        },
+        { onConflict: "ip_address" },
+      );
+
+      await supabaseAdmin
+        .from("visitors")
+        .update({
+          was_blocked: true,
+          blocked_at: nowIso,
+          block_reason: `AI auto-block: RF score ${data.score}/100`,
+          access_decision: "blocked",
+        })
+        .eq("session_token", data.session_token);
+
+      await supabaseAdmin.from("visitor_events").insert({
+        session_token: data.session_token,
+        visitor_id: data.visitor_id,
+        ip_address: ip,
+        event_type: "blocked",
+        page_path: "/share",
+        event_data: {
+          rf_score: data.score,
+          rf_decision: data.decision,
+          tree_votes: data.tree_votes,
+          top_signals: data.top_signals,
+          confidence: data.confidence,
+        } as never,
+      });
+
+      return { ok: true as const, blocked: true as const };
+    }
+
+    if (data.decision === "honeypot") {
+      await supabaseAdmin.from("honeypot_activity").insert({
+        session_token: data.session_token,
+        ip_address: ip,
+        action: "honeypot_entered",
+        event_data: {
+          rf_score: data.score,
+          tree_votes: data.tree_votes,
+          trigger_signals: data.top_signals,
+          confidence: data.confidence,
+        } as never,
+      });
+
+      await supabaseAdmin
+        .from("visitors")
+        .update({
+          in_honeypot: true,
+          honeypot_entered_at: nowIso,
+          access_decision: "honeypot",
+        })
+        .eq("session_token", data.session_token);
+    }
+
+    await supabaseAdmin.from("visitor_events").insert({
+      session_token: data.session_token,
+      visitor_id: data.visitor_id,
+      ip_address: ip,
+      event_type: data.decision === "honeypot" ? "honeypot_entered" : "suspicious_behavior",
+      page_path: "/share",
+      event_data: {
+        rf_score: data.score,
+        rf_decision: data.decision,
+        tree_votes: data.tree_votes,
+        top_signals: data.top_signals,
+        confidence: data.confidence,
+      } as never,
+    });
+
+    return { ok: true as const, blocked: false as const };
+  });
+
+/** Whether the caller's IP already carries an active block. */
+export const checkSelfBlocked = createServerFn({ method: "POST" }).handler(async () => {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const reason = await isIpBlocked(supabaseAdmin, clientIp());
+  return { blocked: reason !== null, reason };
+});
