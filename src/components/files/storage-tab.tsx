@@ -1,13 +1,12 @@
 import { Progress } from "@/components/ui/progress";
 import { formatFileSize } from "@/lib/share/format";
 import { FileTypeIcon } from "./file-type-icon";
-import type { FileRow } from "./types";
-
-const MAX_STORAGE = 50 * 1024 * 1024;
+import { USER_MAX_FILES, USER_STORAGE_QUOTA, usedBytes, type FileRow } from "./types";
 
 export function StorageTab({ files }: { files: FileRow[] }) {
-  const used = files.reduce((total, file) => total + file.size_bytes, 0);
-  const percent = Math.min(100, Math.round((used / MAX_STORAGE) * 100));
+  const used = usedBytes(files);
+  const percent = Math.min(100, Math.round((used / USER_STORAGE_QUOTA) * 100));
+  const filePercent = Math.min(100, Math.round((files.length / USER_MAX_FILES) * 100));
 
   return (
     <div className="space-y-6">
@@ -15,10 +14,17 @@ export function StorageTab({ files }: { files: FileRow[] }) {
         <div className="flex items-baseline justify-between">
           <p className="text-sm font-medium text-slate-100">Storage used</p>
           <p className="text-sm text-[#94a3b8]">
-            {formatFileSize(used)} / {formatFileSize(MAX_STORAGE)}
+            {formatFileSize(used)} / {formatFileSize(USER_STORAGE_QUOTA)}
           </p>
         </div>
         <Progress value={percent} className="mt-3 h-2" />
+        <div className="mt-5 flex items-baseline justify-between">
+          <p className="text-sm font-medium text-slate-100">Files</p>
+          <p className="text-sm text-[#94a3b8]">
+            {files.length} / {USER_MAX_FILES}
+          </p>
+        </div>
+        <Progress value={filePercent} className="mt-3 h-2" />
       </div>
 
       <div className="space-y-2">

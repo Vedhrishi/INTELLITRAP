@@ -22,4 +22,13 @@ export const statusBadgeClass: Record<FileStatus, string> = {
 };
 
 export const BLOCKED_EXTENSIONS = [".exe", ".sh", ".bat", ".msi", ".cmd", ".vbs", ".ps1", ".jar"];
-export const MAX_FILE_SIZE = 50 * 1024 * 1024;
+
+/** 1 GB per user — matches profiles.storage_quota and platform_settings. */
+export const USER_STORAGE_QUOTA = 1073741824;
+export const USER_MAX_FILES = 100;
+export const MAX_FILE_SIZE = USER_STORAGE_QUOTA;
+
+export function usedBytes(files: FileRow[]): number {
+  return files.reduce((total, file) => total + file.size_bytes, 0);
+}
+

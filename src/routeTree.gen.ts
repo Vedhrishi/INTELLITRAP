@@ -11,12 +11,18 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as BlockedRouteImport } from './routes/blocked'
 import { Route as ShareRouteImport } from './routes/share'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
+import { Route as AuthenticatedBlockedIpsRouteImport } from './routes/_authenticated/blocked-ips'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedFilesRouteImport } from './routes/_authenticated/files'
+import { Route as AuthenticatedHoneypotRouteImport } from './routes/_authenticated/honeypot'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedThreatsRouteImport } from './routes/_authenticated/threats'
+import { Route as AuthenticatedVisitorsRouteImport } from './routes/_authenticated/visitors'
 import { Route as AuthIndexRouteImport } from './routes/auth.index'
 import { Route as AuthForgotRouteImport } from './routes/auth.forgot'
 import { Route as AuthResetRouteImport } from './routes/auth.reset'
@@ -35,6 +41,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlockedRoute = BlockedRouteImport.update({
+  id: '/blocked',
+  path: '/blocked',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShareRoute = ShareRouteImport.update({
   id: '/share',
   path: '/share',
@@ -45,9 +56,19 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
   id: '/app',
   path: '/app',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedBlockedIpsRoute = AuthenticatedBlockedIpsRouteImport.update({
+  id: '/blocked-ips',
+  path: '/blocked-ips',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -60,9 +81,24 @@ const AuthenticatedFilesRoute = AuthenticatedFilesRouteImport.update({
   path: '/files',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedHoneypotRoute = AuthenticatedHoneypotRouteImport.update({
+  id: '/honeypot',
+  path: '/honeypot',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedThreatsRoute = AuthenticatedThreatsRouteImport.update({
+  id: '/threats',
+  path: '/threats',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedVisitorsRoute = AuthenticatedVisitorsRouteImport.update({
+  id: '/visitors',
+  path: '/visitors',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthIndexRoute = AuthIndexRouteImport.update({
@@ -112,12 +148,18 @@ const AuthenticatedAdminThreatIntelRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/blocked': typeof BlockedRoute
   '/share': typeof ShareRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/analytics': typeof AuthenticatedAnalyticsRoute
   '/app': typeof AuthenticatedAppRoute
+  '/blocked-ips': typeof AuthenticatedBlockedIpsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/files': typeof AuthenticatedFilesRoute
+  '/honeypot': typeof AuthenticatedHoneypotRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/threats': typeof AuthenticatedThreatsRoute
+  '/visitors': typeof AuthenticatedVisitorsRoute
   '/auth/forgot': typeof AuthForgotRoute
   '/auth/reset': typeof AuthResetRoute
   '/auth/': typeof AuthIndexRoute
@@ -129,11 +171,17 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/blocked': typeof BlockedRoute
   '/share': typeof ShareRoute
+  '/analytics': typeof AuthenticatedAnalyticsRoute
   '/app': typeof AuthenticatedAppRoute
+  '/blocked-ips': typeof AuthenticatedBlockedIpsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/files': typeof AuthenticatedFilesRoute
+  '/honeypot': typeof AuthenticatedHoneypotRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/threats': typeof AuthenticatedThreatsRoute
+  '/visitors': typeof AuthenticatedVisitorsRoute
   '/auth/forgot': typeof AuthForgotRoute
   '/auth/reset': typeof AuthResetRoute
   '/auth': typeof AuthIndexRoute
@@ -147,12 +195,18 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/blocked': typeof BlockedRoute
   '/share': typeof ShareRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/app': typeof AuthenticatedAppRoute
+  '/_authenticated/blocked-ips': typeof AuthenticatedBlockedIpsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/files': typeof AuthenticatedFilesRoute
+  '/_authenticated/honeypot': typeof AuthenticatedHoneypotRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/threats': typeof AuthenticatedThreatsRoute
+  '/_authenticated/visitors': typeof AuthenticatedVisitorsRoute
   '/auth/forgot': typeof AuthForgotRoute
   '/auth/reset': typeof AuthResetRoute
   '/auth/': typeof AuthIndexRoute
@@ -166,12 +220,18 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/blocked'
     | '/share'
     | '/admin'
+    | '/analytics'
     | '/app'
+    | '/blocked-ips'
     | '/dashboard'
     | '/files'
+    | '/honeypot'
     | '/settings'
+    | '/threats'
+    | '/visitors'
     | '/auth/forgot'
     | '/auth/reset'
     | '/auth/'
@@ -183,11 +243,17 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/blocked'
     | '/share'
+    | '/analytics'
     | '/app'
+    | '/blocked-ips'
     | '/dashboard'
     | '/files'
+    | '/honeypot'
     | '/settings'
+    | '/threats'
+    | '/visitors'
     | '/auth/forgot'
     | '/auth/reset'
     | '/auth'
@@ -200,12 +266,18 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/blocked'
     | '/share'
     | '/_authenticated/admin'
+    | '/_authenticated/analytics'
     | '/_authenticated/app'
+    | '/_authenticated/blocked-ips'
     | '/_authenticated/dashboard'
     | '/_authenticated/files'
+    | '/_authenticated/honeypot'
     | '/_authenticated/settings'
+    | '/_authenticated/threats'
+    | '/_authenticated/visitors'
     | '/auth/forgot'
     | '/auth/reset'
     | '/auth/'
@@ -219,6 +291,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  BlockedRoute: typeof BlockedRoute
   ShareRoute: typeof ShareRoute
   AuthForgotRoute: typeof AuthForgotRoute
   AuthResetRoute: typeof AuthResetRoute
@@ -241,6 +314,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blocked': {
+      id: '/blocked'
+      path: '/blocked'
+      fullPath: '/blocked'
+      preLoaderRoute: typeof BlockedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/share': {
       id: '/share'
       path: '/share'
@@ -255,11 +335,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/analytics': {
+      id: '/_authenticated/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/app': {
       id: '/_authenticated/app'
       path: '/app'
       fullPath: '/app'
       preLoaderRoute: typeof AuthenticatedAppRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/blocked-ips': {
+      id: '/_authenticated/blocked-ips'
+      path: '/blocked-ips'
+      fullPath: '/blocked-ips'
+      preLoaderRoute: typeof AuthenticatedBlockedIpsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
@@ -276,11 +370,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFilesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/honeypot': {
+      id: '/_authenticated/honeypot'
+      path: '/honeypot'
+      fullPath: '/honeypot'
+      preLoaderRoute: typeof AuthenticatedHoneypotRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/threats': {
+      id: '/_authenticated/threats'
+      path: '/threats'
+      fullPath: '/threats'
+      preLoaderRoute: typeof AuthenticatedThreatsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/visitors': {
+      id: '/_authenticated/visitors'
+      path: '/visitors'
+      fullPath: '/visitors'
+      preLoaderRoute: typeof AuthenticatedVisitorsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/auth/': {
@@ -363,18 +478,28 @@ const AuthenticatedAdminRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
+  AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedAppRoute: typeof AuthenticatedAppRoute
+  AuthenticatedBlockedIpsRoute: typeof AuthenticatedBlockedIpsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFilesRoute: typeof AuthenticatedFilesRoute
+  AuthenticatedHoneypotRoute: typeof AuthenticatedHoneypotRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedThreatsRoute: typeof AuthenticatedThreatsRoute
+  AuthenticatedVisitorsRoute: typeof AuthenticatedVisitorsRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
+  AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedAppRoute: AuthenticatedAppRoute,
+  AuthenticatedBlockedIpsRoute: AuthenticatedBlockedIpsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFilesRoute: AuthenticatedFilesRoute,
+  AuthenticatedHoneypotRoute: AuthenticatedHoneypotRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedThreatsRoute: AuthenticatedThreatsRoute,
+  AuthenticatedVisitorsRoute: AuthenticatedVisitorsRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -383,6 +508,7 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  BlockedRoute: BlockedRoute,
   ShareRoute: ShareRoute,
   AuthForgotRoute: AuthForgotRoute,
   AuthResetRoute: AuthResetRoute,
@@ -391,13 +517,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

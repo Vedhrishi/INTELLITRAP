@@ -14,7 +14,15 @@ import { useAuth } from "@/lib/auth/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { formatFileSize, hashPassword, passwordStrength } from "@/lib/share/format";
 import { FileTypeIcon } from "./file-type-icon";
-import { BLOCKED_EXTENSIONS, MAX_FILE_SIZE } from "./types";
+import {
+  BLOCKED_EXTENSIONS,
+  MAX_FILE_SIZE,
+  USER_MAX_FILES,
+  USER_STORAGE_QUOTA,
+  usedBytes,
+  type FileRow,
+} from "./types";
+
 
 const EXPIRY_OPTIONS = [
   { value: "never", label: "Never" },
@@ -73,13 +81,16 @@ export function UploadDialog({
   open,
   onOpenChange,
   userSecretCode,
+  existingFiles = [],
   onUploaded,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   userSecretCode: string | null;
+  existingFiles?: FileRow[];
   onUploaded: () => void;
 }) {
+
   const { user } = useAuth();
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -115,17 +126,29 @@ export function UploadDialog({
     setUploading(false);
   }, []);
 
-  const validateAndSetFile = useCallback((candidate: File) => {
-    if (isBlockedExtension(candidate.name)) {
-      toast.error("This file type is not allowed");
-      return;
-    }
-    if (candidate.size > MAX_FILE_SIZE) {
-      toast.error("File too large. 50MB max.");
-      return;
-    }
-    setFile(candidate);
-  }, []);
+  const validateAndSetFile = useCallback(
+    (candidate: File) => {
+      if (isBlockedExtension(candidate.name)) {
+        toast.error("This file type is not allowed");
+        return;
+      }
+      if (candidate.size > MAX_FILE_SIZE) {
+        toast.error("File too large. 1GB max.");
+        return;
+      }
+      if (existingFiles.length >= USER_MAX_FILES) {
+        toast.error("Storage full. Delete files to free space.");
+        return;
+      }
+      if (usedBytes(existingFiles) + candidate.size > USER_STORAGE_QUOTA) {
+        toast.error("Storage full. Delete files to free space.");
+        return;
+      }
+      setFile(candidate);
+    },
+    [existingFiles],
+  );
+
 
   const handleDrop = useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {
@@ -144,6 +167,14 @@ export function UploadDialog({
 
   const startUpload = useCallback(async () => {
     if (!file || !user) return;
+    if (
+      existingFiles.length >= USER_MAX_FILES ||
+      usedBytes(existingFiles) + file.size > USER_STORAGE_QUOTA
+    ) {
+      toast.error("Storage full. Delete files to free space.");
+      return;
+    }
+
     setStep(3);
     setUploading(true);
     setProgress(0);
@@ -202,7 +233,7 @@ export function UploadDialog({
     } finally {
       setUploading(false);
     }
-  }, [expiry, file, onOpenChange, onUploaded, oneTime, password, reset, sharingEnabled, user, userSecretCode]);
+  }, [existingFiles, expiry, file, onOpenChange, onUploaded, oneTime, password, reset, sharingEnabled, user, userSecretCode]);
 
   const closeSavedPasswordModal = useCallback(() => {
     setSavedPasswordModal(false);

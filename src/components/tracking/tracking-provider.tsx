@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useRouterState } from "@tanstack/react-router";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   behaviorTracker,
   getDeviceFingerprint,
@@ -52,6 +52,8 @@ const HEARTBEAT_MS = 15_000;
 
 export function TrackingProvider({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const navigate = useNavigate();
+
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [visitorId, setVisitorId] = useState<string | null>(null);
   const [ipAddress, setIpAddress] = useState<string | null>(null);
@@ -88,9 +90,14 @@ export function TrackingProvider({ children }: { children: ReactNode }) {
     })
       .then((result) => {
         if (cancelled || !result) return;
-        setBlocked(Boolean(result.blocked));
+        const isBlocked = Boolean(result.blocked);
+        setBlocked(isBlocked);
         if ("ip" in result && result.ip) setIpAddress(result.ip);
+        if (isBlocked && window.location.pathname !== "/blocked") {
+          void navigate({ to: "/blocked" });
+        }
       })
+
       .catch(() => {
         /* tracking must never break the page */
       })
@@ -101,7 +108,7 @@ export function TrackingProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [pathname, sessionToken]);
+  }, [pathname, sessionToken, navigate]);
 
   // Heartbeat so the dashboard can tell who is still online.
   useEffect(() => {
