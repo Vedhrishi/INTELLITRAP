@@ -18,6 +18,7 @@ import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/ap
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedFilesRouteImport } from './routes/_authenticated/files'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedThreatsRouteImport } from './routes/_authenticated/threats'
 import { Route as AuthenticatedVisitorsRouteImport } from './routes/_authenticated/visitors'
 import { Route as AuthIndexRouteImport } from './routes/auth.index'
 import { Route as AuthForgotRouteImport } from './routes/auth.forgot'
@@ -70,6 +71,11 @@ const AuthenticatedFilesRoute = AuthenticatedFilesRouteImport.update({
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedThreatsRoute = AuthenticatedThreatsRouteImport.update({
+  id: '/threats',
+  path: '/threats',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedVisitorsRoute = AuthenticatedVisitorsRouteImport.update({
@@ -131,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/files': typeof AuthenticatedFilesRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/threats': typeof AuthenticatedThreatsRoute
   '/visitors': typeof AuthenticatedVisitorsRoute
   '/auth/forgot': typeof AuthForgotRoute
   '/auth/reset': typeof AuthResetRoute
@@ -149,6 +156,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/files': typeof AuthenticatedFilesRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/threats': typeof AuthenticatedThreatsRoute
   '/visitors': typeof AuthenticatedVisitorsRoute
   '/auth/forgot': typeof AuthForgotRoute
   '/auth/reset': typeof AuthResetRoute
@@ -170,6 +178,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/files': typeof AuthenticatedFilesRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/threats': typeof AuthenticatedThreatsRoute
   '/_authenticated/visitors': typeof AuthenticatedVisitorsRoute
   '/auth/forgot': typeof AuthForgotRoute
   '/auth/reset': typeof AuthResetRoute
@@ -191,6 +200,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/files'
     | '/settings'
+    | '/threats'
     | '/visitors'
     | '/auth/forgot'
     | '/auth/reset'
@@ -209,6 +219,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/files'
     | '/settings'
+    | '/threats'
     | '/visitors'
     | '/auth/forgot'
     | '/auth/reset'
@@ -229,6 +240,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/files'
     | '/_authenticated/settings'
+    | '/_authenticated/threats'
     | '/_authenticated/visitors'
     | '/auth/forgot'
     | '/auth/reset'
@@ -313,6 +325,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/threats': {
+      id: '/_authenticated/threats'
+      path: '/threats'
+      fullPath: '/threats'
+      preLoaderRoute: typeof AuthenticatedThreatsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/visitors': {
@@ -406,6 +425,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFilesRoute: typeof AuthenticatedFilesRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedThreatsRoute: typeof AuthenticatedThreatsRoute
   AuthenticatedVisitorsRoute: typeof AuthenticatedVisitorsRoute
 }
 
@@ -415,6 +435,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFilesRoute: AuthenticatedFilesRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedThreatsRoute: AuthenticatedThreatsRoute,
   AuthenticatedVisitorsRoute: AuthenticatedVisitorsRoute,
 }
 
