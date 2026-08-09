@@ -313,9 +313,8 @@ export default function LiveVisitorMap({
             <MapCanvas visitors={filtered} onSelect={onSelect} />
           </APIProvider>
         ) : (
-        ) : (
-
           <div className="flex h-full flex-col items-center justify-center gap-2 bg-[#0b1220] p-6 text-center">
+
             <ShieldCheck className="size-7 text-[#3b82f6]" />
             <p className="text-sm font-semibold text-white">Google Maps key missing</p>
             <p className="max-w-xs text-xs text-[#94a3b8]">
