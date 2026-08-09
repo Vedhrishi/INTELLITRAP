@@ -44,7 +44,9 @@ function MapSkeleton() {
 
 function DashboardPage() {
   const queryClient = useQueryClient();
+  const presentationMode = usePresentationMode((state) => state.presentationMode);
   const [selected, setSelected] = useState<Visitor | null>(null);
+
 
   const stats = useQuery({
     queryKey: ["dashboard-stats"],
