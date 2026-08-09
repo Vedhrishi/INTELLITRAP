@@ -33,8 +33,10 @@ export function MyFilesTab({
         open={uploadOpen}
         onOpenChange={setUploadOpen}
         userSecretCode={userSecretCode}
+        existingFiles={files}
         onUploaded={onRefresh}
       />
+
     </div>
   );
 }
