@@ -193,6 +193,18 @@ export function VisitorDrawer({
                   ))
                 )}
               </div>
+              {Array.isArray(visitor.risk_signals) && visitor.risk_signals.length > 0 ? (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {(visitor.risk_signals as string[]).map((signal) => (
+                    <span
+                      key={signal}
+                      className="rounded border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 font-mono text-[10px] text-amber-300"
+                    >
+                      {signal}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
             </Section>
 
             <Section title="Network">

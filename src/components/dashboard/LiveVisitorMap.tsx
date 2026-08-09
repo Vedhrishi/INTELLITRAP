@@ -232,10 +232,42 @@ function MapCanvas({
     <Map
       defaultCenter={DEFAULT_CENTER}
       defaultZoom={5}
-      colorScheme="DARK"
       gestureHandling="greedy"
       disableDefaultUI={false}
       style={{ width: "100%", height: "100%" }}
+      styles={[
+        { elementType: "geometry", stylers: [{ color: "#0f172a" }] },
+        { elementType: "labels.text.stroke", stylers: [{ color: "#0f172a" }] },
+        { elementType: "labels.text.fill", stylers: [{ color: "#94a3b8" }] },
+        {
+          featureType: "administrative",
+          elementType: "geometry",
+          stylers: [{ color: "#1e293b" }],
+        },
+        {
+          featureType: "administrative.country",
+          elementType: "geometry.stroke",
+          stylers: [{ color: "#334155" }],
+        },
+        {
+          featureType: "administrative.locality",
+          elementType: "labels.text.fill",
+          stylers: [{ color: "#64748b" }],
+        },
+        { featureType: "road", elementType: "geometry", stylers: [{ color: "#1e293b" }] },
+        { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#0f172a" }] },
+        { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#475569" }] },
+        {
+          featureType: "road.highway",
+          elementType: "geometry",
+          stylers: [{ color: "#263348" }],
+        },
+        { featureType: "transit", elementType: "geometry", stylers: [{ color: "#1e293b" }] },
+        { featureType: "water", elementType: "geometry", stylers: [{ color: "#020817" }] },
+        { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#334155" }] },
+        { featureType: "poi", elementType: "geometry", stylers: [{ color: "#1e293b" }] },
+        { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#0f1f0f" }] },
+      ]}
     >
       <ProtectedZone />
       {visitors.map((visitor) => (

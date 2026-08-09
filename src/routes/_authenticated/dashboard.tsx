@@ -17,6 +17,8 @@ import {
   fetchRecentEvents,
   type Visitor,
 } from "@/lib/tracking/dashboard-data";
+import { usePresentationMode } from "@/lib/presentation-mode";
+import { FirstRunBanner } from "@/components/dashboard/first-run-banner";
 import { cn } from "@/lib/utils";
 
 const VisitorMap = lazy(() => import("@/components/dashboard/LiveVisitorMap"));
@@ -44,6 +46,7 @@ function MapSkeleton() {
 
 function DashboardPage() {
   const queryClient = useQueryClient();
+  const presentationMode = usePresentationMode((state) => state.presentationMode);
   const [selected, setSelected] = useState<Visitor | null>(null);
 
   const stats = useQuery({
@@ -81,7 +84,7 @@ function DashboardPage() {
   const s = stats.data;
 
   return (
-    <>
+    <div className={presentationMode ? "space-y-6 text-[110%]" : "contents"}>
       <PageHeader
         title={title}
         description="Every visitor, scored and mapped the moment they arrive."
@@ -110,6 +113,19 @@ function DashboardPage() {
           </span>
         }
       />
+
+      {presentationMode ? (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#3b82f6]/30 bg-[#3b82f6]/10 px-4 py-3">
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <span className="size-2 animate-pulse rounded-full bg-[#3b82f6]" />
+            <span className="font-semibold text-foreground">Presentation Mode Active</span>
+            <span className="text-muted-foreground">— Map enlarged for projector display</span>
+          </div>
+          <span className="text-xs text-[#64748b]">Ctrl+Shift+P to toggle</span>
+        </div>
+      ) : null}
+
+      <FirstRunBanner visible={(s?.today ?? 0) === 0 && (mapVisitors.data ?? []).length === 0} />
 
       {stats.isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
@@ -176,7 +192,11 @@ function DashboardPage() {
           </header>
           <ClientOnly fallback={<MapSkeleton />}>
             <Suspense fallback={<MapSkeleton />}>
-              <VisitorMap visitors={mapVisitors.data ?? []} onSelect={setSelected} />
+              <VisitorMap
+                visitors={mapVisitors.data ?? []}
+                onSelect={setSelected}
+                height={presentationMode ? 600 : 420}
+              />
             </Suspense>
           </ClientOnly>
         </div>
@@ -193,6 +213,6 @@ function DashboardPage() {
       </section>
 
       <VisitorDrawer visitor={selected} onClose={() => setSelected(null)} onChanged={refreshAll} />
-    </>
+    </div>
   );
 }
