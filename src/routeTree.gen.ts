@@ -17,6 +17,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedFilesRouteImport } from './routes/_authenticated/files'
+import { Route as AuthenticatedHoneypotRouteImport } from './routes/_authenticated/honeypot'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedThreatsRouteImport } from './routes/_authenticated/threats'
 import { Route as AuthenticatedVisitorsRouteImport } from './routes/_authenticated/visitors'
@@ -66,6 +67,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
 const AuthenticatedFilesRoute = AuthenticatedFilesRouteImport.update({
   id: '/files',
   path: '/files',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHoneypotRoute = AuthenticatedHoneypotRouteImport.update({
+  id: '/honeypot',
+  path: '/honeypot',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
@@ -136,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AuthenticatedAppRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/files': typeof AuthenticatedFilesRoute
+  '/honeypot': typeof AuthenticatedHoneypotRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/threats': typeof AuthenticatedThreatsRoute
   '/visitors': typeof AuthenticatedVisitorsRoute
@@ -155,6 +162,7 @@ export interface FileRoutesByTo {
   '/app': typeof AuthenticatedAppRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/files': typeof AuthenticatedFilesRoute
+  '/honeypot': typeof AuthenticatedHoneypotRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/threats': typeof AuthenticatedThreatsRoute
   '/visitors': typeof AuthenticatedVisitorsRoute
@@ -177,6 +185,7 @@ export interface FileRoutesById {
   '/_authenticated/app': typeof AuthenticatedAppRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/files': typeof AuthenticatedFilesRoute
+  '/_authenticated/honeypot': typeof AuthenticatedHoneypotRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/threats': typeof AuthenticatedThreatsRoute
   '/_authenticated/visitors': typeof AuthenticatedVisitorsRoute
@@ -199,6 +208,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/dashboard'
     | '/files'
+    | '/honeypot'
     | '/settings'
     | '/threats'
     | '/visitors'
@@ -218,6 +228,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/dashboard'
     | '/files'
+    | '/honeypot'
     | '/settings'
     | '/threats'
     | '/visitors'
@@ -239,6 +250,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app'
     | '/_authenticated/dashboard'
     | '/_authenticated/files'
+    | '/_authenticated/honeypot'
     | '/_authenticated/settings'
     | '/_authenticated/threats'
     | '/_authenticated/visitors'
@@ -318,6 +330,13 @@ declare module '@tanstack/react-router' {
       path: '/files'
       fullPath: '/files'
       preLoaderRoute: typeof AuthenticatedFilesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/honeypot': {
+      id: '/_authenticated/honeypot'
+      path: '/honeypot'
+      fullPath: '/honeypot'
+      preLoaderRoute: typeof AuthenticatedHoneypotRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings': {
@@ -424,6 +443,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAppRoute: typeof AuthenticatedAppRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFilesRoute: typeof AuthenticatedFilesRoute
+  AuthenticatedHoneypotRoute: typeof AuthenticatedHoneypotRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedThreatsRoute: typeof AuthenticatedThreatsRoute
   AuthenticatedVisitorsRoute: typeof AuthenticatedVisitorsRoute
@@ -434,6 +454,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAppRoute: AuthenticatedAppRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFilesRoute: AuthenticatedFilesRoute,
+  AuthenticatedHoneypotRoute: AuthenticatedHoneypotRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedThreatsRoute: AuthenticatedThreatsRoute,
   AuthenticatedVisitorsRoute: AuthenticatedVisitorsRoute,
