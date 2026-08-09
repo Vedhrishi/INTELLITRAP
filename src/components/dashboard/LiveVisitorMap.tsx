@@ -1,6 +1,14 @@
 import { useMemo, useState } from "react";
-import { APIProvider, AdvancedMarker, InfoWindow, Map } from "@vis.gl/react-google-maps";
-import { Copy, Radio, ShieldCheck } from "lucide-react";
+import {
+  APILoadingStatus,
+  APIProvider,
+  Circle,
+  InfoWindow,
+  Map,
+  Marker,
+  useApiLoadingStatus,
+} from "@vis.gl/react-google-maps";
+import { AlertTriangle, Copy, Radio, ShieldCheck } from "lucide-react";
 import { RISK_COLOR, isOnline, type RiskLevel, type Visitor } from "@/lib/tracking/dashboard-data";
 import { cn } from "@/lib/utils";
 
@@ -28,23 +36,38 @@ function riskColor(visitor: Visitor): string {
   return RISK_COLOR[(visitor.risk_level as RiskLevel) ?? "low"] ?? RISK_COLOR.low;
 }
 
-function ProtectedZoneMarker() {
+/** Circle marker drawn as an inline SVG data URI so no map ID / advanced markers are required. */
+function dotIcon(color: string, size: number, opacity: number): string {
+  const half = size / 2;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${half}" cy="${half}" r="${half - 2}" fill="${color}" fill-opacity="${opacity}" stroke="rgba(0,0,0,0.45)" stroke-width="2"/></svg>`;
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
+
+function shieldIcon(): string {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="#3b82f6" fill-opacity="0.12" stroke="#3b82f6" stroke-opacity="0.55" stroke-width="1.5"/><circle cx="18" cy="18" r="6" fill="#3b82f6" fill-opacity="0.85"/></svg>`;
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
+
+function ProtectedZone() {
   return (
-    <AdvancedMarker position={HYDERABAD} title="Hyderabad — protected zone">
-      <div className="relative flex flex-col items-center">
-        <div className="relative size-12">
-          <span className="absolute inset-0 animate-ping rounded-full border-2 border-blue-400 opacity-30" />
-          <span className="absolute left-1/2 top-1/2 size-8 -translate-x-1/2 -translate-y-1/2 rounded-full border border-blue-500 opacity-50" />
-          <span
-            className="absolute left-1/2 top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#3b82f6]"
-            style={{ boxShadow: "0 0 16px #3b82f6" }}
-          />
-        </div>
-        <span className="mt-2 whitespace-nowrap rounded bg-[#0f172a]/80 px-2 py-0.5 text-[9px] font-bold text-[#3b82f6]">
-          🛡 PROTECTED ZONE
-        </span>
-      </div>
-    </AdvancedMarker>
+    <>
+      <Circle
+        center={HYDERABAD}
+        radius={45000}
+        strokeColor="#3b82f6"
+        strokeOpacity={0.5}
+        strokeWeight={1.5}
+        fillColor="#3b82f6"
+        fillOpacity={0.08}
+        clickable={false}
+      />
+      <Marker
+        position={HYDERABAD}
+        title="Hyderabad — protected zone"
+        clickable={false}
+        icon={{ url: shieldIcon() }}
+      />
+    </>
   );
 }
 
@@ -57,34 +80,15 @@ function VisitorMarker({
 }) {
   const color = riskColor(visitor);
   const online = isOnline(visitor);
-  const size = online ? 14 : 9;
 
   return (
-    <AdvancedMarker
+    <Marker
       position={{ lat: Number(visitor.latitude), lng: Number(visitor.longitude) }}
       title={`${visitor.ip_address} · ${visitor.city ?? "Unknown"}`}
       onClick={() => onSelect(visitor)}
-    >
-      <div className="relative flex items-center justify-center">
-        {online ? (
-          <span
-            className="visitor-pulse absolute size-7 rounded-full opacity-30"
-            style={{ background: color }}
-          />
-        ) : null}
-        <span
-          className="relative cursor-pointer rounded-full transition-transform duration-200 hover:scale-125"
-          style={{
-            width: size,
-            height: size,
-            background: color,
-            opacity: online ? 1 : 0.5,
-            boxShadow: online ? `0 0 12px ${color}` : "none",
-            border: "2px solid rgba(0,0,0,0.4)",
-          }}
-        />
-      </div>
-    </AdvancedMarker>
+      zIndex={online ? 2 : 1}
+      icon={{ url: dotIcon(color, online ? 20 : 14, online ? 1 : 0.5) }}
+    />
   );
 }
 
@@ -100,6 +104,7 @@ function GeoBadge({ children, tone = "blue" }: { children: string; tone?: "blue"
     </span>
   );
 }
+
 
 function VisitorInfo({
   visitor,
