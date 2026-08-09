@@ -18,6 +18,7 @@ import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/ap
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedFilesRouteImport } from './routes/_authenticated/files'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedVisitorsRouteImport } from './routes/_authenticated/visitors'
 import { Route as AuthIndexRouteImport } from './routes/auth.index'
 import { Route as AuthForgotRouteImport } from './routes/auth.forgot'
 import { Route as AuthResetRouteImport } from './routes/auth.reset'
@@ -69,6 +70,11 @@ const AuthenticatedFilesRoute = AuthenticatedFilesRouteImport.update({
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedVisitorsRoute = AuthenticatedVisitorsRouteImport.update({
+  id: '/visitors',
+  path: '/visitors',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthIndexRoute = AuthIndexRouteImport.update({
@@ -125,6 +131,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/files': typeof AuthenticatedFilesRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/visitors': typeof AuthenticatedVisitorsRoute
   '/auth/forgot': typeof AuthForgotRoute
   '/auth/reset': typeof AuthResetRoute
   '/auth/': typeof AuthIndexRoute
@@ -142,6 +149,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/files': typeof AuthenticatedFilesRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/visitors': typeof AuthenticatedVisitorsRoute
   '/auth/forgot': typeof AuthForgotRoute
   '/auth/reset': typeof AuthResetRoute
   '/auth': typeof AuthIndexRoute
@@ -162,6 +170,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/files': typeof AuthenticatedFilesRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/visitors': typeof AuthenticatedVisitorsRoute
   '/auth/forgot': typeof AuthForgotRoute
   '/auth/reset': typeof AuthResetRoute
   '/auth/': typeof AuthIndexRoute
@@ -182,6 +191,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/files'
     | '/settings'
+    | '/visitors'
     | '/auth/forgot'
     | '/auth/reset'
     | '/auth/'
@@ -199,6 +209,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/files'
     | '/settings'
+    | '/visitors'
     | '/auth/forgot'
     | '/auth/reset'
     | '/auth'
@@ -218,6 +229,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/files'
     | '/_authenticated/settings'
+    | '/_authenticated/visitors'
     | '/auth/forgot'
     | '/auth/reset'
     | '/auth/'
@@ -301,6 +313,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/visitors': {
+      id: '/_authenticated/visitors'
+      path: '/visitors'
+      fullPath: '/visitors'
+      preLoaderRoute: typeof AuthenticatedVisitorsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/auth/': {
@@ -387,6 +406,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFilesRoute: typeof AuthenticatedFilesRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedVisitorsRoute: typeof AuthenticatedVisitorsRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -395,6 +415,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFilesRoute: AuthenticatedFilesRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedVisitorsRoute: AuthenticatedVisitorsRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
