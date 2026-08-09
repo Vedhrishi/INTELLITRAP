@@ -108,7 +108,7 @@ export function TrackingProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [pathname, sessionToken]);
+  }, [pathname, sessionToken, navigate]);
 
   // Heartbeat so the dashboard can tell who is still online.
   useEffect(() => {
