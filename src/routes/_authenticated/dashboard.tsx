@@ -117,6 +117,21 @@ function DashboardPage() {
         }
       />
 
+      {presentationMode ? (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#3b82f6]/30 bg-[#3b82f6]/10 px-4 py-3">
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <span className="size-2 animate-pulse rounded-full bg-[#3b82f6]" />
+            <span className="font-semibold text-foreground">Presentation Mode Active</span>
+            <span className="text-muted-foreground">— Map enlarged for projector display</span>
+          </div>
+          <span className="text-xs text-[#64748b]">Ctrl+Shift+P to toggle</span>
+        </div>
+      ) : null}
+
+      <FirstRunBanner visible={(s?.today ?? 0) === 0 && (mapVisitors.data ?? []).length === 0} />
+
+
+
       {stats.isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           {Array.from({ length: 6 }).map((_, index) => (
