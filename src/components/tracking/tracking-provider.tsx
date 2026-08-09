@@ -52,6 +52,8 @@ const HEARTBEAT_MS = 15_000;
 
 export function TrackingProvider({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const navigate = useNavigate();
+
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [visitorId, setVisitorId] = useState<string | null>(null);
   const [ipAddress, setIpAddress] = useState<string | null>(null);
