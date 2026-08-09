@@ -8,12 +8,14 @@ import { LiveAccessMonitor } from "@/components/admin/live-access-monitor";
 import { HoneypotPanel } from "@/components/admin/honeypot-panel";
 import { AutoBlocksTable } from "@/components/admin/auto-blocks-table";
 import { RiskSignalChart } from "@/components/admin/risk-signal-chart";
+import { MlAnalysisPanel } from "@/components/admin/ml-analysis-panel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRealtimeTables } from "@/hooks/use-realtime";
 import {
   fetchActiveBlocks,
   fetchActiveHoneypots,
   fetchActiveVisitors,
+  fetchAutoBlocksToday,
   fetchTodaySignalFrequency,
 } from "@/lib/admin/admin-data";
 
@@ -61,6 +63,11 @@ function AdminThreatIntelContent() {
     queryFn: fetchActiveBlocks,
     refetchInterval: 15_000,
   });
+  const autoBlocksToday = useQuery({
+    queryKey: ["admin-auto-blocks-today"],
+    queryFn: fetchAutoBlocksToday,
+    refetchInterval: 30_000,
+  });
   const signals = useQuery({
     queryKey: ["admin-signal-frequency"],
     queryFn: fetchTodaySignalFrequency,
@@ -71,6 +78,8 @@ function AdminThreatIntelContent() {
     void queryClient.invalidateQueries({ queryKey: ["admin-visitors"] });
     void queryClient.invalidateQueries({ queryKey: ["admin-honeypots"] });
     void queryClient.invalidateQueries({ queryKey: ["admin-blocks"] });
+    void queryClient.invalidateQueries({ queryKey: ["admin-auto-blocks-today"] });
+    void queryClient.invalidateQueries({ queryKey: ["admin-ml-analysis"] });
     void queryClient.invalidateQueries({ queryKey: ["admin-signal-frequency"] });
   }, [queryClient]);
 
@@ -101,8 +110,10 @@ function AdminThreatIntelContent() {
       {blocks.isLoading ? (
         <Skeleton className="h-64 rounded-xl" />
       ) : (
-        <AutoBlocksTable blocks={blocks.data ?? []} />
+        <AutoBlocksTable blocks={blocks.data ?? []} autoBlocksToday={autoBlocksToday.data ?? 0} />
       )}
+
+      <MlAnalysisPanel />
 
       {signals.isLoading ? (
         <Skeleton className="h-64 rounded-xl" />

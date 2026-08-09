@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { CheckCircle2, X } from "lucide-react";
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -111,8 +111,8 @@ export function AutoBlocksTable({
                 const isExpanded = expanded === block.id;
                 const rf = readRfMeta(block.device_snapshot);
                 return (
-                  <>
-                  <tr key={block.id} className="border-t border-border/40 align-top">
+                  <Fragment key={block.id}>
+                  <tr className="border-t border-border/40 align-top">
                     <td className="px-3 py-2 font-mono text-[10px] text-muted-foreground">
                       {toIST(block.blocked_at)}
                     </td>
@@ -176,7 +176,7 @@ export function AutoBlocksTable({
                     </td>
                   </tr>
                   {isExpanded ? (
-                    <tr key={`${block.id}-detail`} className="border-t border-border/20 bg-muted/20">
+                    <tr className="border-t border-border/20 bg-muted/20">
                       <td colSpan={8} className="px-3 py-3">
                         {rf.votes ? (
                           <div className="grid grid-cols-2 gap-1.5 font-mono text-[11px] sm:grid-cols-4">
@@ -200,7 +200,7 @@ export function AutoBlocksTable({
                       </td>
                     </tr>
                   ) : null}
-                  </>
+                  </Fragment>
                 );
               })}
               {blocks.length === 0 ? (
