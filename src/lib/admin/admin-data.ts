@@ -117,7 +117,7 @@ export async function insertAuditLog(entry: {
     action_type: entry.actionType,
     target_type: entry.targetType,
     target_id: entry.targetId,
-    details: entry.details,
+    details: entry.details as Json,
   });
   if (error) throw error;
 }
