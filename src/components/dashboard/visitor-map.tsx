@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import maplibregl from "maplibre-gl";
+import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { RISK_COLOR, isOnline, type RiskLevel, type Visitor } from "@/lib/tracking/dashboard-data";
 
