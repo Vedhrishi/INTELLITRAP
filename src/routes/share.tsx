@@ -269,6 +269,7 @@ function SharePage() {
               confidence: forest.confidence,
               tree_votes: forest.treeVotes,
               top_signals: forest.topSignals,
+              breakdown: forest.breakdown,
             },
           });
         } catch {

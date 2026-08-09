@@ -688,6 +688,7 @@ export const applyRiskVerdict = createServerFn({ method: "POST" })
         confidence: z.number().int().min(0).max(100),
         tree_votes: treeVotesSchema,
         top_signals: z.array(z.string().max(80)).max(10).default([]),
+        breakdown: z.record(z.string().max(80), z.number()).default({}),
       })
       .parse(input),
   )
@@ -755,6 +756,7 @@ export const applyRiskVerdict = createServerFn({ method: "POST" })
           tree_votes: data.tree_votes,
           top_signals: data.top_signals,
           confidence: data.confidence,
+          breakdown: data.breakdown,
         } as never,
       });
 
@@ -796,6 +798,7 @@ export const applyRiskVerdict = createServerFn({ method: "POST" })
         tree_votes: data.tree_votes,
         top_signals: data.top_signals,
         confidence: data.confidence,
+        breakdown: data.breakdown,
       } as never,
     });
 
