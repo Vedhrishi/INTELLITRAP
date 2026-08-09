@@ -14,6 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          action_type: string
+          admin_email: string | null
+          admin_id: string | null
+          admin_ip: string | null
+          created_at: string
+          details: Json
+          id: string
+          target_id: string | null
+          target_type: string | null
+        }
+        Insert: {
+          action_type: string
+          admin_email?: string | null
+          admin_id?: string | null
+          admin_ip?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Update: {
+          action_type?: string
+          admin_email?: string | null
+          admin_id?: string | null
+          admin_ip?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_audit_log_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_reports: {
         Row: {
           attack_classification: string | null
@@ -140,6 +184,111 @@ export type Database = {
         }
         Relationships: []
       }
+      blocked_ips: {
+        Row: {
+          admin_alerted: boolean
+          alert_sent_at: string | null
+          block_type: string
+          blocked_at: string
+          blocked_by_admin: string | null
+          device_snapshot: Json | null
+          geo_snapshot: Json | null
+          id: string
+          ip_address: string
+          is_active: boolean
+          reason: string
+          session_token: string | null
+          trigger_score: number | null
+          trigger_signals: string[] | null
+          unblocked_at: string | null
+          unblocked_by: string | null
+          visitor_id: string | null
+        }
+        Insert: {
+          admin_alerted?: boolean
+          alert_sent_at?: string | null
+          block_type?: string
+          blocked_at?: string
+          blocked_by_admin?: string | null
+          device_snapshot?: Json | null
+          geo_snapshot?: Json | null
+          id?: string
+          ip_address: string
+          is_active?: boolean
+          reason: string
+          session_token?: string | null
+          trigger_score?: number | null
+          trigger_signals?: string[] | null
+          unblocked_at?: string | null
+          unblocked_by?: string | null
+          visitor_id?: string | null
+        }
+        Update: {
+          admin_alerted?: boolean
+          alert_sent_at?: string | null
+          block_type?: string
+          blocked_at?: string
+          blocked_by_admin?: string | null
+          device_snapshot?: Json | null
+          geo_snapshot?: Json | null
+          id?: string
+          ip_address?: string
+          is_active?: boolean
+          reason?: string
+          session_token?: string | null
+          trigger_score?: number | null
+          trigger_signals?: string[] | null
+          unblocked_at?: string | null
+          unblocked_by?: string | null
+          visitor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blocked_ips_blocked_by_admin_fkey"
+            columns: ["blocked_by_admin"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blocked_ips_unblocked_by_fkey"
+            columns: ["unblocked_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      decoy_file_templates: {
+        Row: {
+          category: string
+          content: string
+          file_name: string
+          id: string
+          lure_score: number
+          mime_type: string
+          times_served: number
+        }
+        Insert: {
+          category: string
+          content: string
+          file_name: string
+          id?: string
+          lure_score?: number
+          mime_type: string
+          times_served?: number
+        }
+        Update: {
+          category?: string
+          content?: string
+          file_name?: string
+          id?: string
+          lure_score?: number
+          mime_type?: string
+          times_served?: number
+        }
+        Relationships: []
+      }
       detection_rules: {
         Row: {
           action: string
@@ -184,6 +333,50 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      file_access_log: {
+        Row: {
+          created_at: string
+          device_data: Json | null
+          file_id: string | null
+          geo_data: Json | null
+          id: string
+          ip_address: string
+          outcome: string | null
+          risk_score_at_access: number | null
+          session_token: string | null
+        }
+        Insert: {
+          created_at?: string
+          device_data?: Json | null
+          file_id?: string | null
+          geo_data?: Json | null
+          id?: string
+          ip_address: string
+          outcome?: string | null
+          risk_score_at_access?: number | null
+          session_token?: string | null
+        }
+        Update: {
+          created_at?: string
+          device_data?: Json | null
+          file_id?: string | null
+          geo_data?: Json | null
+          id?: string
+          ip_address?: string
+          outcome?: string | null
+          risk_score_at_access?: number | null
+          session_token?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "file_access_log_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "files"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       file_shares: {
         Row: {
@@ -232,51 +425,75 @@ export type Database = {
       files: {
         Row: {
           checksum_sha256: string | null
+          consumed: boolean
           created_at: string
           deleted_at: string | null
           download_count: number
+          expires_at: string | null
+          file_password_hash: string | null
           folder_id: string | null
           id: string
           is_decoy: boolean
           is_encrypted: boolean
+          is_shared: boolean
           mime_type: string
           name: string
+          one_time: boolean
           owner_id: string
+          share_revoked: boolean
           size_bytes: number
           storage_path: string
           updated_at: string
+          upload_ip: string | null
+          uploader_secret_code: string | null
         }
         Insert: {
           checksum_sha256?: string | null
+          consumed?: boolean
           created_at?: string
           deleted_at?: string | null
           download_count?: number
+          expires_at?: string | null
+          file_password_hash?: string | null
           folder_id?: string | null
           id?: string
           is_decoy?: boolean
           is_encrypted?: boolean
+          is_shared?: boolean
           mime_type: string
           name: string
+          one_time?: boolean
           owner_id: string
+          share_revoked?: boolean
           size_bytes: number
           storage_path: string
           updated_at?: string
+          upload_ip?: string | null
+          uploader_secret_code?: string | null
         }
         Update: {
           checksum_sha256?: string | null
+          consumed?: boolean
           created_at?: string
           deleted_at?: string | null
           download_count?: number
+          expires_at?: string | null
+          file_password_hash?: string | null
           folder_id?: string | null
           id?: string
           is_decoy?: boolean
           is_encrypted?: boolean
+          is_shared?: boolean
           mime_type?: string
           name?: string
+          one_time?: boolean
           owner_id?: string
+          share_revoked?: boolean
           size_bytes?: number
           storage_path?: string
           updated_at?: string
+          upload_ip?: string | null
+          uploader_secret_code?: string | null
         }
         Relationships: [
           {
@@ -325,6 +542,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      honeypot_activity: {
+        Row: {
+          action: string
+          created_at: string
+          decoy_file_name: string | null
+          event_data: Json
+          id: string
+          ip_address: string
+          session_token: string
+          time_spent_seconds: number
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          decoy_file_name?: string | null
+          event_data?: Json
+          id?: string
+          ip_address: string
+          session_token: string
+          time_spent_seconds?: number
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          decoy_file_name?: string | null
+          event_data?: Json
+          id?: string
+          ip_address?: string
+          session_token?: string
+          time_spent_seconds?: number
+        }
+        Relationships: []
       }
       honeypot_sessions: {
         Row: {
@@ -380,6 +630,87 @@ export type Database = {
           },
         ]
       }
+      ip_intelligence: {
+        Row: {
+          admin_notes: string | null
+          browsers_used: string[]
+          city: string | null
+          country: string | null
+          current_risk_score: number
+          first_seen: string
+          highest_risk_score: number
+          ip_address: string
+          is_blacklisted: boolean
+          is_hosting: boolean
+          is_proxy: boolean
+          is_whitelisted: boolean
+          isp: string | null
+          last_seen: string
+          latitude: number | null
+          longitude: number | null
+          region: string | null
+          threat_classification: string
+          times_blocked: number
+          times_honeypotted: number
+          total_failed_codes: number
+          total_failed_passwords: number
+          total_page_views: number
+          total_sessions: number
+        }
+        Insert: {
+          admin_notes?: string | null
+          browsers_used?: string[]
+          city?: string | null
+          country?: string | null
+          current_risk_score?: number
+          first_seen?: string
+          highest_risk_score?: number
+          ip_address: string
+          is_blacklisted?: boolean
+          is_hosting?: boolean
+          is_proxy?: boolean
+          is_whitelisted?: boolean
+          isp?: string | null
+          last_seen?: string
+          latitude?: number | null
+          longitude?: number | null
+          region?: string | null
+          threat_classification?: string
+          times_blocked?: number
+          times_honeypotted?: number
+          total_failed_codes?: number
+          total_failed_passwords?: number
+          total_page_views?: number
+          total_sessions?: number
+        }
+        Update: {
+          admin_notes?: string | null
+          browsers_used?: string[]
+          city?: string | null
+          country?: string | null
+          current_risk_score?: number
+          first_seen?: string
+          highest_risk_score?: number
+          ip_address?: string
+          is_blacklisted?: boolean
+          is_hosting?: boolean
+          is_proxy?: boolean
+          is_whitelisted?: boolean
+          isp?: string | null
+          last_seen?: string
+          latitude?: number | null
+          longitude?: number | null
+          region?: string | null
+          threat_classification?: string
+          times_blocked?: number
+          times_honeypotted?: number
+          total_failed_codes?: number
+          total_failed_passwords?: number
+          total_page_views?: number
+          total_sessions?: number
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           body: string | null
@@ -413,42 +744,101 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: string
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value: string
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_settings_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
           created_at: string
+          display_name: string | null
           email: string | null
           full_name: string | null
           id: string
+          last_login: string | null
+          last_login_geo: Json | null
+          last_login_ip: string | null
+          login_count: number
+          registration_geo: Json | null
+          registration_ip: string | null
           risk_score: number
+          role: string
+          setup_complete: boolean
           status: string
           storage_quota: number
           storage_used: number
           updated_at: string
+          user_secret_code: string | null
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          display_name?: string | null
           email?: string | null
           full_name?: string | null
           id: string
+          last_login?: string | null
+          last_login_geo?: Json | null
+          last_login_ip?: string | null
+          login_count?: number
+          registration_geo?: Json | null
+          registration_ip?: string | null
           risk_score?: number
+          role?: string
+          setup_complete?: boolean
           status?: string
           storage_quota?: number
           storage_used?: number
           updated_at?: string
+          user_secret_code?: string | null
         }
         Update: {
           avatar_url?: string | null
           created_at?: string
+          display_name?: string | null
           email?: string | null
           full_name?: string | null
           id?: string
+          last_login?: string | null
+          last_login_geo?: Json | null
+          last_login_ip?: string | null
+          login_count?: number
+          registration_geo?: Json | null
+          registration_ip?: string | null
           risk_score?: number
+          role?: string
+          setup_complete?: boolean
           status?: string
           storage_quota?: number
           storage_used?: number
           updated_at?: string
+          user_secret_code?: string | null
         }
         Relationships: []
       }
@@ -596,11 +986,262 @@ export type Database = {
         }
         Relationships: []
       }
+      visitor_events: {
+        Row: {
+          created_at: string
+          event_data: Json
+          event_type: string
+          id: string
+          ip_address: string
+          page_path: string | null
+          risk_delta: number
+          session_token: string
+          visitor_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_data?: Json
+          event_type: string
+          id?: string
+          ip_address: string
+          page_path?: string | null
+          risk_delta?: number
+          session_token: string
+          visitor_id: string
+        }
+        Update: {
+          created_at?: string
+          event_data?: Json
+          event_type?: string
+          id?: string
+          ip_address?: string
+          page_path?: string | null
+          risk_delta?: number
+          session_token?: string
+          visitor_id?: string
+        }
+        Relationships: []
+      }
+      visitors: {
+        Row: {
+          access_decision: string | null
+          asn: string | null
+          avg_keystroke_interval_ms: number | null
+          block_reason: string | null
+          blocked_at: string | null
+          browser: string | null
+          browser_version: string | null
+          captcha_passed: boolean
+          captcha_shown: boolean
+          challenge_attempts: number
+          city: string | null
+          clicks: number
+          color_depth: number | null
+          copy_events: number
+          country: string | null
+          country_code: string | null
+          current_page: string | null
+          decoy_files_downloaded: string[]
+          device_memory: number | null
+          device_type: string | null
+          device_vendor: string | null
+          entry_page: string | null
+          first_seen: string
+          hardware_concurrency: number | null
+          honeypot_entered_at: string | null
+          honeypot_exited_at: string | null
+          id: string
+          in_honeypot: boolean
+          ip_address: string
+          ip_version: string | null
+          is_hosting: boolean
+          is_mobile_network: boolean
+          is_online: boolean
+          is_proxy: boolean
+          isp: string | null
+          keystrokes: number
+          language: string | null
+          languages: string[] | null
+          last_heartbeat: string
+          latitude: number | null
+          longitude: number | null
+          mouse_distance_px: number
+          mouse_movements: number
+          org: string | null
+          os: string | null
+          os_version: string | null
+          otp_passed: boolean
+          otp_shown: boolean
+          page_views: number
+          pages_visited: string[]
+          referrer: string | null
+          region: string | null
+          risk_breakdown: Json
+          risk_level: string
+          risk_score: number
+          risk_signals: string[]
+          screen_resolution: string | null
+          scroll_events: number
+          session_ended_at: string | null
+          session_token: string
+          tab_switches: number
+          time_on_site_seconds: number
+          timezone: string | null
+          timezone_offset: number | null
+          touch_support: boolean | null
+          user_agent: string | null
+          visitor_id: string
+          was_blocked: boolean
+        }
+        Insert: {
+          access_decision?: string | null
+          asn?: string | null
+          avg_keystroke_interval_ms?: number | null
+          block_reason?: string | null
+          blocked_at?: string | null
+          browser?: string | null
+          browser_version?: string | null
+          captcha_passed?: boolean
+          captcha_shown?: boolean
+          challenge_attempts?: number
+          city?: string | null
+          clicks?: number
+          color_depth?: number | null
+          copy_events?: number
+          country?: string | null
+          country_code?: string | null
+          current_page?: string | null
+          decoy_files_downloaded?: string[]
+          device_memory?: number | null
+          device_type?: string | null
+          device_vendor?: string | null
+          entry_page?: string | null
+          first_seen?: string
+          hardware_concurrency?: number | null
+          honeypot_entered_at?: string | null
+          honeypot_exited_at?: string | null
+          id?: string
+          in_honeypot?: boolean
+          ip_address: string
+          ip_version?: string | null
+          is_hosting?: boolean
+          is_mobile_network?: boolean
+          is_online?: boolean
+          is_proxy?: boolean
+          isp?: string | null
+          keystrokes?: number
+          language?: string | null
+          languages?: string[] | null
+          last_heartbeat?: string
+          latitude?: number | null
+          longitude?: number | null
+          mouse_distance_px?: number
+          mouse_movements?: number
+          org?: string | null
+          os?: string | null
+          os_version?: string | null
+          otp_passed?: boolean
+          otp_shown?: boolean
+          page_views?: number
+          pages_visited?: string[]
+          referrer?: string | null
+          region?: string | null
+          risk_breakdown?: Json
+          risk_level?: string
+          risk_score?: number
+          risk_signals?: string[]
+          screen_resolution?: string | null
+          scroll_events?: number
+          session_ended_at?: string | null
+          session_token: string
+          tab_switches?: number
+          time_on_site_seconds?: number
+          timezone?: string | null
+          timezone_offset?: number | null
+          touch_support?: boolean | null
+          user_agent?: string | null
+          visitor_id: string
+          was_blocked?: boolean
+        }
+        Update: {
+          access_decision?: string | null
+          asn?: string | null
+          avg_keystroke_interval_ms?: number | null
+          block_reason?: string | null
+          blocked_at?: string | null
+          browser?: string | null
+          browser_version?: string | null
+          captcha_passed?: boolean
+          captcha_shown?: boolean
+          challenge_attempts?: number
+          city?: string | null
+          clicks?: number
+          color_depth?: number | null
+          copy_events?: number
+          country?: string | null
+          country_code?: string | null
+          current_page?: string | null
+          decoy_files_downloaded?: string[]
+          device_memory?: number | null
+          device_type?: string | null
+          device_vendor?: string | null
+          entry_page?: string | null
+          first_seen?: string
+          hardware_concurrency?: number | null
+          honeypot_entered_at?: string | null
+          honeypot_exited_at?: string | null
+          id?: string
+          in_honeypot?: boolean
+          ip_address?: string
+          ip_version?: string | null
+          is_hosting?: boolean
+          is_mobile_network?: boolean
+          is_online?: boolean
+          is_proxy?: boolean
+          isp?: string | null
+          keystrokes?: number
+          language?: string | null
+          languages?: string[] | null
+          last_heartbeat?: string
+          latitude?: number | null
+          longitude?: number | null
+          mouse_distance_px?: number
+          mouse_movements?: number
+          org?: string | null
+          os?: string | null
+          os_version?: string | null
+          otp_passed?: boolean
+          otp_shown?: boolean
+          page_views?: number
+          pages_visited?: string[]
+          referrer?: string | null
+          region?: string | null
+          risk_breakdown?: Json
+          risk_level?: string
+          risk_score?: number
+          risk_signals?: string[]
+          screen_resolution?: string | null
+          scroll_events?: number
+          session_ended_at?: string | null
+          session_token?: string
+          tab_switches?: number
+          time_on_site_seconds?: number
+          timezone?: string | null
+          timezone_offset?: number | null
+          touch_support?: boolean | null
+          user_agent?: string | null
+          visitor_id?: string
+          was_blocked?: boolean
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      is_admin: { Args: never; Returns: boolean }
+      is_staff: { Args: never; Returns: boolean }
       recalc_storage: { Args: { _owner: string }; Returns: undefined }
     }
     Enums: {
