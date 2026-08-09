@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Database, Json } from "@/integrations/supabase/types";
 import { startOfTodayIST } from "@/lib/share/format";
+import { removeUserAccount } from "@/lib/admin/admin.functions";
 
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 export type BlockedIp = Database["public"]["Tables"]["blocked_ips"]["Row"];
