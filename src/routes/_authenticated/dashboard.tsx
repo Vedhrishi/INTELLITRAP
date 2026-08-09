@@ -107,8 +107,10 @@ function DashboardPage() {
             )}
           />
           {status === "live" ? "Realtime" : status === "connecting" ? "Connecting" : "Polling"}
-        </span>
-      </PageHeader>
+          </span>
+        }
+      />
+
 
       {stats.isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
