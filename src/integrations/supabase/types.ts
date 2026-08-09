@@ -785,6 +785,7 @@ export type Database = {
           last_login_geo: Json | null
           last_login_ip: string | null
           login_count: number
+          max_files: number
           registration_geo: Json | null
           registration_ip: string | null
           risk_score: number
@@ -807,6 +808,7 @@ export type Database = {
           last_login_geo?: Json | null
           last_login_ip?: string | null
           login_count?: number
+          max_files?: number
           registration_geo?: Json | null
           registration_ip?: string | null
           risk_score?: number
@@ -829,6 +831,7 @@ export type Database = {
           last_login_geo?: Json | null
           last_login_ip?: string | null
           login_count?: number
+          max_files?: number
           registration_geo?: Json | null
           registration_ip?: string | null
           risk_score?: number
