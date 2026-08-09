@@ -182,7 +182,11 @@ function DashboardPage() {
           </header>
           <ClientOnly fallback={<MapSkeleton />}>
             <Suspense fallback={<MapSkeleton />}>
-              <VisitorMap visitors={mapVisitors.data ?? []} onSelect={setSelected} />
+              <VisitorMap
+                visitors={mapVisitors.data ?? []}
+                onSelect={setSelected}
+                height={presentationMode ? 600 : 420}
+              />
             </Suspense>
           </ClientOnly>
         </div>
@@ -199,6 +203,7 @@ function DashboardPage() {
       </section>
 
       <VisitorDrawer visitor={selected} onClose={() => setSelected(null)} onChanged={refreshAll} />
-    </>
+    </div>
+
   );
 }
