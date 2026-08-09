@@ -86,7 +86,8 @@ function DashboardPage() {
   const s = stats.data;
 
   return (
-    <>
+    <div className={presentationMode ? "space-y-6 text-[110%]" : "contents"}>
+
       <PageHeader
         title={title}
         description="Every visitor, scored and mapped the moment they arrive."
