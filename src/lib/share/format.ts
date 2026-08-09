@@ -50,9 +50,16 @@ export function generateSecretCode(): string {
   return Array.from(bytes, (byte) => CODE_ALPHABET[byte % CODE_ALPHABET.length]).join("");
 }
 
-/** SHA-256 hex digest — used for file passwords and demo OTP comparison. */
+/**
+ * SHA-256 hex digest — used for file passwords and demo OTP comparison.
+ * Salted identically to hashSharePassword() in tracking.server.ts so uploaded
+ * hashes match server-side verification.
+ */
 export async function hashPassword(value: string): Promise<string> {
-  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(`${value}intellitrap-salt-2024`),
+  );
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
