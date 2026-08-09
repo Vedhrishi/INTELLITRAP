@@ -1,5 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { PageHeader } from "@/components/primitives/page-header";
 import { RiskSignalChart } from "@/components/admin/risk-signal-chart";
 import { KpiCard } from "@/components/dashboard/kpi-card";
@@ -7,6 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { fetchActiveVisitors, fetchTodaySignalFrequency } from "@/lib/admin/admin-data";
 import { isOnline } from "@/lib/tracking/dashboard-data";
 import { Activity, Bug, ShieldAlert, Users } from "lucide-react";
+
 
 const title = "Analytics";
 const description = "Traffic, risk distribution and deception outcomes at a glance.";
