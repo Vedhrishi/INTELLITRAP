@@ -448,9 +448,9 @@ function SharePage() {
               >
                 <Lock className="h-7 w-7 text-[#3b82f6]" />
               </motion.div>
-              <h2 className="text-center text-xl font-bold text-white">Enter Share Code</h2>
-              <p className="mt-1 text-center text-sm text-[#94a3b8]">
-                Enter the secure code you received to find the shared file.
+              <h2 className="text-center text-2xl font-bold text-white">Enter Secret Code</h2>
+              <p className="mt-2 text-center text-sm text-[#64748b]">
+                Ask the file owner for their unique 8-character code.
               </p>
               <form onSubmit={handleCodeSubmit} className="mt-6 space-y-4">
                 <motion.input
