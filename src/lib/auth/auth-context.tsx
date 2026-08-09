@@ -57,16 +57,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [profileResult, rolesResult] = await Promise.all([
       supabase
         .from("profiles")
-        .select("id, email, full_name, avatar_url, storage_used, storage_quota, status, risk_score")
+        .select(
+          "id, email, full_name, display_name, avatar_url, storage_used, storage_quota, status, risk_score",
+        )
         .eq("id", userId)
         .maybeSingle(),
       supabase.from("user_roles").select("role").eq("user_id", userId),
     ]);
 
     if (!mounted.current) return;
-    setProfile((profileResult.data as Profile | null) ?? null);
+    let nextProfile = (profileResult.data as Profile | null) ?? null;
+
+    // Backfill a missing display name from the email prefix (e.g. "ada@x.com" -> "ada").
+    if (nextProfile && !nextProfile.display_name) {
+      const fallback =
+        nextProfile.full_name?.trim() || (nextProfile.email ?? "").split("@")[0] || null;
+      if (fallback) {
+        nextProfile = { ...nextProfile, display_name: fallback };
+        void supabase.from("profiles").update({ display_name: fallback }).eq("id", userId);
+      }
+    }
+
+    setProfile(nextProfile);
     setRoles(((rolesResult.data ?? []) as { role: AppRole }[]).map((row) => row.role));
   }, []);
+
 
   const loadRoles = useCallback(async (userId: string) => {
     const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
