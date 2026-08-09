@@ -88,9 +88,14 @@ export function TrackingProvider({ children }: { children: ReactNode }) {
     })
       .then((result) => {
         if (cancelled || !result) return;
-        setBlocked(Boolean(result.blocked));
+        const isBlocked = Boolean(result.blocked);
+        setBlocked(isBlocked);
         if ("ip" in result && result.ip) setIpAddress(result.ip);
+        if (isBlocked && window.location.pathname !== "/blocked") {
+          void navigate({ to: "/blocked" });
+        }
       })
+
       .catch(() => {
         /* tracking must never break the page */
       })
