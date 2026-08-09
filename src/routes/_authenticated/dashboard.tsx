@@ -17,7 +17,10 @@ import {
   fetchRecentEvents,
   type Visitor,
 } from "@/lib/tracking/dashboard-data";
+import { usePresentationMode } from "@/lib/presentation-mode";
+import { FirstRunBanner } from "@/components/dashboard/first-run-banner";
 import { cn } from "@/lib/utils";
+
 
 const VisitorMap = lazy(() => import("@/components/dashboard/LiveVisitorMap"));
 
