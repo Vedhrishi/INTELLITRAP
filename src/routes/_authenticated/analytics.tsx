@@ -153,6 +153,97 @@ function AnalyticsPage() {
       ) : (
         <RiskSignalChart data={signals.data ?? []} />
       )}
+
+      <div className="grid gap-5 lg:grid-cols-3">
+        <div className="rounded-xl border border-[#334155] bg-[#1e293b] p-5">
+          <h3 className="mb-3 text-sm font-semibold text-foreground">Risk Distribution</h3>
+          {riskDistribution.length === 0 ? (
+            <p className="py-12 text-center text-xs text-[#64748b]">No data yet</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={240}>
+              <PieChart>
+                <Pie
+                  data={riskDistribution}
+                  dataKey="value"
+                  nameKey="name"
+                  outerRadius={80}
+                  labelLine={false}
+                  label={({ name, percent }: { name?: string; percent?: number }) =>
+                    `${name} ${Math.round((percent ?? 0) * 100)}%`
+                  }
+                >
+                  {riskDistribution.map((entry) => (
+                    <Cell key={entry.name} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    background: "#0f172a",
+                    border: "1px solid #334155",
+                    borderRadius: 8,
+                    fontSize: 12,
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+
+        <div className="rounded-xl border border-[#334155] bg-[#1e293b] p-5">
+          <h3 className="mb-3 text-sm font-semibold text-foreground">Top Source Cities</h3>
+          {topCities.length === 0 ? (
+            <p className="py-12 text-center text-xs text-[#64748b]">No location data yet</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart data={topCities}>
+                <CartesianGrid stroke="#334155" strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="city" stroke="#64748b" fontSize={10} interval={0} angle={-20} />
+                <YAxis stroke="#64748b" fontSize={10} allowDecimals={false} />
+                <Tooltip
+                  contentStyle={{
+                    background: "#0f172a",
+                    border: "1px solid #334155",
+                    borderRadius: 8,
+                    fontSize: 12,
+                  }}
+                />
+                <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+
+        <div className="rounded-xl border border-[#334155] bg-[#1e293b] p-5">
+          <h3 className="mb-3 text-sm font-semibold text-foreground">
+            Access Decision Breakdown
+          </h3>
+          {decisions.length === 0 ? (
+            <p className="py-12 text-center text-xs text-[#64748b]">No decisions recorded yet</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart data={decisions}>
+                <CartesianGrid stroke="#334155" strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="name" stroke="#64748b" fontSize={10} />
+                <YAxis stroke="#64748b" fontSize={10} allowDecimals={false} />
+                <Tooltip
+                  contentStyle={{
+                    background: "#0f172a",
+                    border: "1px solid #334155",
+                    borderRadius: 8,
+                    fontSize: 12,
+                  }}
+                />
+                <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                  {decisions.map((entry) => (
+                    <Cell key={entry.name} fill={entry.fill} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+      </div>
+
     </>
   );
 }
