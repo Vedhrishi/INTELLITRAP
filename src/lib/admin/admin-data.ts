@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { Database } from "@/integrations/supabase/types";
+import type { Database, Json } from "@/integrations/supabase/types";
 import { startOfTodayIST } from "@/lib/share/format";
 
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
