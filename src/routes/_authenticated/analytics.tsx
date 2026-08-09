@@ -56,6 +56,55 @@ function AnalyticsPage() {
   ).length;
   const trapped = rows.filter((v) => v.in_honeypot).length;
 
+  const riskDistribution = [
+    { name: "Low", value: rows.filter((v) => v.risk_level === "low").length, color: "#22c55e" },
+    {
+      name: "Medium",
+      value: rows.filter((v) => v.risk_level === "medium").length,
+      color: "#f59e0b",
+    },
+    { name: "High", value: rows.filter((v) => v.risk_level === "high").length, color: "#f97316" },
+    {
+      name: "Critical",
+      value: rows.filter((v) => v.risk_level === "critical").length,
+      color: "#ef4444",
+    },
+  ].filter((d) => d.value > 0);
+
+  const cityMap: Record<string, number> = {};
+  for (const v of rows) {
+    if (v.city) cityMap[v.city] = (cityMap[v.city] ?? 0) + 1;
+  }
+  const topCities = Object.entries(cityMap)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+    .map(([city, count]) => ({ city, count }));
+
+  const decisions = [
+    {
+      name: "Granted",
+      value: rows.filter((v) => v.access_decision === "granted").length,
+      fill: "#22c55e",
+    },
+    {
+      name: "Challenged",
+      value: rows.filter((v) => v.access_decision === "captcha_mfa").length,
+      fill: "#f59e0b",
+    },
+    {
+      name: "Honeypot",
+      value: rows.filter((v) => v.access_decision === "honeypot").length,
+      fill: "#f97316",
+    },
+    {
+      name: "Blocked",
+      value: rows.filter((v) => v.access_decision === "blocked").length,
+      fill: "#ef4444",
+    },
+  ].filter((d) => d.value > 0);
+
+
+
   return (
     <>
       <PageHeader title={title} description={description} />
