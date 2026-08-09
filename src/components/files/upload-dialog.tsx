@@ -126,17 +126,29 @@ export function UploadDialog({
     setUploading(false);
   }, []);
 
-  const validateAndSetFile = useCallback((candidate: File) => {
-    if (isBlockedExtension(candidate.name)) {
-      toast.error("This file type is not allowed");
-      return;
-    }
-    if (candidate.size > MAX_FILE_SIZE) {
-      toast.error("File too large. 50MB max.");
-      return;
-    }
-    setFile(candidate);
-  }, []);
+  const validateAndSetFile = useCallback(
+    (candidate: File) => {
+      if (isBlockedExtension(candidate.name)) {
+        toast.error("This file type is not allowed");
+        return;
+      }
+      if (candidate.size > MAX_FILE_SIZE) {
+        toast.error("File too large. 1GB max.");
+        return;
+      }
+      if (existingFiles.length >= USER_MAX_FILES) {
+        toast.error("Storage full. Delete files to free space.");
+        return;
+      }
+      if (usedBytes(existingFiles) + candidate.size > USER_STORAGE_QUOTA) {
+        toast.error("Storage full. Delete files to free space.");
+        return;
+      }
+      setFile(candidate);
+    },
+    [existingFiles],
+  );
+
 
   const handleDrop = useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {
