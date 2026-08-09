@@ -159,6 +159,7 @@ function DashboardPage() {
           <KpiCard
             index={5}
             label="Blocked IPs"
+            sublabel={`${s?.autoBlocksToday ?? 0} auto-blocked today`}
             value={s?.blocked ?? 0}
             icon={Ban}
             accent="bg-red-500/15 text-red-400"
