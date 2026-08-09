@@ -727,6 +727,7 @@ function SharePage() {
                   </FileCard>
                 </motion.div>
               ) : null}
+              {rfResult ? <SecurityAnalysisPanel result={rfResult} /> : null}
             </motion.div>
           ) : null}
 
@@ -805,6 +806,7 @@ function SharePage() {
                   ) : null}
                 </motion.div>
               ) : null}
+              {rfResult ? <SecurityAnalysisPanel result={rfResult} /> : null}
             </motion.div>
           ) : null}
 
@@ -880,7 +882,7 @@ function SharePage() {
           ) : null}
 
           {effectiveState === "blocked" ? (
-            <BlockedState key="blocked" sessionToken={sessionToken} />
+            <BlockedState key="blocked" sessionToken={sessionToken} result={rfResult} />
           ) : null}
 
           {effectiveState === "download_complete" ? (
@@ -910,7 +912,13 @@ function SharePage() {
   );
 }
 
-function BlockedState({ sessionToken }: { sessionToken: string | null }) {
+function BlockedState({
+  sessionToken,
+  result,
+}: {
+  sessionToken: string | null;
+  result: RiskResult | null;
+}) {
   const particles = useRef(
     Array.from({ length: 20 }, () => ({
       left: `${randomInt(0, 100)}%`,
@@ -973,6 +981,12 @@ function BlockedState({ sessionToken }: { sessionToken: string | null }) {
         <p className="mt-4 font-mono text-xs text-[#64748b]">
           Reference: {sessionToken.slice(0, 8).toUpperCase()}
         </p>
+      ) : null}
+
+      {result ? (
+        <div className="w-full max-w-md">
+          <SecurityAnalysisPanel result={result} />
+        </div>
       ) : null}
     </motion.div>
   );
