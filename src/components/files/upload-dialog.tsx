@@ -73,13 +73,16 @@ export function UploadDialog({
   open,
   onOpenChange,
   userSecretCode,
+  existingFiles = [],
   onUploaded,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   userSecretCode: string | null;
+  existingFiles?: FileRow[];
   onUploaded: () => void;
 }) {
+
   const { user } = useAuth();
   const inputRef = useRef<HTMLInputElement>(null);
 
