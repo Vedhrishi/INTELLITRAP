@@ -58,7 +58,7 @@ function DashboardPage() {
   });
   const events = useQuery({
     queryKey: ["recent-events"],
-    queryFn: () => fetchRecentEvents(30),
+    queryFn: () => fetchRecentEvents(20),
     refetchInterval: 15_000,
   });
   const online = useQuery({
