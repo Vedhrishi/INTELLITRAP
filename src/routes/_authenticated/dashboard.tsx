@@ -21,7 +21,6 @@ import { usePresentationMode } from "@/lib/presentation-mode";
 import { FirstRunBanner } from "@/components/dashboard/first-run-banner";
 import { cn } from "@/lib/utils";
 
-
 const VisitorMap = lazy(() => import("@/components/dashboard/LiveVisitorMap"));
 
 const title = "Live visitor intelligence";
@@ -49,7 +48,6 @@ function DashboardPage() {
   const queryClient = useQueryClient();
   const presentationMode = usePresentationMode((state) => state.presentationMode);
   const [selected, setSelected] = useState<Visitor | null>(null);
-
 
   const stats = useQuery({
     queryKey: ["dashboard-stats"],
@@ -87,7 +85,6 @@ function DashboardPage() {
 
   return (
     <div className={presentationMode ? "space-y-6 text-[110%]" : "contents"}>
-
       <PageHeader
         title={title}
         description="Every visitor, scored and mapped the moment they arrive."
@@ -129,8 +126,6 @@ function DashboardPage() {
       ) : null}
 
       <FirstRunBanner visible={(s?.today ?? 0) === 0 && (mapVisitors.data ?? []).length === 0} />
-
-
 
       {stats.isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
@@ -219,6 +214,5 @@ function DashboardPage() {
 
       <VisitorDrawer visitor={selected} onClose={() => setSelected(null)} onChanged={refreshAll} />
     </div>
-
   );
 }

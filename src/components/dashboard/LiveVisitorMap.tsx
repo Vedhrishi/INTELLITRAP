@@ -269,7 +269,6 @@ function MapCanvas({
         { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#0f1f0f" }] },
       ]}
     >
-
       <ProtectedZone />
       {visitors.map((visitor) => (
         <VisitorMarker key={visitor.id} visitor={visitor} onSelect={setSelectedVisitor} />

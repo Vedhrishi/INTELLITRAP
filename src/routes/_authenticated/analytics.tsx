@@ -20,7 +20,6 @@ import { fetchActiveVisitors, fetchTodaySignalFrequency } from "@/lib/admin/admi
 import { isOnline } from "@/lib/tracking/dashboard-data";
 import { Activity, Bug, ShieldAlert, Users } from "lucide-react";
 
-
 const title = "Analytics";
 const description = "Traffic, risk distribution and deception outcomes at a glance.";
 
@@ -102,8 +101,6 @@ function AnalyticsPage() {
       fill: "#ef4444",
     },
   ].filter((d) => d.value > 0);
-
-
 
   return (
     <>
@@ -214,9 +211,7 @@ function AnalyticsPage() {
         </div>
 
         <div className="rounded-xl border border-[#334155] bg-[#1e293b] p-5">
-          <h3 className="mb-3 text-sm font-semibold text-foreground">
-            Access Decision Breakdown
-          </h3>
+          <h3 className="mb-3 text-sm font-semibold text-foreground">Access Decision Breakdown</h3>
           {decisions.length === 0 ? (
             <p className="py-12 text-center text-xs text-[#64748b]">No decisions recorded yet</p>
           ) : (
@@ -243,7 +238,6 @@ function AnalyticsPage() {
           )}
         </div>
       </div>
-
     </>
   );
 }

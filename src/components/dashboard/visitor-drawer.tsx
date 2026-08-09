@@ -207,7 +207,6 @@ export function VisitorDrawer({
               ) : null}
             </Section>
 
-
             <Section title="Network">
               <Row label="Country" value={visitor.country} />
               <Row label="City" value={visitor.city} />
