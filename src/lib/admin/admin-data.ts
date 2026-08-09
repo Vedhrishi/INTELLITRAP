@@ -366,3 +366,68 @@ export async function fetchTodayEventsByType(): Promise<{ event_type: string; cr
   if (error) throw error;
   return data ?? [];
 }
+
+export type MlAnalysis = {
+  score: number;
+  decision: string;
+  confidence: number;
+  treeVotes: { granted: number; captcha_mfa: number; honeypot: number; blocked: number };
+  breakdown: Record<string, number>;
+  topSignals: string[];
+  ip: string;
+  at: string;
+};
+
+function readTreeVotes(value: unknown): MlAnalysis["treeVotes"] {
+  const raw = (value ?? {}) as Record<string, unknown>;
+  const num = (key: string) => (typeof raw[key] === "number" ? (raw[key] as number) : 0);
+  return {
+    granted: num("granted"),
+    captcha_mfa: num("captcha_mfa"),
+    honeypot: num("honeypot"),
+    blocked: num("blocked"),
+  };
+}
+
+/** Most recent Random Forest verdict recorded on a visitor session. */
+export async function fetchLatestMlAnalysis(): Promise<MlAnalysis | null> {
+  const { data, error } = await supabase
+    .from("visitor_events")
+    .select("ip_address, event_data, created_at")
+    .not("event_data->rf_score", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(1);
+  if (error || !data || data.length === 0) return null;
+
+  const row = data[0]!;
+  const payload = (row.event_data ?? {}) as Record<string, unknown>;
+  const breakdownRaw = (payload["breakdown"] ?? {}) as Record<string, unknown>;
+  const breakdown: Record<string, number> = {};
+  for (const [key, value] of Object.entries(breakdownRaw)) {
+    if (typeof value === "number") breakdown[key] = value;
+  }
+
+  return {
+    score: typeof payload["rf_score"] === "number" ? (payload["rf_score"] as number) : 0,
+    decision: typeof payload["rf_decision"] === "string" ? (payload["rf_decision"] as string) : "granted",
+    confidence: typeof payload["confidence"] === "number" ? (payload["confidence"] as number) : 0,
+    treeVotes: readTreeVotes(payload["tree_votes"]),
+    breakdown,
+    topSignals: Array.isArray(payload["top_signals"])
+      ? (payload["top_signals"] as unknown[]).filter((item): item is string => typeof item === "string")
+      : [],
+    ip: row.ip_address,
+    at: row.created_at,
+  };
+}
+
+/** Count of automatic blocks recorded since IST midnight. */
+export async function fetchAutoBlocksToday(): Promise<number> {
+  const { count, error } = await supabase
+    .from("blocked_ips")
+    .select("id", { count: "exact", head: true })
+    .eq("block_type", "auto")
+    .gte("blocked_at", startOfTodayIST());
+  if (error) return 0;
+  return count ?? 0;
+}
