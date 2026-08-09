@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Database, Json } from "@/integrations/supabase/types";
 import { startOfTodayIST } from "@/lib/share/format";
+import { removeUserAccount } from "@/lib/admin/admin.functions";
 
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 export type BlockedIp = Database["public"]["Tables"]["blocked_ips"]["Row"];
@@ -131,44 +132,13 @@ export type RemoveUserOptions = {
 };
 
 export async function removeUser(options: RemoveUserOptions): Promise<void> {
-  const { target, reason, banIp, wipeFiles, admin } = options;
+  const { target, reason, banIp, wipeFiles } = options;
   if (target.role === "admin") {
     throw new Error("Admin accounts are protected");
   }
 
-  const { error: statusError } = await supabase
-    .from("profiles")
-    .update({ status: "removed" })
-    .eq("id", target.id);
-  if (statusError) throw statusError;
-
-  if (banIp && target.last_login_ip) {
-    const { error: blockError } = await supabase.from("blocked_ips").insert({
-      ip_address: target.last_login_ip,
-      reason: `User removal: ${reason}`,
-      block_type: "manual",
-      blocked_by_admin: admin.id,
-      is_active: true,
-    });
-    if (blockError) throw blockError;
-  }
-
-  if (wipeFiles) {
-    const { error: wipeError } = await supabase
-      .from("files")
-      .update({ deleted_at: new Date().toISOString() })
-      .eq("owner_id", target.id)
-      .is("deleted_at", null);
-    if (wipeError) throw wipeError;
-  }
-
-  await insertAuditLog({
-    adminId: admin.id,
-    adminEmail: admin.email,
-    actionType: "user_removed",
-    targetType: "profile",
-    targetId: target.id,
-    details: { reason, banIp, wipeFiles, email: target.email },
+  await removeUserAccount({
+    data: { userId: target.id, reason, banIp, wipeFiles },
   });
 }
 
