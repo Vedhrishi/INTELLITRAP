@@ -1240,8 +1240,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      is_admin: { Args: never; Returns: boolean }
-      is_staff: { Args: never; Returns: boolean }
       recalc_storage: { Args: { _owner: string }; Returns: undefined }
     }
     Enums: {
