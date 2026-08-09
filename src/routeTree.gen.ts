@@ -15,6 +15,7 @@ import { Route as BlockedRouteImport } from './routes/blocked'
 import { Route as ShareRouteImport } from './routes/share'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
+import { Route as AuthenticatedBlockedIpsRouteImport } from './routes/_authenticated/blocked-ips'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedFilesRouteImport } from './routes/_authenticated/files'
 import { Route as AuthenticatedHoneypotRouteImport } from './routes/_authenticated/honeypot'
@@ -57,6 +58,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
 const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
   id: '/app',
   path: '/app',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedBlockedIpsRoute = AuthenticatedBlockedIpsRouteImport.update({
+  id: '/blocked-ips',
+  path: '/blocked-ips',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -140,6 +146,7 @@ export interface FileRoutesByFullPath {
   '/share': typeof ShareRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/app': typeof AuthenticatedAppRoute
+  '/blocked-ips': typeof AuthenticatedBlockedIpsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/files': typeof AuthenticatedFilesRoute
   '/honeypot': typeof AuthenticatedHoneypotRoute
@@ -160,6 +167,7 @@ export interface FileRoutesByTo {
   '/blocked': typeof BlockedRoute
   '/share': typeof ShareRoute
   '/app': typeof AuthenticatedAppRoute
+  '/blocked-ips': typeof AuthenticatedBlockedIpsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/files': typeof AuthenticatedFilesRoute
   '/honeypot': typeof AuthenticatedHoneypotRoute
@@ -183,6 +191,7 @@ export interface FileRoutesById {
   '/share': typeof ShareRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/app': typeof AuthenticatedAppRoute
+  '/_authenticated/blocked-ips': typeof AuthenticatedBlockedIpsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/files': typeof AuthenticatedFilesRoute
   '/_authenticated/honeypot': typeof AuthenticatedHoneypotRoute
@@ -206,6 +215,7 @@ export interface FileRouteTypes {
     | '/share'
     | '/admin'
     | '/app'
+    | '/blocked-ips'
     | '/dashboard'
     | '/files'
     | '/honeypot'
@@ -226,6 +236,7 @@ export interface FileRouteTypes {
     | '/blocked'
     | '/share'
     | '/app'
+    | '/blocked-ips'
     | '/dashboard'
     | '/files'
     | '/honeypot'
@@ -248,6 +259,7 @@ export interface FileRouteTypes {
     | '/share'
     | '/_authenticated/admin'
     | '/_authenticated/app'
+    | '/_authenticated/blocked-ips'
     | '/_authenticated/dashboard'
     | '/_authenticated/files'
     | '/_authenticated/honeypot'
@@ -316,6 +328,13 @@ declare module '@tanstack/react-router' {
       path: '/app'
       fullPath: '/app'
       preLoaderRoute: typeof AuthenticatedAppRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/blocked-ips': {
+      id: '/_authenticated/blocked-ips'
+      path: '/blocked-ips'
+      fullPath: '/blocked-ips'
+      preLoaderRoute: typeof AuthenticatedBlockedIpsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
@@ -441,6 +460,7 @@ const AuthenticatedAdminRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedAppRoute: typeof AuthenticatedAppRoute
+  AuthenticatedBlockedIpsRoute: typeof AuthenticatedBlockedIpsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFilesRoute: typeof AuthenticatedFilesRoute
   AuthenticatedHoneypotRoute: typeof AuthenticatedHoneypotRoute
@@ -452,6 +472,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedAppRoute: AuthenticatedAppRoute,
+  AuthenticatedBlockedIpsRoute: AuthenticatedBlockedIpsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFilesRoute: AuthenticatedFilesRoute,
   AuthenticatedHoneypotRoute: AuthenticatedHoneypotRoute,
