@@ -14,7 +14,8 @@ import { cn } from "@/lib/utils";
 
 const HYDERABAD = { lat: 17.385, lng: 78.4867 };
 const DEFAULT_CENTER = { lat: 20.5937, lng: 78.9629 };
-const MAPS_KEY = import.meta.env["VITE_GOOGLE_MAPS_KEY"] as string | undefined;
+const MAPS_KEY = (import.meta.env["VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY"] ||
+  import.meta.env["VITE_GOOGLE_MAPS_KEY"]) as string | undefined;
 
 type FilterKey = "all" | "online" | "high" | "india";
 
