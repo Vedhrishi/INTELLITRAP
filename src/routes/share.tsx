@@ -215,6 +215,10 @@ function SharePage() {
         setShareState("blocked");
         return;
       }
+      if ("honeypot" in result && result.honeypot) {
+        setShareState("honeypot");
+        return;
+      }
       if (result.success) {
         setFileData({
           name: result.fileName,
