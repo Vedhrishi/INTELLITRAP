@@ -97,7 +97,7 @@ function VisitorMarker({
       title={`${visitor.ip_address} · ${visitor.city ?? "Unknown"}`}
       onClick={() => onSelect(visitor)}
       zIndex={online ? 2 : 1}
-      icon={{ url: dotIcon(color, online ? 20 : 14, online ? 1 : 0.5) }}
+      icon={{ url: dotIcon(color, online ? 20 : 14, online ? 1 : 0.5, online) }}
     />
   );
 }
