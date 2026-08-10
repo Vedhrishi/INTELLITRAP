@@ -37,34 +37,64 @@ export function clientIp(): string {
 
 const PRIVATE_IP = /^(0\.|10\.|127\.|169\.254\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|::1|fc|fd)/i;
 
-/** Geo/ASN enrichment. Never throws — tracking must not fail on lookup errors. */
-export async function lookupGeo(ip: string): Promise<GeoInfo> {
-  if (!ip || PRIVATE_IP.test(ip)) return {};
+/** ipwho.is — HTTPS, no key. Returns {} on any failure. */
+async function fetchGeo(ip: string): Promise<GeoInfo> {
   try {
-    const response = await fetch(
-      `http://ip-api.com/json/${encodeURIComponent(ip)}?fields=status,country,countryCode,regionName,city,lat,lon,timezone,isp,org,as,proxy,hosting,mobile`,
-    );
+    const response = await fetch(`https://ipwho.is/${encodeURIComponent(ip)}`);
     if (!response.ok) return {};
     const g = (await response.json()) as Record<string, unknown>;
-    if (g["status"] !== "success") return {};
+    if (g["success"] !== true) return {};
+    const connection = (g["connection"] ?? {}) as Record<string, unknown>;
+    const timezone = (g["timezone"] ?? {}) as Record<string, unknown>;
     return {
       city: (g["city"] as string) ?? null,
-      region: (g["regionName"] as string) ?? null,
+      region: (g["region"] as string) ?? null,
       country: (g["country"] as string) ?? null,
-      country_code: (g["countryCode"] as string) ?? null,
-      isp: (g["isp"] as string) ?? null,
-      org: (g["org"] as string) ?? null,
-      asn: (g["as"] as string) ?? null,
-      latitude: (g["lat"] as number) ?? null,
-      longitude: (g["lon"] as number) ?? null,
-      timezone: (g["timezone"] as string) ?? null,
-      is_proxy: Boolean(g["proxy"]),
-      is_hosting: Boolean(g["hosting"]),
-      is_mobile_network: Boolean(g["mobile"]),
+      country_code: (g["country_code"] as string) ?? null,
+      isp: (connection["isp"] as string) ?? null,
+      org: (connection["org"] as string) ?? null,
+      asn: connection["asn"] ? `AS${String(connection["asn"])}` : null,
+      latitude: (g["latitude"] as number) ?? null,
+      longitude: (g["longitude"] as number) ?? null,
+      timezone: (timezone["id"] as string) ?? null,
+      is_proxy: false,
+      is_hosting: false,
+      is_mobile_network: false,
     };
   } catch {
     return {};
   }
+}
+
+/**
+ * Geo/ASN enrichment. Never throws — tracking must not fail on lookup errors.
+ * Results are cached per IP in ip_intelligence so a provider rate limit can
+ * never empty the live map for an IP we have already resolved.
+ */
+export async function lookupGeo(ip: string, admin?: Admin): Promise<GeoInfo> {
+  if (!ip || PRIVATE_IP.test(ip)) return {};
+
+  if (admin) {
+    const { data: cached } = await admin
+      .from("ip_intelligence")
+      .select("city, region, country, isp, latitude, longitude, is_proxy, is_hosting")
+      .eq("ip_address", ip)
+      .maybeSingle();
+    if (cached?.latitude != null && cached.longitude != null) {
+      return {
+        city: cached.city,
+        region: cached.region,
+        country: cached.country,
+        isp: cached.isp,
+        latitude: Number(cached.latitude),
+        longitude: Number(cached.longitude),
+        is_proxy: cached.is_proxy,
+        is_hosting: cached.is_hosting,
+      };
+    }
+  }
+
+  return fetchGeo(ip);
 }
 
 export async function isIpBlocked(admin: Admin, ip: string): Promise<string | null> {
