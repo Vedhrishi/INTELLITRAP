@@ -18,6 +18,7 @@ import {
 import {
   assessVisitorRisk,
   logVisitorEvent,
+  markVisitorOffline,
   trackVisitor,
   visitorHeartbeat,
 } from "@/lib/tracking/tracking.functions";
