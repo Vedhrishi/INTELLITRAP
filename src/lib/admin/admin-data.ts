@@ -219,12 +219,32 @@ export async function fetchActiveBlocks(): Promise<BlockedIp[]> {
   return data ?? [];
 }
 
+/** Current signed-in admin identity, for audit rows written from the browser. */
+async function currentAdmin(): Promise<{ id: string | null; email: string | null }> {
+  const { data } = await supabase.auth.getUser();
+  return { id: data.user?.id ?? null, email: data.user?.email ?? null };
+}
+
 export async function liftBlock(id: string): Promise<void> {
+  const admin = await currentAdmin();
   const { error } = await supabase
     .from("blocked_ips")
-    .update({ is_active: false, unblocked_at: new Date().toISOString() })
+    .update({
+      is_active: false,
+      unblocked_at: new Date().toISOString(),
+      unblocked_by: admin.id,
+    })
     .eq("id", id);
   if (error) throw error;
+
+  await insertAuditLog({
+    adminId: admin.id,
+    adminEmail: admin.email,
+    actionType: "block_lifted",
+    targetType: "blocked_ip",
+    targetId: id,
+    details: {},
+  });
 }
 
 export async function insertManualBlock(
@@ -240,6 +260,16 @@ export async function insertManualBlock(
     is_active: true,
   });
   if (error) throw error;
+
+  const identity = await currentAdmin();
+  await insertAuditLog({
+    adminId: admin.id ?? identity.id,
+    adminEmail: identity.email,
+    actionType: "ip_blocked_manual",
+    targetType: "ip",
+    targetId: ip,
+    details: { reason },
+  });
 }
 
 export async function fetchTodaySignalFrequency(): Promise<{ signal: string; count: number }[]> {
