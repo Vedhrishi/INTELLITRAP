@@ -230,6 +230,18 @@ export const visitorHeartbeat = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/** Marks a session offline when the tab is closed or hidden. */
+export const markVisitorOffline = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => z.object({ session_token: token }).parse(input))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin
+      .from("visitors")
+      .update({ is_online: false, session_ended_at: new Date().toISOString() })
+      .eq("session_token", data.session_token);
+    return { ok: true };
+  });
+
 export const logVisitorEvent = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
     z
