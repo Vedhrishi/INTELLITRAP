@@ -313,6 +313,16 @@ export async function upsertPlatformSettings(
     { onConflict: "key" },
   );
   if (error) throw error;
+
+  const identity = await currentAdmin();
+  await insertAuditLog({
+    adminId: adminId ?? identity.id,
+    adminEmail: identity.email,
+    actionType: "settings_updated",
+    targetType: "platform_settings",
+    targetId: entries.map((entry) => entry.key).join(","),
+    details: { entries },
+  });
 }
 
 export async function fetchWhitelist(): Promise<IpIntel[]> {
