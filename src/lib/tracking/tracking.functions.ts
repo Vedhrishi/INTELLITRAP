@@ -98,7 +98,7 @@ export const trackVisitor = createServerFn({ method: "POST" })
     const blocked = await isIpBlocked(supabaseAdmin, ip);
     if (blocked) return { blocked: true, reason: blocked, ip, sessionToken: data.session_token };
 
-    const geo = await lookupGeo(ip);
+    const geo = await lookupGeo(ip, supabaseAdmin);
     const { device, behavior } = data;
 
     const { data: existing } = await supabaseAdmin
