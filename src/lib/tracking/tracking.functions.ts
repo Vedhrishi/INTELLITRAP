@@ -572,6 +572,26 @@ export const verifyFilePassword = createServerFn({ method: "POST" })
       return { success: false as const, error: "Incorrect password." };
     }
 
+    // Correct password is not enough: a session the risk engine already sent to
+    // the honeypot (or blocked) never receives a signed URL for the real file.
+    const { data: verdict } = await supabaseAdmin
+      .from("visitors")
+      .select("access_decision, in_honeypot, was_blocked")
+      .eq("session_token", data.session_token)
+      .maybeSingle();
+    if (verdict?.was_blocked || verdict?.access_decision === "blocked") {
+      return { success: false as const, blocked: true as const, error: "Access denied." };
+    }
+    if (verdict?.in_honeypot || verdict?.access_decision === "honeypot") {
+      await supabaseAdmin.from("file_access_log").insert({
+        file_id: file.id,
+        session_token: data.session_token,
+        ip_address: ip,
+        outcome: "honeypot",
+      });
+      return { success: false as const, honeypot: true as const, error: "Access denied." };
+    }
+
     const { data: signed } = await supabaseAdmin.storage
       .from("user-files")
       .createSignedUrl(file.storage_path, 60);
