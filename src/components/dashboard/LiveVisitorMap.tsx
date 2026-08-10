@@ -38,9 +38,18 @@ function riskColor(visitor: Visitor): string {
 }
 
 /** Circle marker drawn as an inline SVG data URI so no map ID / advanced markers are required. */
-function dotIcon(color: string, size: number, opacity: number): string {
-  const half = size / 2;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${half}" cy="${half}" r="${half - 2}" fill="${color}" fill-opacity="${opacity}" stroke="rgba(0,0,0,0.45)" stroke-width="2"/></svg>`;
+function dotIcon(color: string, size: number, opacity: number, pulse = false): string {
+  const box = pulse ? size * 2.4 : size;
+  const center = box / 2;
+  const core = `<circle cx="${center}" cy="${center}" r="${size / 2 - 2}" fill="${color}" fill-opacity="${opacity}" stroke="rgba(0,0,0,0.45)" stroke-width="2"/>`;
+  // Declarative SMIL pulse — animates inside an <img>-referenced SVG, no script needed.
+  const ring = pulse
+    ? `<circle cx="${center}" cy="${center}" r="${size / 2}" fill="none" stroke="${color}" stroke-width="2">
+        <animate attributeName="r" values="${size / 2};${center - 1}" dur="1.8s" repeatCount="indefinite"/>
+        <animate attributeName="stroke-opacity" values="0.85;0" dur="1.8s" repeatCount="indefinite"/>
+      </circle>`
+    : "";
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${box}" height="${box}" viewBox="0 0 ${box} ${box}">${ring}${core}</svg>`;
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
 
@@ -88,7 +97,7 @@ function VisitorMarker({
       title={`${visitor.ip_address} · ${visitor.city ?? "Unknown"}`}
       onClick={() => onSelect(visitor)}
       zIndex={online ? 2 : 1}
-      icon={{ url: dotIcon(color, online ? 20 : 14, online ? 1 : 0.5) }}
+      icon={{ url: dotIcon(color, online ? 20 : 14, online ? 1 : 0.5, online) }}
     />
   );
 }

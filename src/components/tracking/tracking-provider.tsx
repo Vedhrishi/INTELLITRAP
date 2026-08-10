@@ -18,6 +18,7 @@ import {
 import {
   assessVisitorRisk,
   logVisitorEvent,
+  markVisitorOffline,
   trackVisitor,
   visitorHeartbeat,
 } from "@/lib/tracking/tracking.functions";
@@ -120,6 +121,24 @@ export function TrackingProvider({ children }: { children: ReactNode }) {
     }, HEARTBEAT_MS);
     return () => window.clearInterval(interval);
   }, [sessionToken, pathname, blocked]);
+
+  // Mark the session offline as soon as the tab closes or is hidden, so
+  // "online now" never keeps counting people who have left.
+  useEffect(() => {
+    if (!sessionToken) return;
+    const goOffline = () => {
+      void markVisitorOffline({ data: { session_token: sessionToken } }).catch(() => {});
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") goOffline();
+    };
+    window.addEventListener("pagehide", goOffline);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("pagehide", goOffline);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [sessionToken]);
 
   const logEvent = useCallback(async (type: EventType, data: Record<string, unknown> = {}) => {
     if (!identity.current) return;

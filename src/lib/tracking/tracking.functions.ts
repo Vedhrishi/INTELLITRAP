@@ -98,7 +98,7 @@ export const trackVisitor = createServerFn({ method: "POST" })
     const blocked = await isIpBlocked(supabaseAdmin, ip);
     if (blocked) return { blocked: true, reason: blocked, ip, sessionToken: data.session_token };
 
-    const geo = await lookupGeo(ip);
+    const geo = await lookupGeo(ip, supabaseAdmin);
     const { device, behavior } = data;
 
     const { data: existing } = await supabaseAdmin
@@ -226,6 +226,18 @@ export const visitorHeartbeat = createServerFn({ method: "POST" })
         tab_switches: behavior.tabSwitches ?? 0,
         time_on_site_seconds: behavior.timeOnSite ?? 0,
       })
+      .eq("session_token", data.session_token);
+    return { ok: true };
+  });
+
+/** Marks a session offline when the tab is closed or hidden. */
+export const markVisitorOffline = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => z.object({ session_token: token }).parse(input))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin
+      .from("visitors")
+      .update({ is_online: false, session_ended_at: new Date().toISOString() })
       .eq("session_token", data.session_token);
     return { ok: true };
   });
@@ -558,6 +570,26 @@ export const verifyFilePassword = createServerFn({ method: "POST" })
           .update({ total_failed_passwords: (intel.total_failed_passwords ?? 0) + 1 })
           .eq("ip_address", ip);
       return { success: false as const, error: "Incorrect password." };
+    }
+
+    // Correct password is not enough: a session the risk engine already sent to
+    // the honeypot (or blocked) never receives a signed URL for the real file.
+    const { data: verdict } = await supabaseAdmin
+      .from("visitors")
+      .select("access_decision, in_honeypot, was_blocked")
+      .eq("session_token", data.session_token)
+      .maybeSingle();
+    if (verdict?.was_blocked || verdict?.access_decision === "blocked") {
+      return { success: false as const, blocked: true as const, error: "Access denied." };
+    }
+    if (verdict?.in_honeypot || verdict?.access_decision === "honeypot") {
+      await supabaseAdmin.from("file_access_log").insert({
+        file_id: file.id,
+        session_token: data.session_token,
+        ip_address: ip,
+        outcome: "honeypot",
+      });
+      return { success: false as const, honeypot: true as const, error: "Access denied." };
     }
 
     const { data: signed } = await supabaseAdmin.storage

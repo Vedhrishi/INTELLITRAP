@@ -1243,6 +1243,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_secret_code: { Args: never; Returns: string }
       recalc_storage: { Args: { _owner: string }; Returns: undefined }
     }
     Enums: {
