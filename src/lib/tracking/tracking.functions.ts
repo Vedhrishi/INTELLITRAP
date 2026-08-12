@@ -574,12 +574,14 @@ export const verifyFilePassword = createServerFn({ method: "POST" })
       // Brute force on a share password is deception-worthy on its own: after
       // BRUTE_FORCE_LIMIT wrong passwords in one session the visitor is moved
       // into the honeypot and served decoys from here on.
-      const { count: sessionFails } = await supabaseAdmin
+      const { data: failRows } = await supabaseAdmin
         .from("visitor_events")
-        .select("id", { count: "exact", head: true })
+        .select("id")
         .eq("session_token", data.session_token)
-        .eq("event_type", "password_fail");
-      if ((sessionFails ?? 0) >= BRUTE_FORCE_LIMIT) {
+        .eq("event_type", "password_fail")
+        .limit(50);
+      const sessionFails = failRows?.length ?? 0;
+      if (sessionFails >= BRUTE_FORCE_LIMIT) {
         const nowIso = new Date().toISOString();
         await supabaseAdmin
           .from("visitors")
@@ -595,7 +597,7 @@ export const verifyFilePassword = createServerFn({ method: "POST" })
           action: "honeypot_entered",
           event_data: {
             trigger: "password_brute_force",
-            failed_passwords: sessionFails ?? 0,
+            failed_passwords: sessionFails,
           } as never,
         });
         await supabaseAdmin.from("visitor_events").insert({
