@@ -9,17 +9,18 @@ import { useAuth, type AppRole } from "@/lib/auth/auth-context";
  * database plus has_role() checks on the server.
  */
 export function RoleGuard({ role, children }: { role: AppRole; children: ReactNode }) {
-  const { roles, loading, user } = useAuth();
+  const { roles, loading, rolesLoading, user } = useAuth();
   const navigate = useNavigate();
   const allowed = roles.includes(role);
+  const resolving = loading || rolesLoading;
 
   useEffect(() => {
-    if (loading || !user || allowed) return;
+    if (resolving || !user || allowed) return;
     toast.error("You don't have access to the security console.");
     void navigate({ to: "/app", replace: true });
-  }, [loading, user, allowed, navigate]);
+  }, [resolving, user, allowed, navigate]);
 
-  if (loading || !allowed) {
+  if (resolving || !allowed) {
     return (
       <div className="space-y-6" aria-busy="true">
         <Skeleton className="h-10 w-64" />

@@ -47,6 +47,9 @@ export const RISK_BANDS: {
   { decision: "block", label: "Block", min: RISK_THRESHOLDS.blockMin, max: null },
 ];
 
+/** Wrong share passwords in one session before the visitor is diverted into the honeypot. */
+export const BRUTE_FORCE_LIMIT = 5;
+
 /** Default storage quota mirrored from the database default (5 GB). */
 export const DEFAULT_STORAGE_QUOTA_BYTES = 5_368_709_120;
 
