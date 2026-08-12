@@ -37,6 +37,7 @@ type AuthContextValue = {
   isAdmin: boolean;
   isAnalyst: boolean;
   loading: boolean;
+  rolesLoading: boolean;
   signIn: (email: string, password: string) => Promise<AuthResult>;
   signUp: (email: string, password: string, fullName: string) => Promise<AuthResult>;
   signOut: () => Promise<void>;
@@ -52,6 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [loading, setLoading] = useState(true);
+  const [rolesLoading, setRolesLoading] = useState(true);
   const mounted = useRef(true);
 
   const loadAccount = useCallback(async (userId: string) => {
@@ -81,12 +83,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     setProfile(nextProfile);
     setRoles(((rolesResult.data ?? []) as { role: AppRole }[]).map((row) => row.role));
+    setRolesLoading(false);
   }, []);
 
   const loadRoles = useCallback(async (userId: string) => {
     const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
     if (!mounted.current) return;
     setRoles(((data ?? []) as { role: AppRole }[]).map((row) => row.role));
+    setRolesLoading(false);
   }, []);
 
   const refreshRoles = useCallback(async () => {
@@ -118,6 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         setProfile(null);
         setRoles([]);
+        setRolesLoading(false);
       }
       setLoading(false);
     });
@@ -126,7 +131,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!mounted.current) return;
       setSession(data.session);
       setUser(data.session?.user ?? null);
-      if (data.session?.user) void loadAccount(data.session.user.id);
+      if (data.session?.user) {
+        void loadAccount(data.session.user.id);
+      } else {
+        setRolesLoading(false);
+      }
       setLoading(false);
     });
 
@@ -180,13 +189,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAdmin: roles.includes("admin"),
       isAnalyst: roles.includes("analyst"),
       loading,
+      rolesLoading,
       signIn,
       signUp,
       signOut,
       resetPassword,
       refreshRoles,
     }),
-    [user, session, profile, roles, loading, signIn, signUp, signOut, resetPassword, refreshRoles],
+    [user, session, profile, roles, loading, rolesLoading, signIn, signUp, signOut, resetPassword, refreshRoles],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

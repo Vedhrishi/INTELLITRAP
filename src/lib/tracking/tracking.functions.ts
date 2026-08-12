@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { BRUTE_FORCE_LIMIT } from "@/config/security";
 import {
   alertAdmins,
   clientIp,
@@ -569,8 +570,49 @@ export const verifyFilePassword = createServerFn({ method: "POST" })
           .from("ip_intelligence")
           .update({ total_failed_passwords: (intel.total_failed_passwords ?? 0) + 1 })
           .eq("ip_address", ip);
+
+      // Brute force on a share password is deception-worthy on its own: after
+      // BRUTE_FORCE_LIMIT wrong passwords in one session the visitor is moved
+      // into the honeypot and served decoys from here on.
+      const { data: failRows } = await supabaseAdmin
+        .from("visitor_events")
+        .select("id")
+        .eq("session_token", data.session_token)
+        .eq("event_type", "password_fail")
+        .limit(50);
+      const sessionFails = failRows?.length ?? 0;
+      if (sessionFails >= BRUTE_FORCE_LIMIT) {
+        const nowIso = new Date().toISOString();
+        await supabaseAdmin
+          .from("visitors")
+          .update({
+            in_honeypot: true,
+            honeypot_entered_at: nowIso,
+            access_decision: "honeypot",
+          })
+          .eq("session_token", data.session_token);
+        await supabaseAdmin.from("honeypot_activity").insert({
+          session_token: data.session_token,
+          ip_address: ip,
+          action: "honeypot_entered",
+          event_data: {
+            trigger: "password_brute_force",
+            failed_passwords: sessionFails,
+          } as never,
+        });
+        await supabaseAdmin.from("visitor_events").insert({
+          session_token: data.session_token,
+          visitor_id: data.visitor_id,
+          ip_address: ip,
+          event_type: "honeypot_entered",
+          page_path: "/share",
+          event_data: { trigger: "password_brute_force" } as never,
+        });
+        return { success: false as const, honeypot: true as const, error: "Access denied." };
+      }
       return { success: false as const, error: "Incorrect password." };
     }
+
 
     // Correct password is not enough: a session the risk engine already sent to
     // the honeypot (or blocked) never receives a signed URL for the real file.
