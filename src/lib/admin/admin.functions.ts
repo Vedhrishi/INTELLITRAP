@@ -141,7 +141,7 @@ export const createUserAccount = createServerFn({ method: "POST" })
 
     await supabaseAdmin
       .from("profiles")
-      .update({ full_name: data.fullName.trim() || email.split("@")[0] })
+      .update({ full_name: data.fullName.trim() || email.split("@")[0], role: data.role })
       .eq("id", userId);
 
     if (data.role !== "user") {

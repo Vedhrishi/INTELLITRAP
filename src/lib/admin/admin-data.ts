@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Database, Json } from "@/integrations/supabase/types";
 import { startOfTodayIST } from "@/lib/share/format";
-import { removeUserAccount } from "@/lib/admin/admin.functions";
+import { createUserAccount, removeUserAccount } from "@/lib/admin/admin.functions";
 
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 export type BlockedIp = Database["public"]["Tables"]["blocked_ips"]["Row"];
@@ -449,4 +449,15 @@ export async function fetchAutoBlocksToday(): Promise<number> {
     .gte("blocked_at", startOfTodayIST());
   if (error) return 0;
   return count ?? 0;
+}
+
+export type CreateUserOptions = {
+  email: string;
+  password: string;
+  fullName: string;
+  role: "user" | "analyst" | "admin";
+};
+
+export async function createUser(options: CreateUserOptions): Promise<void> {
+  await createUserAccount({ data: options });
 }
