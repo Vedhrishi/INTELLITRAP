@@ -97,3 +97,68 @@ export const removeUserAccount = createServerFn({ method: "POST" })
 
     return { deactivatedOnly: false };
   });
+
+export type CreateUserInput = {
+  email: string;
+  password: string;
+  fullName: string;
+  role: "user" | "analyst" | "admin";
+};
+
+/**
+ * Privileged user creation. Admin-only: creates a confirmed auth user with the
+ * service-role client, then assigns the requested role.
+ */
+export const createUserAccount = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: CreateUserInput) => input)
+  .handler(async ({ data, context }): Promise<{ userId: string }> => {
+    const { data: callerRoles, error: callerError } = await context.supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", context.userId)
+      .eq("role", "admin");
+    if (callerError) throw new Error(callerError.message);
+    if (!callerRoles?.length) throw new Error("Only admins can create users");
+
+    const email = data.email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Enter a valid email address");
+    if (data.password.length < 8) throw new Error("Password must be at least 8 characters");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: created, error: createError } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password: data.password,
+      email_confirm: true,
+      user_metadata: { full_name: data.fullName.trim() || email.split("@")[0] },
+    });
+    if (createError || !created?.user) {
+      throw new Error(createError?.message ?? "Could not create the account");
+    }
+
+    const userId = created.user.id;
+
+    await supabaseAdmin
+      .from("profiles")
+      .update({ full_name: data.fullName.trim() || email.split("@")[0], role: data.role })
+      .eq("id", userId);
+
+    if (data.role !== "user") {
+      const { error: roleError } = await supabaseAdmin
+        .from("user_roles")
+        .upsert({ user_id: userId, role: data.role }, { onConflict: "user_id,role" });
+      if (roleError) throw new Error(roleError.message);
+    }
+
+    await supabaseAdmin.from("admin_audit_log").insert({
+      admin_id: context.userId,
+      admin_email: (context.claims as { email?: string } | null)?.email ?? null,
+      action_type: "user_created",
+      target_type: "profile",
+      target_id: userId,
+      details: { email, role: data.role },
+    });
+
+    return { userId };
+  });
