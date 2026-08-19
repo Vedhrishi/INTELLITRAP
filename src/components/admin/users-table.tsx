@@ -17,6 +17,8 @@ import { fetchProfilesPage, setProfileStatus, type Profile } from "@/lib/admin/a
 import { cn } from "@/lib/utils";
 import { UserDetailDrawer } from "@/components/admin/user-detail-drawer";
 import { RemoveUserDialog } from "@/components/admin/remove-user-dialog";
+import { AddUserDialog } from "@/components/admin/add-user-dialog";
+import { UserPlus } from "lucide-react";
 
 const PAGE_SIZE = 20;
 
@@ -50,6 +52,7 @@ export function UsersTable() {
   const [detail, setDetail] = useState<Profile | null>(null);
   const [removeTarget, setRemoveTarget] = useState<Profile | null>(null);
   const [removedIds, setRemovedIds] = useState<Set<string>>(new Set());
+  const [addOpen, setAddOpen] = useState(false);
 
   const query = useQuery({
     queryKey: ["admin-profiles", page],
@@ -74,9 +77,15 @@ export function UsersTable() {
     <section className="glass overflow-hidden rounded-xl">
       <header className="flex items-center justify-between border-b border-border/60 px-4 py-3">
         <h2 className="text-sm font-semibold">All users</h2>
-        <span className="font-mono text-[10px] text-muted-foreground">
-          {query.data?.count ?? 0} total
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="font-mono text-[10px] text-muted-foreground">
+            {query.data?.count ?? 0} total
+          </span>
+          <Button size="sm" onClick={() => setAddOpen(true)}>
+            <UserPlus className="mr-1.5 size-3.5" />
+            Add user
+          </Button>
+        </div>
       </header>
 
       {query.isLoading ? (
@@ -221,7 +230,15 @@ export function UsersTable() {
       <RemoveUserDialog
         target={removeTarget}
         onClose={() => setRemoveTarget(null)}
-        onRemoved={(id) => setRemovedIds((current) => new Set(current).add(id))}
+        onRemoved={(id) => {
+          setRemovedIds((current) => new Set(current).add(id));
+          void queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
+        }}
+      />
+      <AddUserDialog
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        onCreated={() => void queryClient.invalidateQueries({ queryKey: ["admin-profiles"] })}
       />
     </section>
   );
