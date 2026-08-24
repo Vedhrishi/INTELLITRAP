@@ -117,7 +117,7 @@ export function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
           aria-invalid={Boolean(errors.password)}
           {...register("password")}
         />
-        <PasswordStrength value={password} />
+        <PasswordStrength value={password} email={email} />
         {errors.password ? (
           <p className="text-xs text-destructive">{errors.password.message}</p>
         ) : null}
@@ -152,9 +152,10 @@ export function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
       {errors.terms ? <p className="text-xs text-destructive">{errors.terms.message}</p> : null}
 
       <Button type="submit" className="w-full" disabled={isSubmitting}>
-        {isSubmitting ? <Loader2 className="size-4 animate-spin" /> : null}
-        Create account
+        {isSubmitting ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
+        {isSubmitting ? "Creating account…" : "Create account"}
       </Button>
+      </fieldset>
     </form>
   );
 }
