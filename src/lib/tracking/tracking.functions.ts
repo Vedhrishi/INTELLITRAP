@@ -694,22 +694,44 @@ export const verifyFilePassword = createServerFn({ method: "POST" })
       event_data: { file_id: file.id } as never,
     });
 
-    if (file.one_time) {
-      await supabaseAdmin.storage.from("user-files").remove([file.storage_path]);
-      await supabaseAdmin
-        .from("files")
-        .update({ consumed: true, share_revoked: true })
-        .eq("id", file.id);
-    }
+    // NOTE: a one-time file is NOT deleted here. The browser only fetches the
+    // signed URL when the visitor clicks Download, so removing the object now
+    // guarantees a "NoSuchKey" error. confirmShareDownload does the cleanup.
 
     return {
       success: true as const,
-      url: signed?.signedUrl ?? null,
+      url: signed.signedUrl,
+      fileId: file.id,
       fileName: file.name,
       fileSize: file.size_bytes,
       fileType: file.mime_type,
       oneTime: file.one_time,
     };
+  });
+
+/**
+ * Called by /share once the real download has actually started. Only now is a
+ * one-time link burned and its stored object removed.
+ */
+export const confirmShareDownload = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z.object({ session_token: token, file_id: z.string().uuid() }).parse(input),
+  )
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: file } = await supabaseAdmin
+      .from("files")
+      .select("id, storage_path, one_time, consumed")
+      .eq("id", data.file_id)
+      .maybeSingle();
+    if (!file || !file.one_time || file.consumed) return { ok: true };
+
+    await supabaseAdmin
+      .from("files")
+      .update({ consumed: true, share_revoked: true })
+      .eq("id", file.id);
+    await supabaseAdmin.storage.from("user-files").remove([file.storage_path]);
+    return { ok: true };
   });
 
 /** Serves decoy documents to a trapped session. */
