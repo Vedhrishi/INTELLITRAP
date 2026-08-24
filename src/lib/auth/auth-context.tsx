@@ -40,7 +40,7 @@ type AuthContextValue = {
   loading: boolean;
   rolesLoading: boolean;
   signIn: (email: string, password: string) => Promise<AuthResult>;
-  signUp: (email: string, password: string, fullName: string) => Promise<AuthResult>;
+  signUp: (email: string, password: string, fullName: string) => Promise<SignUpResult>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<AuthResult>;
   refreshRoles: () => Promise<void>;
