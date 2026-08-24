@@ -36,6 +36,7 @@ export function getDeviceFingerprint() {
     screen: `${screen.width}x${screen.height}`,
     colorDepth: screen.colorDepth,
     tzOffset: new Date().getTimezoneOffset(),
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone ?? "",
     language: navigator.language,
     languages: Array.from(navigator.languages ?? []).slice(0, 20),
     cores: navigator.hardwareConcurrency ?? 0,
