@@ -657,9 +657,24 @@ export const verifyFilePassword = createServerFn({ method: "POST" })
       return { success: false as const, honeypot: true as const, error: "Access denied." };
     }
 
-    const { data: signed } = await supabaseAdmin.storage
+    // Signed URL first: if the stored object is gone we must say so plainly
+    // instead of handing the browser a link that 404s with "NoSuchKey".
+    const { data: signed, error: signError } = await supabaseAdmin.storage
       .from("user-files")
-      .createSignedUrl(file.storage_path, 60);
+      .createSignedUrl(file.storage_path, 300);
+
+    if (signError || !signed?.signedUrl) {
+      await supabaseAdmin.from("file_access_log").insert({
+        file_id: file.id,
+        session_token: data.session_token,
+        ip_address: ip,
+        outcome: "missing_object",
+      });
+      return {
+        success: false as const,
+        error: "This file is no longer available. Ask the sender to upload it again.",
+      };
+    }
 
     await supabaseAdmin
       .from("files")
