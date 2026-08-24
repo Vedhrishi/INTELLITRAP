@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, MailCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,11 +14,13 @@ import { useAuth } from "@/lib/auth/auth-context";
 
 export function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
   const { signUp } = useAuth();
+  const [awaitingConfirmation, setAwaitingConfirmation] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
     watch,
     setValue,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<RegisterValues>({
     resolver: zodResolver(registerSchema),
@@ -31,20 +34,53 @@ export function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
   });
 
   const password = watch("password") ?? "";
+  const email = watch("email") ?? "";
   const terms = watch("terms");
 
   const onSubmit = handleSubmit(async (values) => {
-    const { error } = await signUp(values.email, values.password, values.fullName);
+    const { error, field, needsEmailConfirmation } = await signUp(
+      values.email,
+      values.password,
+      values.fullName,
+    );
     if (error) {
+      if (field) setError(field, { type: "server", message: error });
       toast.error(error);
+      return;
+    }
+    // No session means email confirmation is required — staying put beats
+    // navigating into the app and bouncing straight back to sign-in.
+    if (needsEmailConfirmation) {
+      setAwaitingConfirmation(values.email);
+      toast.success("Check your email to confirm your account.");
       return;
     }
     toast.success("Account created. Welcome to IntelliTrap.");
     onSuccess();
   });
 
+  if (awaitingConfirmation) {
+    return (
+      <div className="space-y-4 text-center">
+        <MailCheck className="mx-auto size-8 text-primary" aria-hidden />
+        <div className="space-y-1">
+          <p className="text-sm font-semibold">Confirm your email</p>
+          <p className="text-sm text-muted-foreground">
+            We sent a confirmation link to{" "}
+            <span className="font-mono-data text-foreground">{awaitingConfirmation}</span>. Open it
+            to finish creating your account, then sign in.
+          </p>
+        </div>
+        <Button variant="outline" className="w-full" onClick={() => setAwaitingConfirmation(null)}>
+          Use a different email
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <form onSubmit={onSubmit} className="space-y-4" noValidate>
+      <fieldset disabled={isSubmitting} className="space-y-4 border-0 p-0">
       <div className="space-y-2">
         <Label htmlFor="register-name">Full name</Label>
         <Input
