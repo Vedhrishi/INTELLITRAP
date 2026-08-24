@@ -1,4 +1,4 @@
-import { passwordRules, passwordScore } from "@/lib/auth/auth-schemas";
+import { commonPasswordIssue, passwordRules, passwordScore } from "@/lib/auth/auth-schemas";
 import { cn } from "@/lib/utils";
 
 const toneByScore = [
@@ -10,8 +10,12 @@ const toneByScore = [
 ] as const;
 const labelByScore = ["Too weak", "Weak", "Fair", "Good", "Strong"] as const;
 
-export function PasswordStrength({ value }: { value: string }) {
-  const score = passwordScore(value);
+export function PasswordStrength({ value, email }: { value: string; email?: string }) {
+  const breachIssue = commonPasswordIssue(value, email);
+  const rawScore = passwordScore(value);
+  // A predictable password can never read better than "Weak", however many
+  // character classes it satisfies — the server rejects it regardless.
+  const score = breachIssue && value.length > 0 ? 1 : rawScore;
 
   return (
     <div className="space-y-2" aria-live="polite">
@@ -27,8 +31,18 @@ export function PasswordStrength({ value }: { value: string }) {
             />
           ))}
         </div>
-        <span className="shrink-0 text-xs text-muted-foreground">{labelByScore[score]}</span>
+        <span
+          className={cn(
+            "shrink-0 text-xs",
+            breachIssue && value.length > 0 ? "text-destructive" : "text-muted-foreground",
+          )}
+        >
+          {labelByScore[score]}
+        </span>
       </div>
+      {breachIssue && value.length > 0 ? (
+        <p className="text-xs text-destructive">{breachIssue}</p>
+      ) : null}
       <ul className="grid grid-cols-2 gap-x-3 gap-y-1">
         {passwordRules.map((rule) => {
           const passed = rule.test(value);
