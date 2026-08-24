@@ -15,6 +15,7 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
@@ -22,8 +23,10 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
   });
 
   const onSubmit = handleSubmit(async (values) => {
-    const { error } = await signIn(values.email, values.password);
+    const { error, field } = await signIn(values.email, values.password);
     if (error) {
+      // Keep the reason visible on the field, not only in a toast that fades.
+      if (field) setError(field, { type: "server", message: error });
       toast.error(error);
       return;
     }
@@ -32,6 +35,7 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
 
   return (
     <form onSubmit={onSubmit} className="space-y-4" noValidate>
+      <fieldset disabled={isSubmitting} className="space-y-4 border-0 p-0">
       <div className="space-y-2">
         <Label htmlFor="login-email">Email</Label>
         <Input
@@ -65,9 +69,10 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
       </div>
 
       <Button type="submit" className="w-full" disabled={isSubmitting}>
-        {isSubmitting ? <Loader2 className="size-4 animate-spin" /> : null}
-        Sign in
+        {isSubmitting ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
+        {isSubmitting ? "Signing in…" : "Sign in"}
       </Button>
+      </fieldset>
     </form>
   );
 }

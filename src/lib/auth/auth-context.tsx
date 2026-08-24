@@ -10,7 +10,7 @@ import {
 } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { humanAuthError } from "./auth-errors";
+import { describeAuthError, type AuthErrorField } from "./auth-errors";
 
 export type AppRole = "admin" | "analyst" | "user";
 
@@ -27,7 +27,8 @@ export type Profile = {
   user_secret_code: string | null;
 };
 
-type AuthResult = { error: string | null };
+export type AuthResult = { error: string | null; field: AuthErrorField };
+export type SignUpResult = AuthResult & { needsEmailConfirmation: boolean };
 
 type AuthContextValue = {
   user: User | null;
@@ -39,7 +40,7 @@ type AuthContextValue = {
   loading: boolean;
   rolesLoading: boolean;
   signIn: (email: string, password: string) => Promise<AuthResult>;
-  signUp: (email: string, password: string, fullName: string) => Promise<AuthResult>;
+  signUp: (email: string, password: string, fullName: string) => Promise<SignUpResult>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<AuthResult>;
   refreshRoles: () => Promise<void>;
@@ -147,12 +148,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = useCallback(async (email: string, password: string): Promise<AuthResult> => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error ? humanAuthError(error.message) : null };
+    if (error) {
+      const described = describeAuthError(error.message);
+      return { error: described.message, field: described.field };
+    }
+    return { error: null, field: null };
   }, []);
 
   const signUp = useCallback(
-    async (email: string, password: string, fullName: string): Promise<AuthResult> => {
-      const { error } = await supabase.auth.signUp({
+    async (email: string, password: string, fullName: string): Promise<SignUpResult> => {
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -160,7 +165,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           data: { full_name: fullName },
         },
       });
-      return { error: error ? humanAuthError(error.message) : null };
+      if (error) {
+        const described = describeAuthError(error.message);
+        return { error: described.message, field: described.field, needsEmailConfirmation: false };
+      }
+      // With email confirmation enabled, signUp() returns no session — the user
+      // is NOT signed in yet, so the caller must not navigate into the app.
+      return { error: null, field: null, needsEmailConfirmation: !data.session };
     },
     [],
   );
@@ -177,7 +188,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth/reset`,
     });
-    return { error: error ? humanAuthError(error.message) : null };
+    if (error) {
+      const described = describeAuthError(error.message);
+      return { error: described.message, field: described.field };
+    }
+    return { error: null, field: null };
   }, []);
 
   const value = useMemo<AuthContextValue>(
