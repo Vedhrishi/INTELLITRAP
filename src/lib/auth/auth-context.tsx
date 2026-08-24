@@ -10,7 +10,7 @@ import {
 } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { humanAuthError } from "./auth-errors";
+import { describeAuthError, type AuthErrorField } from "./auth-errors";
 
 export type AppRole = "admin" | "analyst" | "user";
 
