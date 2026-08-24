@@ -211,6 +211,7 @@ export const visitorHeartbeat = createServerFn({ method: "POST" })
       .object({
         session_token: token,
         page: z.string().max(300),
+        timezone: z.string().max(80).optional(),
         behavior: behaviorSchema.optional().default({}),
       })
       .parse(input),
