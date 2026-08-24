@@ -165,6 +165,9 @@ export const trackVisitor = createServerFn({ method: "POST" })
       .eq("ip_address", ip)
       .maybeSingle();
 
+    // Never overwrite a cached location with nulls when a lookup came back empty.
+    const geoPatch = geo.latitude != null ? intelGeo(geo) : {};
+
     if (intel) {
       const browsers = Array.from(
         new Set([...(intel.browsers_used ?? []), device.browser].filter(Boolean) as string[]),
@@ -176,7 +179,7 @@ export const trackVisitor = createServerFn({ method: "POST" })
           total_page_views: (intel.total_page_views ?? 0) + 1,
           total_sessions: existing ? (intel.total_sessions ?? 1) : (intel.total_sessions ?? 0) + 1,
           browsers_used: browsers,
-          ...intelGeo(geo),
+          ...geoPatch,
         })
         .eq("ip_address", ip);
     } else {
@@ -185,7 +188,7 @@ export const trackVisitor = createServerFn({ method: "POST" })
         total_sessions: 1,
         total_page_views: 1,
         browsers_used: device.browser ? [device.browser] : [],
-        ...intelGeo(geo),
+        ...geoPatch,
       });
     }
 
