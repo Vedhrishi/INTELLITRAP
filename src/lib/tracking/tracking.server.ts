@@ -37,33 +37,118 @@ export function clientIp(): string {
 
 const PRIVATE_IP = /^(0\.|10\.|127\.|169\.254\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|::1|fc|fd)/i;
 
-/** ipwho.is — HTTPS, no key. Returns {} on any failure. */
-async function fetchGeo(ip: string): Promise<GeoInfo> {
+const LOOKUP_TIMEOUT_MS = 4_000;
+
+const num = (value: unknown): number | null => {
+  const parsed = typeof value === "string" ? Number(value) : (value as number);
+  return typeof parsed === "number" && Number.isFinite(parsed) ? parsed : null;
+};
+
+async function getJson(url: string): Promise<Record<string, unknown> | null> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), LOOKUP_TIMEOUT_MS);
   try {
-    const response = await fetch(`https://ipwho.is/${encodeURIComponent(ip)}`);
-    if (!response.ok) return {};
-    const g = (await response.json()) as Record<string, unknown>;
-    if (g["success"] !== true) return {};
-    const connection = (g["connection"] ?? {}) as Record<string, unknown>;
-    const timezone = (g["timezone"] ?? {}) as Record<string, unknown>;
-    return {
-      city: (g["city"] as string) ?? null,
-      region: (g["region"] as string) ?? null,
-      country: (g["country"] as string) ?? null,
-      country_code: (g["country_code"] as string) ?? null,
-      isp: (connection["isp"] as string) ?? null,
-      org: (connection["org"] as string) ?? null,
-      asn: connection["asn"] ? `AS${String(connection["asn"])}` : null,
-      latitude: (g["latitude"] as number) ?? null,
-      longitude: (g["longitude"] as number) ?? null,
-      timezone: (timezone["id"] as string) ?? null,
-      is_proxy: false,
-      is_hosting: false,
-      is_mobile_network: false,
-    };
-  } catch {
-    return {};
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: { accept: "application/json" },
+    });
+    if (!response.ok) {
+      console.warn(`[geo] ${url} -> HTTP ${response.status}`);
+      return null;
+    }
+    return (await response.json()) as Record<string, unknown>;
+  } catch (error) {
+    console.warn(`[geo] ${url} failed:`, error instanceof Error ? error.message : error);
+    return null;
+  } finally {
+    clearTimeout(timer);
   }
+}
+
+/** ipwho.is — HTTPS, no key. */
+async function fromIpWhoIs(ip: string): Promise<GeoInfo | null> {
+  const g = await getJson(`https://ipwho.is/${ip}`);
+  if (!g || g["success"] !== true) return null;
+  const connection = (g["connection"] ?? {}) as Record<string, unknown>;
+  const timezone = (g["timezone"] ?? {}) as Record<string, unknown>;
+  const lat = num(g["latitude"]);
+  const lon = num(g["longitude"]);
+  if (lat === null || lon === null) return null;
+  return {
+    city: (g["city"] as string) ?? null,
+    region: (g["region"] as string) ?? null,
+    country: (g["country"] as string) ?? null,
+    country_code: (g["country_code"] as string) ?? null,
+    isp: (connection["isp"] as string) ?? null,
+    org: (connection["org"] as string) ?? null,
+    asn: connection["asn"] ? `AS${String(connection["asn"])}` : null,
+    latitude: lat,
+    longitude: lon,
+    timezone: (timezone["id"] as string) ?? null,
+    is_proxy: false,
+    is_hosting: false,
+    is_mobile_network: false,
+  };
+}
+
+/** ipapi.co — HTTPS, no key, generous free tier. */
+async function fromIpApiCo(ip: string): Promise<GeoInfo | null> {
+  const g = await getJson(`https://ipapi.co/${ip}/json/`);
+  if (!g || g["error"]) return null;
+  const lat = num(g["latitude"]);
+  const lon = num(g["longitude"]);
+  if (lat === null || lon === null) return null;
+  return {
+    city: (g["city"] as string) ?? null,
+    region: (g["region"] as string) ?? null,
+    country: (g["country_name"] as string) ?? null,
+    country_code: (g["country_code"] as string) ?? null,
+    isp: (g["org"] as string) ?? null,
+    org: (g["org"] as string) ?? null,
+    asn: (g["asn"] as string) ?? null,
+    latitude: lat,
+    longitude: lon,
+    timezone: (g["timezone"] as string) ?? null,
+    is_proxy: false,
+    is_hosting: false,
+    is_mobile_network: false,
+  };
+}
+
+/** ip-api.com over HTTPS (pro-style host also serves free https for json). */
+async function fromIpApiCom(ip: string): Promise<GeoInfo | null> {
+  const g = await getJson(
+    `https://get.geojs.io/v1/ip/geo/${ip}.json`,
+  );
+  if (!g) return null;
+  const lat = num(g["latitude"]);
+  const lon = num(g["longitude"]);
+  if (lat === null || lon === null) return null;
+  return {
+    city: (g["city"] as string) ?? null,
+    region: (g["region"] as string) ?? null,
+    country: (g["country"] as string) ?? null,
+    country_code: (g["country_code"] as string) ?? null,
+    isp: (g["organization_name"] as string) ?? null,
+    org: (g["organization"] as string) ?? null,
+    asn: g["asn"] ? `AS${String(g["asn"])}` : null,
+    latitude: lat,
+    longitude: lon,
+    timezone: (g["timezone"] as string) ?? null,
+    is_proxy: false,
+    is_hosting: false,
+    is_mobile_network: false,
+  };
+}
+
+/** Tries every provider in order; the first one with coordinates wins. */
+async function fetchGeo(ip: string): Promise<GeoInfo> {
+  for (const provider of [fromIpWhoIs, fromIpApiCo, fromIpApiCom]) {
+    const result = await provider(ip);
+    if (result) return result;
+  }
+  console.warn(`[geo] all providers failed for ${ip}`);
+  return {};
 }
 
 /**
@@ -95,6 +180,43 @@ export async function lookupGeo(ip: string, admin?: Admin): Promise<GeoInfo> {
   }
 
   return fetchGeo(ip);
+}
+
+/**
+ * Country/region guessed from the browser's own timezone. Used only when every
+ * IP provider fails, so a visitor still lands on the map instead of vanishing.
+ */
+const TZ_FALLBACK: Record<string, { city: string; country: string; lat: number; lon: number }> = {
+  "Asia/Kolkata": { city: "Mumbai", country: "India", lat: 19.076, lon: 72.8777 },
+  "Asia/Calcutta": { city: "Mumbai", country: "India", lat: 19.076, lon: 72.8777 },
+  "Asia/Dubai": { city: "Dubai", country: "United Arab Emirates", lat: 25.2048, lon: 55.2708 },
+  "Asia/Singapore": { city: "Singapore", country: "Singapore", lat: 1.3521, lon: 103.8198 },
+  "Asia/Tokyo": { city: "Tokyo", country: "Japan", lat: 35.6762, lon: 139.6503 },
+  "Europe/London": { city: "London", country: "United Kingdom", lat: 51.5072, lon: -0.1276 },
+  "Europe/Berlin": { city: "Berlin", country: "Germany", lat: 52.52, lon: 13.405 },
+  "Europe/Paris": { city: "Paris", country: "France", lat: 48.8566, lon: 2.3522 },
+  "America/New_York": { city: "New York", country: "United States", lat: 40.7128, lon: -74.006 },
+  "America/Chicago": { city: "Chicago", country: "United States", lat: 41.8781, lon: -87.6298 },
+  "America/Los_Angeles": {
+    city: "Los Angeles",
+    country: "United States",
+    lat: 34.0522,
+    lon: -118.2437,
+  },
+  "Australia/Sydney": { city: "Sydney", country: "Australia", lat: -33.8688, lon: 151.2093 },
+};
+
+export function geoFromTimezone(timezone?: string | null): GeoInfo {
+  if (!timezone) return {};
+  const hit = TZ_FALLBACK[timezone];
+  if (!hit) return {};
+  return {
+    city: hit.city,
+    country: hit.country,
+    latitude: hit.lat,
+    longitude: hit.lon,
+    timezone,
+  };
 }
 
 export async function isIpBlocked(admin: Admin, ip: string): Promise<string | null> {

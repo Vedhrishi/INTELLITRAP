@@ -4,6 +4,7 @@ import { BRUTE_FORCE_LIMIT } from "@/config/security";
 import {
   alertAdmins,
   clientIp,
+  geoFromTimezone,
   hashSharePassword,
   intelGeo,
   isIpBlocked,
@@ -23,6 +24,7 @@ const deviceSchema = z
     screen: z.string().max(40).optional(),
     colorDepth: z.number().int().optional(),
     tzOffset: z.number().int().optional(),
+    timezone: z.string().max(80).optional(),
     language: z.string().max(40).optional(),
     languages: z.array(z.string().max(40)).max(20).optional(),
     cores: z.number().int().optional(),
@@ -99,8 +101,10 @@ export const trackVisitor = createServerFn({ method: "POST" })
     const blocked = await isIpBlocked(supabaseAdmin, ip);
     if (blocked) return { blocked: true, reason: blocked, ip, sessionToken: data.session_token };
 
-    const geo = await lookupGeo(ip, supabaseAdmin);
     const { device, behavior } = data;
+    let geo = await lookupGeo(ip, supabaseAdmin);
+    // Last resort so the visitor still appears on the map: the browser's own timezone.
+    if (geo.latitude == null) geo = geoFromTimezone(device.timezone);
 
     const { data: existing } = await supabaseAdmin
       .from("visitors")
@@ -161,6 +165,9 @@ export const trackVisitor = createServerFn({ method: "POST" })
       .eq("ip_address", ip)
       .maybeSingle();
 
+    // Never overwrite a cached location with nulls when a lookup came back empty.
+    const geoPatch = geo.latitude != null ? intelGeo(geo) : {};
+
     if (intel) {
       const browsers = Array.from(
         new Set([...(intel.browsers_used ?? []), device.browser].filter(Boolean) as string[]),
@@ -172,7 +179,7 @@ export const trackVisitor = createServerFn({ method: "POST" })
           total_page_views: (intel.total_page_views ?? 0) + 1,
           total_sessions: existing ? (intel.total_sessions ?? 1) : (intel.total_sessions ?? 0) + 1,
           browsers_used: browsers,
-          ...intelGeo(geo),
+          ...geoPatch,
         })
         .eq("ip_address", ip);
     } else {
@@ -181,7 +188,7 @@ export const trackVisitor = createServerFn({ method: "POST" })
         total_sessions: 1,
         total_page_views: 1,
         browsers_used: device.browser ? [device.browser] : [],
-        ...intelGeo(geo),
+        ...geoPatch,
       });
     }
 
@@ -204,6 +211,7 @@ export const visitorHeartbeat = createServerFn({ method: "POST" })
       .object({
         session_token: token,
         page: z.string().max(300),
+        timezone: z.string().max(80).optional(),
         behavior: behaviorSchema.optional().default({}),
       })
       .parse(input),
@@ -211,9 +219,24 @@ export const visitorHeartbeat = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { behavior } = data;
+
+    // A visitor whose first lookup failed gets another chance on every beat,
+    // so nobody stays permanently unlocated on the map.
+    const { data: row } = await supabaseAdmin
+      .from("visitors")
+      .select("latitude, timezone")
+      .eq("session_token", data.session_token)
+      .maybeSingle();
+    let geo: Awaited<ReturnType<typeof lookupGeo>> = {};
+    if (row && row.latitude == null) {
+      geo = await lookupGeo(clientIp(), supabaseAdmin);
+      if (geo.latitude == null) geo = geoFromTimezone(data.timezone ?? row.timezone);
+    }
+
     await supabaseAdmin
       .from("visitors")
       .update({
+        ...(geo.latitude != null ? geo : {}),
         is_online: true,
         last_heartbeat: new Date().toISOString(),
         current_page: data.page,
@@ -634,9 +657,24 @@ export const verifyFilePassword = createServerFn({ method: "POST" })
       return { success: false as const, honeypot: true as const, error: "Access denied." };
     }
 
-    const { data: signed } = await supabaseAdmin.storage
+    // Signed URL first: if the stored object is gone we must say so plainly
+    // instead of handing the browser a link that 404s with "NoSuchKey".
+    const { data: signed, error: signError } = await supabaseAdmin.storage
       .from("user-files")
-      .createSignedUrl(file.storage_path, 60);
+      .createSignedUrl(file.storage_path, 300);
+
+    if (signError || !signed?.signedUrl) {
+      await supabaseAdmin.from("file_access_log").insert({
+        file_id: file.id,
+        session_token: data.session_token,
+        ip_address: ip,
+        outcome: "missing_object",
+      });
+      return {
+        success: false as const,
+        error: "This file is no longer available. Ask the sender to upload it again.",
+      };
+    }
 
     await supabaseAdmin
       .from("files")
@@ -656,22 +694,44 @@ export const verifyFilePassword = createServerFn({ method: "POST" })
       event_data: { file_id: file.id } as never,
     });
 
-    if (file.one_time) {
-      await supabaseAdmin.storage.from("user-files").remove([file.storage_path]);
-      await supabaseAdmin
-        .from("files")
-        .update({ consumed: true, share_revoked: true })
-        .eq("id", file.id);
-    }
+    // NOTE: a one-time file is NOT deleted here. The browser only fetches the
+    // signed URL when the visitor clicks Download, so removing the object now
+    // guarantees a "NoSuchKey" error. confirmShareDownload does the cleanup.
 
     return {
       success: true as const,
-      url: signed?.signedUrl ?? null,
+      url: signed.signedUrl,
+      fileId: file.id,
       fileName: file.name,
       fileSize: file.size_bytes,
       fileType: file.mime_type,
       oneTime: file.one_time,
     };
+  });
+
+/**
+ * Called by /share once the real download has actually started. Only now is a
+ * one-time link burned and its stored object removed.
+ */
+export const confirmShareDownload = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z.object({ session_token: token, file_id: z.string().uuid() }).parse(input),
+  )
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: file } = await supabaseAdmin
+      .from("files")
+      .select("id, storage_path, one_time, consumed")
+      .eq("id", data.file_id)
+      .maybeSingle();
+    if (!file || !file.one_time || file.consumed) return { ok: true };
+
+    await supabaseAdmin
+      .from("files")
+      .update({ consumed: true, share_revoked: true })
+      .eq("id", file.id);
+    await supabaseAdmin.storage.from("user-files").remove([file.storage_path]);
+    return { ok: true };
   });
 
 /** Serves decoy documents to a trapped session. */

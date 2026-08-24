@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { useTracking } from "@/components/tracking/tracking-provider";
 import {
   findShareOwner,
+  confirmShareDownload,
   verifyFilePassword,
   logHoneypotAction,
   applyRiskVerdict,
@@ -75,6 +76,7 @@ type DecoyItem = {
 };
 
 type FileData = {
+  id: string;
   name: string;
   size: number;
   type: string;
@@ -221,6 +223,7 @@ function SharePage() {
       }
       if (result.success) {
         setFileData({
+          id: result.fileId,
           name: result.fileName,
           size: result.fileSize,
           type: result.fileType,
@@ -342,19 +345,34 @@ function SharePage() {
     if (!fileData || downloading) return;
     setDownloading(true);
     try {
+      // Fetch the bytes first: that way we know the object really exists before
+      // the link is burned, and a missing object shows a clear message.
+      const response = await fetch(fileData.url);
+      if (!response.ok) throw new Error(`storage ${response.status}`);
+      const blob = await response.blob();
+
+      const objectUrl = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
-      anchor.href = fileData.url;
+      anchor.href = objectUrl;
       anchor.download = fileData.name;
       document.body.append(anchor);
       anchor.click();
       anchor.remove();
+      URL.revokeObjectURL(objectUrl);
+
       await logEvent("file_download_real", { file: fileData.name });
+      if (fileData.oneTime && sessionToken && fileData.id) {
+        await confirmShareDownload({
+          data: { session_token: sessionToken, file_id: fileData.id },
+        }).catch(() => {});
+      }
       toast.success("Download started successfully.");
       window.setTimeout(() => {
         setShareState("download_complete");
         setDownloading(false);
       }, 1500);
     } catch {
+      toast.error("This file is no longer available. Ask the sender to share it again.");
       setDownloading(false);
     }
   }

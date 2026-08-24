@@ -116,7 +116,12 @@ export function TrackingProvider({ children }: { children: ReactNode }) {
     if (!sessionToken || blocked) return;
     const interval = window.setInterval(() => {
       void visitorHeartbeat({
-        data: { session_token: sessionToken, page: pathname, behavior: behaviorTracker.snapshot() },
+        data: {
+          session_token: sessionToken,
+          page: pathname,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone ?? "",
+          behavior: behaviorTracker.snapshot(),
+        },
       }).catch(() => {});
     }, HEARTBEAT_MS);
     return () => window.clearInterval(interval);
