@@ -100,8 +100,10 @@ export const trackVisitor = createServerFn({ method: "POST" })
     const blocked = await isIpBlocked(supabaseAdmin, ip);
     if (blocked) return { blocked: true, reason: blocked, ip, sessionToken: data.session_token };
 
-    const geo = await lookupGeo(ip, supabaseAdmin);
     const { device, behavior } = data;
+    let geo = await lookupGeo(ip, supabaseAdmin);
+    // Last resort so the visitor still appears on the map: the browser's own timezone.
+    if (geo.latitude == null) geo = geoFromTimezone(device.timezone);
 
     const { data: existing } = await supabaseAdmin
       .from("visitors")
