@@ -10,7 +10,16 @@ const toneByScore = [
 ] as const;
 const labelByScore = ["Too weak", "Weak", "Fair", "Good", "Strong"] as const;
 
-export function PasswordStrength({ value, email }: { value: string; email?: string }) {
+export function PasswordStrength({
+  value,
+  email,
+  /** Set false when the form already renders the same reason under the field. */
+  showIssue = true,
+}: {
+  value: string;
+  email?: string;
+  showIssue?: boolean;
+}) {
   const breachIssue = commonPasswordIssue(value, email);
   const rawScore = passwordScore(value);
   // A predictable password can never read better than "Weak", however many
