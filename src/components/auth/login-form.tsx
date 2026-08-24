@@ -15,6 +15,7 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
@@ -22,8 +23,10 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
   });
 
   const onSubmit = handleSubmit(async (values) => {
-    const { error } = await signIn(values.email, values.password);
+    const { error, field } = await signIn(values.email, values.password);
     if (error) {
+      // Keep the reason visible on the field, not only in a toast that fades.
+      if (field) setError(field, { type: "server", message: error });
       toast.error(error);
       return;
     }
