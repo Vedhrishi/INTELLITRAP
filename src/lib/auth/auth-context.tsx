@@ -27,7 +27,8 @@ export type Profile = {
   user_secret_code: string | null;
 };
 
-type AuthResult = { error: string | null };
+export type AuthResult = { error: string | null; field: AuthErrorField };
+export type SignUpResult = AuthResult & { needsEmailConfirmation: boolean };
 
 type AuthContextValue = {
   user: User | null;
