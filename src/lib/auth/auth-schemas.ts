@@ -118,7 +118,8 @@ export const resetSchema = z
       .string()
       .min(8, "Use at least 8 characters")
       .max(72)
-      .refine((value) => passwordScore(value) >= 3, "Add upper/lower case, a number or a symbol"),
+      .refine((value) => passwordScore(value) >= 3, "Add upper/lower case, a number or a symbol")
+      .refine((value) => !commonPasswordIssue(value), "Too common — pick something less guessable"),
     confirmPassword: z.string().min(1, "Confirm your password"),
   })
   .refine((data) => data.password === data.confirmPassword, {
