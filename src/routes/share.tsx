@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { useTracking } from "@/components/tracking/tracking-provider";
 import {
   findShareOwner,
+  confirmShareDownload,
   verifyFilePassword,
   logHoneypotAction,
   applyRiskVerdict,
@@ -75,6 +76,7 @@ type DecoyItem = {
 };
 
 type FileData = {
+  id: string;
   name: string;
   size: number;
   type: string;
@@ -221,6 +223,7 @@ function SharePage() {
       }
       if (result.success) {
         setFileData({
+          id: result.fileId,
           name: result.fileName,
           size: result.fileSize,
           type: result.fileType,
