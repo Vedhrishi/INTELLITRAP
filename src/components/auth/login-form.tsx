@@ -69,9 +69,10 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
       </div>
 
       <Button type="submit" className="w-full" disabled={isSubmitting}>
-        {isSubmitting ? <Loader2 className="size-4 animate-spin" /> : null}
-        Sign in
+        {isSubmitting ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
+        {isSubmitting ? "Signing in…" : "Sign in"}
       </Button>
+      </fieldset>
     </form>
   );
 }
