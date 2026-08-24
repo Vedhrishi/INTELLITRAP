@@ -23,6 +23,7 @@ const deviceSchema = z
     screen: z.string().max(40).optional(),
     colorDepth: z.number().int().optional(),
     tzOffset: z.number().int().optional(),
+    timezone: z.string().max(80).optional(),
     language: z.string().max(40).optional(),
     languages: z.array(z.string().max(40)).max(20).optional(),
     cores: z.number().int().optional(),
