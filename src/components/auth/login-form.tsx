@@ -35,6 +35,7 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
 
   return (
     <form onSubmit={onSubmit} className="space-y-4" noValidate>
+      <fieldset disabled={isSubmitting} className="space-y-4 border-0 p-0">
       <div className="space-y-2">
         <Label htmlFor="login-email">Email</Label>
         <Input
