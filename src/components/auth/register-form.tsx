@@ -117,7 +117,7 @@ export function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
           aria-invalid={Boolean(errors.password)}
           {...register("password")}
         />
-        <PasswordStrength value={password} email={email} />
+        <PasswordStrength value={password} email={email} showIssue={!errors.password} />
         {errors.password ? (
           <p className="text-xs text-destructive">{errors.password.message}</p>
         ) : null}
