@@ -188,7 +188,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth/reset`,
     });
-    return { error: error ? humanAuthError(error.message) : null };
+    if (error) {
+      const described = describeAuthError(error.message);
+      return { error: described.message, field: described.field };
+    }
+    return { error: null, field: null };
   }, []);
 
   const value = useMemo<AuthContextValue>(
