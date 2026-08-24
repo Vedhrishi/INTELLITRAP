@@ -218,9 +218,24 @@ export const visitorHeartbeat = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { behavior } = data;
+
+    // A visitor whose first lookup failed gets another chance on every beat,
+    // so nobody stays permanently unlocated on the map.
+    const { data: row } = await supabaseAdmin
+      .from("visitors")
+      .select("latitude, timezone")
+      .eq("session_token", data.session_token)
+      .maybeSingle();
+    let geo: Awaited<ReturnType<typeof lookupGeo>> = {};
+    if (row && row.latitude == null) {
+      geo = await lookupGeo(clientIp(), supabaseAdmin);
+      if (geo.latitude == null) geo = geoFromTimezone(data.timezone ?? row.timezone);
+    }
+
     await supabaseAdmin
       .from("visitors")
       .update({
+        ...(geo.latitude != null ? geo : {}),
         is_online: true,
         last_heartbeat: new Date().toISOString(),
         current_page: data.page,
