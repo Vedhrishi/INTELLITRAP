@@ -49,7 +49,7 @@ export function PasswordStrength({
           {labelByScore[score]}
         </span>
       </div>
-      {breachIssue && value.length > 0 ? (
+      {showIssue && breachIssue && value.length > 0 ? (
         <p className="text-xs text-destructive">{breachIssue}</p>
       ) : null}
       <ul className="grid grid-cols-2 gap-x-3 gap-y-1">
