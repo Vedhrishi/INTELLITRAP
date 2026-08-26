@@ -46,11 +46,11 @@ export const logAuthFailure = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => inputSchema.parse(data))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { clientIp, lookupGeo, geoFromTimezone } = await import(
-      "@/lib/tracking/tracking.server"
-    );
+    const { clientIp, lookupGeo, geoFromTimezone } = await import("@/lib/tracking/tracking.server");
+    const { getRequestHeader } = await import("@tanstack/react-start/server");
 
     const ip = clientIp();
+    const userAgent = (getRequestHeader("user-agent") ?? "").slice(0, 500) || null;
 
     // Flood guard so the public endpoint can't be used to bloat the table.
     const since = new Date(Date.now() - PER_IP_WINDOW_MS).toISOString();
