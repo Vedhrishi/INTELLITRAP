@@ -71,7 +71,7 @@ export const logAuthFailure = createServerFn({ method: "POST" })
       ip_address: ip,
       country: geo.country ?? null,
       city: geo.city ?? null,
-      user_agent: null,
+      user_agent: userAgent,
     });
     if (error) return { logged: false as const };
     return { logged: true as const };
