@@ -3,8 +3,31 @@
 /** Which form field an auth failure belongs to, so it can be shown inline. */
 export type AuthErrorField = "email" | "password" | null;
 
+/**
+ * Machine-readable reason, safe to store and aggregate. Deliberately coarse so
+ * nothing sensitive (the attempted password, tokens, raw provider text) leaks
+ * into the admin-visible failure log.
+ */
+export type AuthFailureReason =
+  | "invalid_credentials"
+  | "already_registered"
+  | "email_not_confirmed"
+  | "invalid_email"
+  | "weak_password"
+  | "signup_disabled"
+  | "rate_limited"
+  | "expired_link"
+  | "network"
+  | "other";
+
 export function humanAuthError(message: string | undefined): string {
   return describeAuthError(message).message;
+}
+
+/** Cooldown in seconds the backend asked for, when it named one. */
+export function backendCooldownSeconds(message: string | undefined): number | null {
+  const match = (message ?? "").toLowerCase().match(/after (\d+) seconds?/);
+  return match?.[1] ? Number(match[1]) : null;
 }
 
 /**
