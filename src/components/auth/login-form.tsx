@@ -24,11 +24,12 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
   });
 
   const onSubmit = handleSubmit(async (values) => {
-    const { error, field } = await signIn(values.email, values.password);
+    const { error, field, reason } = await signIn(values.email, values.password);
     if (error) {
       // Keep the reason visible on the field, not only in a toast that fades.
       if (field) setError(field, { type: "server", message: error });
       toast.error(error);
+      reportAuthFailure({ reason, flow: "login", email: values.email });
       return;
     }
     onSuccess();
