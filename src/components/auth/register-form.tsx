@@ -11,6 +11,8 @@ import { PasswordInput } from "./password-input";
 import { PasswordStrength } from "./password-strength";
 import { registerSchema, type RegisterValues } from "@/lib/auth/auth-schemas";
 import { useAuth } from "@/lib/auth/auth-context";
+import { reportAuthFailure } from "@/lib/auth/report-auth-failure";
+import { useResendCooldown } from "@/lib/auth/use-resend-cooldown";
 
 export function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
   const { signUp } = useAuth();
@@ -36,9 +38,25 @@ export function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
   const password = watch("password") ?? "";
   const email = watch("email") ?? "";
   const terms = watch("terms");
+  const cooldown = useResendCooldown(`confirm:${awaitingConfirmation ?? ""}`);
+  const [resending, setResending] = useState(false);
+
+  const resendConfirmation = async () => {
+    if (!awaitingConfirmation || cooldown.active || resending) return;
+    setResending(true);
+    const { error, reason, retryAfter } = await resendConfirmationEmail(awaitingConfirmation);
+    setResending(false);
+    if (error) {
+      toast.error(error);
+      cooldown.start(reason === "rate_limited" ? retryAfter : 30);
+      return;
+    }
+    toast.success("Confirmation email sent again.");
+    cooldown.start();
+  };
 
   const onSubmit = handleSubmit(async (values) => {
-    const { error, field, needsEmailConfirmation } = await signUp(
+    const { error, field, reason, retryAfter, needsEmailConfirmation } = await signUp(
       values.email,
       values.password,
       values.fullName,
@@ -46,12 +64,16 @@ export function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
     if (error) {
       if (field) setError(field, { type: "server", message: error });
       toast.error(error);
+      reportAuthFailure({ reason, flow: "register", email: values.email });
+      if (reason === "rate_limited") cooldown.start(retryAfter);
       return;
     }
     // No session means email confirmation is required — staying put beats
     // navigating into the app and bouncing straight back to sign-in.
     if (needsEmailConfirmation) {
       setAwaitingConfirmation(values.email);
+      // The confirmation email just went out — hold resends for a minute.
+      cooldown.start();
       toast.success("Check your email to confirm your account.");
       return;
     }
@@ -71,9 +93,23 @@ export function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
             to finish creating your account, then sign in.
           </p>
         </div>
-        <Button variant="outline" className="w-full" onClick={() => setAwaitingConfirmation(null)}>
-          Use a different email
-        </Button>
+        <div className="space-y-2">
+          <Button
+            className="w-full"
+            onClick={() => void resendConfirmation()}
+            disabled={cooldown.active || resending}
+          >
+            {resending ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
+            {cooldown.active ? `Resend in ${cooldown.label}` : "Resend confirmation email"}
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => setAwaitingConfirmation(null)}
+          >
+            Use a different email
+          </Button>
+        </div>
       </div>
     );
   }
