@@ -41,7 +41,7 @@ export function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
   const cooldown = useResendCooldown(`confirm:${awaitingConfirmation ?? ""}`);
   const [resending, setResending] = useState(false);
 
-  const resendConfirmation = async () => {
+  const handleResend = async () => {
     if (!awaitingConfirmation || cooldown.active || resending) return;
     setResending(true);
     const { error, reason, retryAfter } = await resendConfirmation(awaitingConfirmation);
@@ -96,7 +96,7 @@ export function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
         <div className="space-y-2">
           <Button
             className="w-full"
-            onClick={() => void resendConfirmation()}
+            onClick={() => void handleResend()}
             disabled={cooldown.active || resending}
           >
             {resending ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
