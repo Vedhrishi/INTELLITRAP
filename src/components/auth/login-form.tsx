@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { PasswordInput } from "./password-input";
 import { loginSchema, type LoginValues } from "@/lib/auth/auth-schemas";
 import { useAuth } from "@/lib/auth/auth-context";
+import { reportAuthFailure } from "@/lib/auth/report-auth-failure";
 
 export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
   const { signIn } = useAuth();
@@ -23,11 +24,12 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
   });
 
   const onSubmit = handleSubmit(async (values) => {
-    const { error, field } = await signIn(values.email, values.password);
+    const { error, field, reason } = await signIn(values.email, values.password);
     if (error) {
       // Keep the reason visible on the field, not only in a toast that fades.
       if (field) setError(field, { type: "server", message: error });
       toast.error(error);
+      reportAuthFailure({ reason, flow: "login", email: values.email });
       return;
     }
     onSuccess();

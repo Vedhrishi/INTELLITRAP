@@ -10,7 +10,12 @@ import {
 } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { describeAuthError, type AuthErrorField } from "./auth-errors";
+import {
+  backendCooldownSeconds,
+  describeAuthError,
+  type AuthErrorField,
+  type AuthFailureReason,
+} from "./auth-errors";
 
 export type AppRole = "admin" | "analyst" | "user";
 
@@ -27,7 +32,13 @@ export type Profile = {
   user_secret_code: string | null;
 };
 
-export type AuthResult = { error: string | null; field: AuthErrorField };
+export type AuthResult = {
+  error: string | null;
+  field: AuthErrorField;
+  reason: AuthFailureReason;
+  /** Seconds the backend asked us to wait, when it named one. */
+  retryAfter?: number | null;
+};
 export type SignUpResult = AuthResult & { needsEmailConfirmation: boolean };
 
 type AuthContextValue = {
@@ -43,6 +54,7 @@ type AuthContextValue = {
   signUp: (email: string, password: string, fullName: string) => Promise<SignUpResult>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<AuthResult>;
+  resendConfirmation: (email: string) => Promise<AuthResult>;
   refreshRoles: () => Promise<void>;
 };
 
@@ -150,9 +162,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       const described = describeAuthError(error.message);
-      return { error: described.message, field: described.field };
+      return {
+        error: described.message,
+        field: described.field,
+        reason: described.reason,
+        retryAfter: backendCooldownSeconds(error.message),
+      };
     }
-    return { error: null, field: null };
+    return { error: null, field: null, reason: "other" };
   }, []);
 
   const signUp = useCallback(
@@ -167,11 +184,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       if (error) {
         const described = describeAuthError(error.message);
-        return { error: described.message, field: described.field, needsEmailConfirmation: false };
+        return {
+          error: described.message,
+          field: described.field,
+          reason: described.reason,
+          retryAfter: backendCooldownSeconds(error.message),
+          needsEmailConfirmation: false,
+        };
       }
       // With email confirmation enabled, signUp() returns no session — the user
       // is NOT signed in yet, so the caller must not navigate into the app.
-      return { error: null, field: null, needsEmailConfirmation: !data.session };
+      return {
+        error: null,
+        field: null,
+        reason: "other",
+        needsEmailConfirmation: !data.session,
+      };
     },
     [],
   );
@@ -190,9 +218,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     if (error) {
       const described = describeAuthError(error.message);
-      return { error: described.message, field: described.field };
+      return {
+        error: described.message,
+        field: described.field,
+        reason: described.reason,
+        retryAfter: backendCooldownSeconds(error.message),
+      };
     }
-    return { error: null, field: null };
+    return { error: null, field: null, reason: "other" };
+  }, []);
+
+  const resendConfirmation = useCallback(async (email: string): Promise<AuthResult> => {
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email,
+      options: { emailRedirectTo: `${window.location.origin}/app` },
+    });
+    if (error) {
+      const described = describeAuthError(error.message);
+      return {
+        error: described.message,
+        field: described.field,
+        reason: described.reason,
+        retryAfter: backendCooldownSeconds(error.message),
+      };
+    }
+    return { error: null, field: null, reason: "other" };
   }, []);
 
   const value = useMemo<AuthContextValue>(
@@ -209,9 +260,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signUp,
       signOut,
       resetPassword,
+      resendConfirmation,
       refreshRoles,
     }),
-    [user, session, profile, roles, loading, rolesLoading, signIn, signUp, signOut, resetPassword, refreshRoles],
+    [
+      user,
+      session,
+      profile,
+      roles,
+      loading,
+      rolesLoading,
+      signIn,
+      signUp,
+      signOut,
+      resetPassword,
+      resendConfirmation,
+      refreshRoles,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
