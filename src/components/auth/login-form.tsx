@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { PasswordInput } from "./password-input";
 import { loginSchema, type LoginValues } from "@/lib/auth/auth-schemas";
 import { useAuth } from "@/lib/auth/auth-context";
+import { reportAuthFailure } from "@/lib/auth/report-auth-failure";
 
 export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
   const { signIn } = useAuth();
