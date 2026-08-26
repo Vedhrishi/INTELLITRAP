@@ -11,6 +11,7 @@ import {
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import {
+  backendCooldownSeconds,
   describeAuthError,
   type AuthErrorField,
   type AuthFailureReason,
