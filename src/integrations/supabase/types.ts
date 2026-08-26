@@ -184,6 +184,42 @@ export type Database = {
         }
         Relationships: []
       }
+      auth_failure_log: {
+        Row: {
+          city: string | null
+          country: string | null
+          created_at: string
+          flow: string
+          id: string
+          ip_address: string | null
+          masked_email: string | null
+          reason: string
+          user_agent: string | null
+        }
+        Insert: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          flow: string
+          id?: string
+          ip_address?: string | null
+          masked_email?: string | null
+          reason: string
+          user_agent?: string | null
+        }
+        Update: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          flow?: string
+          id?: string
+          ip_address?: string | null
+          masked_email?: string | null
+          reason?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       blocked_ips: {
         Row: {
           admin_alerted: boolean
