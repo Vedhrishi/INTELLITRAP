@@ -15,7 +15,7 @@ import { reportAuthFailure } from "@/lib/auth/report-auth-failure";
 import { useResendCooldown } from "@/lib/auth/use-resend-cooldown";
 
 export function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
-  const { signUp } = useAuth();
+  const { signUp, resendConfirmation } = useAuth();
   const [awaitingConfirmation, setAwaitingConfirmation] = useState<string | null>(null);
   const {
     register,
@@ -44,7 +44,7 @@ export function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
   const resendConfirmation = async () => {
     if (!awaitingConfirmation || cooldown.active || resending) return;
     setResending(true);
-    const { error, reason, retryAfter } = await resendConfirmationEmail(awaitingConfirmation);
+    const { error, reason, retryAfter } = await resendConfirmation(awaitingConfirmation);
     setResending(false);
     if (error) {
       toast.error(error);

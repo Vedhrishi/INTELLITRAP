@@ -54,6 +54,7 @@ type AuthContextValue = {
   signUp: (email: string, password: string, fullName: string) => Promise<SignUpResult>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<AuthResult>;
+  resendConfirmation: (email: string) => Promise<AuthResult>;
   refreshRoles: () => Promise<void>;
 };
 
@@ -227,6 +228,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: null, field: null, reason: "other" };
   }, []);
 
+  const resendConfirmation = useCallback(async (email: string): Promise<AuthResult> => {
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email,
+      options: { emailRedirectTo: `${window.location.origin}/app` },
+    });
+    if (error) {
+      const described = describeAuthError(error.message);
+      return {
+        error: described.message,
+        field: described.field,
+        reason: described.reason,
+        retryAfter: backendCooldownSeconds(error.message),
+      };
+    }
+    return { error: null, field: null, reason: "other" };
+  }, []);
+
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
@@ -241,9 +260,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signUp,
       signOut,
       resetPassword,
+      resendConfirmation,
       refreshRoles,
     }),
-    [user, session, profile, roles, loading, rolesLoading, signIn, signUp, signOut, resetPassword, refreshRoles],
+    [
+      user,
+      session,
+      profile,
+      roles,
+      loading,
+      rolesLoading,
+      signIn,
+      signUp,
+      signOut,
+      resetPassword,
+      resendConfirmation,
+      refreshRoles,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
