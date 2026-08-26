@@ -9,6 +9,7 @@ import { HoneypotPanel } from "@/components/admin/honeypot-panel";
 import { AutoBlocksTable } from "@/components/admin/auto-blocks-table";
 import { RiskSignalChart } from "@/components/admin/risk-signal-chart";
 import { MlAnalysisPanel } from "@/components/admin/ml-analysis-panel";
+import { AuthFailurePanel } from "@/components/admin/auth-failure-panel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRealtimeTables } from "@/hooks/use-realtime";
 import {
@@ -112,6 +113,8 @@ function AdminThreatIntelContent() {
       ) : (
         <AutoBlocksTable blocks={blocks.data ?? []} autoBlocksToday={autoBlocksToday.data ?? 0} />
       )}
+
+      <AuthFailurePanel />
 
       <MlAnalysisPanel />
 
