@@ -461,3 +461,31 @@ export type CreateUserOptions = {
 export async function createUser(options: CreateUserOptions): Promise<void> {
   await createUserAccount({ data: options });
 }
+
+export type AuthFailure = Database["public"]["Tables"]["auth_failure_log"]["Row"];
+
+/** Recent authentication failures for threat triage. Staff-only via RLS. */
+export async function fetchAuthFailures(limit = 50): Promise<AuthFailure[]> {
+  const { data, error } = await supabase
+    .from("auth_failure_log")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return data ?? [];
+}
+
+/** Counts per reason for today, highest first. */
+export async function fetchAuthFailureSummary(): Promise<{ reason: string; count: number }[]> {
+  const { data, error } = await supabase
+    .from("auth_failure_log")
+    .select("reason")
+    .gte("created_at", startOfTodayIST())
+    .limit(1000);
+  if (error) throw error;
+  const counts = new Map<string, number>();
+  for (const row of data ?? []) counts.set(row.reason, (counts.get(row.reason) ?? 0) + 1);
+  return [...counts.entries()]
+    .map(([reason, count]) => ({ reason, count }))
+    .sort((a, b) => b.count - a.count);
+}
