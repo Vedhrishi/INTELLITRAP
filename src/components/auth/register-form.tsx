@@ -38,7 +38,7 @@ export function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
   const password = watch("password") ?? "";
   const email = watch("email") ?? "";
   const terms = watch("terms");
-  const cooldown = useResendCooldown(`confirm:${awaitingConfirmation ?? ""}`);
+  const cooldown = useResendCooldown("confirm");
   const [resending, setResending] = useState(false);
 
   const handleResend = async () => {
