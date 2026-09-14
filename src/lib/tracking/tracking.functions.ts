@@ -523,6 +523,8 @@ export const verifyFilePassword = createServerFn({ method: "POST" })
       .object({
         secret_code: z.string().min(4).max(24),
         password: z.string().min(1).max(200),
+        // Present when the recipient picked one of several files behind the code.
+        file_id: z.string().uuid().optional(),
         session_token: token,
         visitor_id: token,
       })
@@ -535,14 +537,16 @@ export const verifyFilePassword = createServerFn({ method: "POST" })
       return { success: false as const, blocked: true, error: "Access denied" };
 
     const code = data.secret_code.trim().toUpperCase();
-    const { data: file } = await supabaseAdmin
+    let lookup = supabaseAdmin
       .from("files")
       .select("*")
       .eq("uploader_secret_code", code)
       .eq("is_shared", true)
       .eq("share_revoked", false)
       .eq("consumed", false)
-      .is("deleted_at", null)
+      .is("deleted_at", null);
+    if (data.file_id) lookup = lookup.eq("id", data.file_id);
+    const { data: file } = await lookup
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();

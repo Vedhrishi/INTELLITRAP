@@ -477,6 +477,7 @@ export type Database = {
           one_time: boolean
           owner_id: string
           share_revoked: boolean
+          share_token: string | null
           size_bytes: number
           storage_path: string
           updated_at: string
@@ -501,6 +502,7 @@ export type Database = {
           one_time?: boolean
           owner_id: string
           share_revoked?: boolean
+          share_token?: string | null
           size_bytes: number
           storage_path: string
           updated_at?: string
@@ -525,6 +527,7 @@ export type Database = {
           one_time?: boolean
           owner_id?: string
           share_revoked?: boolean
+          share_token?: string | null
           size_bytes?: number
           storage_path?: string
           updated_at?: string
