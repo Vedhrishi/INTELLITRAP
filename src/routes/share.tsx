@@ -20,6 +20,8 @@ import {
   findShareOwner,
   confirmShareDownload,
   verifyFilePassword,
+  listSharedFilesForCode,
+  resolveShareToken,
   logHoneypotAction,
   applyRiskVerdict,
   checkSelfBlocked,
@@ -59,6 +61,7 @@ export const Route = createFileRoute("/share")({
 
 type ShareState =
   | "enter_code"
+  | "pick_file"
   | "enter_password"
   | "analyzing"
   | "granted"
@@ -81,6 +84,15 @@ type FileData = {
   size: number;
   type: string;
   url: string;
+  oneTime: boolean;
+};
+
+type SharedFileOption = {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  createdAt: string;
   oneTime: boolean;
 };
 
@@ -109,6 +121,9 @@ function SharePage() {
   const [codeError, setCodeError] = useState("");
   const [codeShake, setCodeShake] = useState(false);
   const [codeLoading, setCodeLoading] = useState(false);
+  const [sharedFiles, setSharedFiles] = useState<SharedFileOption[]>([]);
+  const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
+  const [linkError, setLinkError] = useState("");
 
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -149,7 +164,7 @@ function SharePage() {
   }, [resendCountdown]);
 
   const step: ShareStep = useMemo(() => {
-    if (shareState === "enter_code") return 0;
+    if (shareState === "enter_code" || shareState === "pick_file") return 0;
     if (shareState === "enter_password" || shareState === "analyzing" || shareState === "challenge")
       return 1;
     return 2;
@@ -172,7 +187,23 @@ function SharePage() {
       }
       if (result.found) {
         setOwnerName(result.ownerName);
-        setShareState("enter_password");
+        // One code can cover several shared files, so the recipient chooses
+        // which one before the password step.
+        const listed = await listSharedFilesForCode({
+          data: { secret_code: code.trim(), session_token: sessionToken },
+        });
+        if (listed.blocked) {
+          setShareState("blocked");
+          return;
+        }
+        setSharedFiles(listed.files);
+        if (listed.files.length > 1) {
+          setSelectedFileId(null);
+          setShareState("pick_file");
+        } else {
+          setSelectedFileId(listed.files[0]?.id ?? null);
+          setShareState("enter_password");
+        }
       } else {
         setInvalidCodes((value) => value + 1);
         triggerCodeShake("No files found for this code. Double-check with the owner.");
@@ -209,6 +240,7 @@ function SharePage() {
         data: {
           secret_code: code.trim(),
           password,
+          ...(selectedFileId ? { file_id: selectedFileId } : {}),
           session_token: sessionToken,
           visitor_id: visitorId,
         },
@@ -320,6 +352,51 @@ function SharePage() {
     };
   }, []);
 
+  // Link-only share: /share?t=<token> skips both the code and password screens
+  // and goes straight into the risk check.
+  const tokenHandled = useRef(false);
+  useEffect(() => {
+    if (tokenHandled.current || !sessionToken || !visitorId) return;
+    const shareTokenParam = new URLSearchParams(window.location.search).get("t");
+    if (!shareTokenParam) return;
+    tokenHandled.current = true;
+    void (async () => {
+      try {
+        const result = await resolveShareToken({
+          data: {
+            share_token: shareTokenParam,
+            session_token: sessionToken,
+            visitor_id: visitorId,
+          },
+        });
+        if ("blocked" in result && result.blocked) {
+          setShareState("blocked");
+          return;
+        }
+        if ("honeypot" in result && result.honeypot) {
+          setShareState("honeypot");
+          return;
+        }
+        if (result.success) {
+          setOwnerName(result.ownerName);
+          setFileData({
+            id: result.fileId,
+            name: result.fileName,
+            size: result.fileSize,
+            type: result.fileType,
+            url: result.url,
+            oneTime: result.oneTime,
+          });
+          setShareState("analyzing");
+        } else {
+          setLinkError(result.error);
+        }
+      } catch {
+        setLinkError("Something went wrong opening this link.");
+      }
+    })();
+  }, [sessionToken, visitorId]);
+
   useEffect(() => {
     if (shareState !== "honeypot") return;
     let cancelled = false;
@@ -427,6 +504,9 @@ function SharePage() {
     setDemoOtp("");
     setInvalidCodes(0);
     setRfResult(null);
+    setSharedFiles([]);
+    setSelectedFileId(null);
+    setLinkError("");
   }
 
   async function sendOtp() {
@@ -561,6 +641,59 @@ function SharePage() {
                   Find File Owner
                 </motion.button>
               </form>
+              {linkError ? (
+                <p className="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-center text-sm text-red-400">
+                  {linkError}
+                </p>
+              ) : null}
+            </motion.div>
+          ) : null}
+
+          {effectiveState === "pick_file" ? (
+            <motion.div
+              key="pick_file"
+              initial={variants.initial}
+              animate={variants.animate}
+              exit={variants.exit}
+              transition={transition}
+              className="w-full max-w-md rounded-2xl border border-[#334155] bg-[#1e293b]/80 p-8 backdrop-blur-xl"
+            >
+              <div className="mb-5 rounded-lg border border-green-500/30 bg-green-500/10 px-4 py-2 text-sm text-green-400">
+                {sharedFiles.length} files shared by {ownerName}
+              </div>
+              <h2 className="text-xl font-bold text-white">Choose a file</h2>
+              <p className="mt-1 text-sm text-[#94a3b8]">
+                Pick the file you were sent, then enter its password.
+              </p>
+              <div className="mt-5 space-y-2">
+                {sharedFiles.map((option) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedFileId(option.id);
+                      setPassword("");
+                      setPasswordError("");
+                      setShareState("enter_password");
+                    }}
+                    className="w-full rounded-lg border border-[#334155] bg-[#0f172a] px-4 py-3 text-left transition-colors hover:border-[#3b82f6]"
+                  >
+                    <p className="truncate text-sm font-medium text-white">{option.name}</p>
+                    <p className="mt-0.5 text-xs text-[#64748b]">
+                      {formatFileSize(option.size)} ·{" "}
+                      {new Date(option.createdAt).toLocaleDateString()}
+                      {option.oneTime ? " · one-time" : ""}
+                    </p>
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={resetAll}
+                className="mt-5 w-full rounded-lg border border-[#334155] py-2 text-sm text-[#94a3b8] hover:text-white"
+              >
+                Use a different code
+              </button>
             </motion.div>
           ) : null}
 

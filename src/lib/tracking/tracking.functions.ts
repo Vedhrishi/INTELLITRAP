@@ -714,6 +714,178 @@ export const verifyFilePassword = createServerFn({ method: "POST" })
   });
 
 /**
+ * Lists every file shared behind one secret code so the recipient can pick.
+ * Returns display columns only — never storage paths, hashes or owner ids.
+ */
+export const listSharedFilesForCode = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        secret_code: z.string().min(4).max(24),
+        session_token: token,
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const ip = clientIp();
+    if (await isIpBlocked(supabaseAdmin, ip)) return { blocked: true as const, files: [] };
+
+    const code = data.secret_code.trim().toUpperCase();
+    const { data: rows } = await supabaseAdmin
+      .from("files")
+      .select("id, name, size_bytes, mime_type, created_at, one_time, expires_at, download_count")
+      .eq("uploader_secret_code", code)
+      .eq("is_shared", true)
+      .eq("share_revoked", false)
+      .eq("consumed", false)
+      .not("file_password_hash", "is", null)
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    const now = Date.now();
+    const files = (rows ?? [])
+      .filter((row) => !(row.expires_at && new Date(row.expires_at).getTime() < now))
+      .filter((row) => !(row.one_time && row.download_count > 0))
+      .map((row) => ({
+        id: row.id,
+        name: row.name,
+        size: row.size_bytes,
+        type: row.mime_type,
+        createdAt: row.created_at,
+        oneTime: row.one_time,
+      }));
+
+    return { blocked: false as const, files };
+  });
+
+/**
+ * Opens a link-only share: no code, no password, but every other guard
+ * (IP block, expiry, one-time, honeypot verdict, access logging) still applies.
+ */
+export const resolveShareToken = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        share_token: z
+          .string()
+          .min(20)
+          .max(120)
+          .regex(/^[A-Za-z0-9_-]+$/),
+        session_token: token,
+        visitor_id: token,
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const ip = clientIp();
+    if (await isIpBlocked(supabaseAdmin, ip))
+      return { success: false as const, blocked: true as const, error: "Access denied" };
+
+    const { data: file } = await supabaseAdmin
+      .from("files")
+      .select("*")
+      .eq("share_token", data.share_token)
+      .eq("is_shared", true)
+      .eq("share_revoked", false)
+      .eq("consumed", false)
+      .is("deleted_at", null)
+      .maybeSingle();
+
+    if (!file) return { success: false as const, error: "This link is not valid any more." };
+
+    if (file.expires_at && new Date(file.expires_at) < new Date()) {
+      await supabaseAdmin.from("file_access_log").insert({
+        file_id: file.id,
+        session_token: data.session_token,
+        ip_address: ip,
+        outcome: "expired",
+      });
+      return { success: false as const, error: "This link has expired." };
+    }
+    if (file.one_time && file.download_count > 0) {
+      await supabaseAdmin.from("file_access_log").insert({
+        file_id: file.id,
+        session_token: data.session_token,
+        ip_address: ip,
+        outcome: "consumed",
+      });
+      return { success: false as const, error: "This file has already been downloaded." };
+    }
+
+    const { data: verdict } = await supabaseAdmin
+      .from("visitors")
+      .select("access_decision, in_honeypot, was_blocked")
+      .eq("session_token", data.session_token)
+      .maybeSingle();
+    if (verdict?.was_blocked || verdict?.access_decision === "blocked")
+      return { success: false as const, blocked: true as const, error: "Access denied." };
+    if (verdict?.in_honeypot || verdict?.access_decision === "honeypot") {
+      await supabaseAdmin.from("file_access_log").insert({
+        file_id: file.id,
+        session_token: data.session_token,
+        ip_address: ip,
+        outcome: "honeypot",
+      });
+      return { success: false as const, honeypot: true as const, error: "Access denied." };
+    }
+
+    const { data: signed, error: signError } = await supabaseAdmin.storage
+      .from("user-files")
+      .createSignedUrl(file.storage_path, 300);
+    if (signError || !signed?.signedUrl) {
+      await supabaseAdmin.from("file_access_log").insert({
+        file_id: file.id,
+        session_token: data.session_token,
+        ip_address: ip,
+        outcome: "missing_object",
+      });
+      return {
+        success: false as const,
+        error: "This file is no longer available. Ask the sender to upload it again.",
+      };
+    }
+
+    await supabaseAdmin
+      .from("files")
+      .update({ download_count: file.download_count + 1 })
+      .eq("id", file.id);
+    await supabaseAdmin.from("file_access_log").insert({
+      file_id: file.id,
+      session_token: data.session_token,
+      ip_address: ip,
+      outcome: "success",
+    });
+    await supabaseAdmin.from("visitor_events").insert({
+      session_token: data.session_token,
+      visitor_id: data.visitor_id,
+      ip_address: ip,
+      event_type: "form_submit",
+      page_path: "/share",
+      event_data: { link_share: true, file_id: file.id } as never,
+    });
+
+    const { data: owner } = await supabaseAdmin
+      .from("profiles")
+      .select("display_name, full_name")
+      .eq("id", file.owner_id)
+      .maybeSingle();
+
+    return {
+      success: true as const,
+      url: signed.signedUrl,
+      fileId: file.id,
+      fileName: file.name,
+      fileSize: file.size_bytes,
+      fileType: file.mime_type,
+      oneTime: file.one_time,
+      ownerName: (owner?.display_name ?? owner?.full_name ?? "the owner").split(" ")[0],
+    };
+  });
+
+/**
  * Called by /share once the real download has actually started. Only now is a
  * one-time link burned and its stored object removed.
  */
