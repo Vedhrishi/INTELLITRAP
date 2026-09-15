@@ -352,6 +352,51 @@ function SharePage() {
     };
   }, []);
 
+  // Link-only share: /share?t=<token> skips both the code and password screens
+  // and goes straight into the risk check.
+  const tokenHandled = useRef(false);
+  useEffect(() => {
+    if (tokenHandled.current || !sessionToken || !visitorId) return;
+    const shareTokenParam = new URLSearchParams(window.location.search).get("t");
+    if (!shareTokenParam) return;
+    tokenHandled.current = true;
+    void (async () => {
+      try {
+        const result = await resolveShareToken({
+          data: {
+            share_token: shareTokenParam,
+            session_token: sessionToken,
+            visitor_id: visitorId,
+          },
+        });
+        if ("blocked" in result && result.blocked) {
+          setShareState("blocked");
+          return;
+        }
+        if ("honeypot" in result && result.honeypot) {
+          setShareState("honeypot");
+          return;
+        }
+        if (result.success) {
+          setOwnerName(result.ownerName);
+          setFileData({
+            id: result.fileId,
+            name: result.fileName,
+            size: result.fileSize,
+            type: result.fileType,
+            url: result.url,
+            oneTime: result.oneTime,
+          });
+          setShareState("analyzing");
+        } else {
+          setLinkError(result.error);
+        }
+      } catch {
+        setLinkError("Something went wrong opening this link.");
+      }
+    })();
+  }, [sessionToken, visitorId]);
+
   useEffect(() => {
     if (shareState !== "honeypot") return;
     let cancelled = false;
