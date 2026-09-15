@@ -121,6 +121,9 @@ function SharePage() {
   const [codeError, setCodeError] = useState("");
   const [codeShake, setCodeShake] = useState(false);
   const [codeLoading, setCodeLoading] = useState(false);
+  const [sharedFiles, setSharedFiles] = useState<SharedFileOption[]>([]);
+  const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
+  const [linkError, setLinkError] = useState("");
 
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -161,7 +164,7 @@ function SharePage() {
   }, [resendCountdown]);
 
   const step: ShareStep = useMemo(() => {
-    if (shareState === "enter_code") return 0;
+    if (shareState === "enter_code" || shareState === "pick_file") return 0;
     if (shareState === "enter_password" || shareState === "analyzing" || shareState === "challenge")
       return 1;
     return 2;
