@@ -61,6 +61,7 @@ export const Route = createFileRoute("/share")({
 
 type ShareState =
   | "enter_code"
+  | "pick_file"
   | "enter_password"
   | "analyzing"
   | "granted"
@@ -83,6 +84,15 @@ type FileData = {
   size: number;
   type: string;
   url: string;
+  oneTime: boolean;
+};
+
+type SharedFileOption = {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  createdAt: string;
   oneTime: boolean;
 };
 
