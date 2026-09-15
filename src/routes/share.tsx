@@ -504,6 +504,9 @@ function SharePage() {
     setDemoOtp("");
     setInvalidCodes(0);
     setRfResult(null);
+    setSharedFiles([]);
+    setSelectedFileId(null);
+    setLinkError("");
   }
 
   async function sendOtp() {
