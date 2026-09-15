@@ -20,6 +20,8 @@ import {
   findShareOwner,
   confirmShareDownload,
   verifyFilePassword,
+  listSharedFilesForCode,
+  resolveShareToken,
   logHoneypotAction,
   applyRiskVerdict,
   checkSelfBlocked,
