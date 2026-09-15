@@ -187,7 +187,23 @@ function SharePage() {
       }
       if (result.found) {
         setOwnerName(result.ownerName);
-        setShareState("enter_password");
+        // One code can cover several shared files, so the recipient chooses
+        // which one before the password step.
+        const listed = await listSharedFilesForCode({
+          data: { secret_code: code.trim(), session_token: sessionToken },
+        });
+        if (listed.blocked) {
+          setShareState("blocked");
+          return;
+        }
+        setSharedFiles(listed.files);
+        if (listed.files.length > 1) {
+          setSelectedFileId(null);
+          setShareState("pick_file");
+        } else {
+          setSelectedFileId(listed.files[0]?.id ?? null);
+          setShareState("enter_password");
+        }
       } else {
         setInvalidCodes((value) => value + 1);
         triggerCodeShake("No files found for this code. Double-check with the owner.");
@@ -224,6 +240,7 @@ function SharePage() {
         data: {
           secret_code: code.trim(),
           password,
+          ...(selectedFileId ? { file_id: selectedFileId } : {}),
           session_token: sessionToken,
           visitor_id: visitorId,
         },
