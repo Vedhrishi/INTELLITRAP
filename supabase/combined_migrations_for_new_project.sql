@@ -1086,16 +1086,16 @@ BEFORE INSERT ON public.files
 FOR EACH ROW EXECUTE FUNCTION public.enforce_file_count();
 
 -- ==== 20260812165200_adeaee1a-7b09-4336-be22-ef0ca231db90.sql ====
-insert into public.user_roles (user_id, role) values ('487fcdb2-673a-490f-924f-e25762b64c2b','admin') on conflict (user_id, role) do nothing;
-update public.profiles set role='admin' where id='487fcdb2-673a-490f-924f-e25762b64c2b';
+-- Skipped: one-off admin grant for a user_id from the old project (487fcdb2-...)
+-- that doesn't exist in this project's auth.users. Fully reverted below anyway
+-- (20260812170520), so both statements are dropped as a no-op pair.
 
 -- ==== 20260812165413_a5bc00c1-4c1a-4d8c-b7f2-92ecb5389d23.sql ====
 GRANT EXECUTE ON FUNCTION private.is_admin() TO authenticated;
 GRANT EXECUTE ON FUNCTION private.is_staff() TO authenticated;
 
 -- ==== 20260812170520_7b6b02dc-37a4-477a-a8a1-9b5f112aca7a.sql ====
-delete from public.user_roles where user_id='487fcdb2-673a-490f-924f-e25762b64c2b' and role='admin';
-update public.profiles set role='user' where id='487fcdb2-673a-490f-924f-e25762b64c2b';
+-- Skipped: reverts the no-op admin grant above; nothing to do.
 
 -- ==== 20260826182315_b6b497f8-3bce-4b3e-a2af-edb8501a96e3.sql ====
 CREATE TABLE public.auth_failure_log (
