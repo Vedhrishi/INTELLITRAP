@@ -203,7 +203,8 @@ function SharePage() {
         setInvalidCodes((value) => value + 1);
         triggerCodeShake("No files found for this code. Double-check with the owner.");
       }
-    } catch {
+    } catch (err) {
+      console.error("[share] handleCodeSubmit failed", err);
       triggerCodeShake("Something went wrong. Please try again.");
     } finally {
       setCodeLoading(false);
@@ -264,7 +265,8 @@ function SharePage() {
         setCaptchaToken(null);
         triggerPasswordShake(result.error);
       }
-    } catch {
+    } catch (err) {
+      console.error("[share] handlePasswordSubmit failed", err);
       triggerPasswordShake("Something went wrong. Please try again.");
     } finally {
       setPasswordLoading(false);

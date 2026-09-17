@@ -3,6 +3,7 @@
 // Use this for admin operations in server functions and server routes only.
 // For user-authenticated queries (with RLS), use the auth middleware instead.
 import { createClient } from "@supabase/supabase-js";
+import WebSocket from "ws";
 import type { Database } from "./types";
 
 function isNewSupabaseApiKey(value: string): boolean {
@@ -54,6 +55,14 @@ function createSupabaseAdminClient() {
       storage: undefined,
       persistSession: false,
       autoRefreshToken: false,
+    },
+    // This client only ever does REST-style queries, never realtime
+    // subscriptions — but supabase-js still constructs a RealtimeClient
+    // eagerly and resolves a WebSocket constructor at construction time.
+    // Node < 22 has no global WebSocket, so that resolution throws unless
+    // we supply one explicitly.
+    realtime: {
+      transport: WebSocket as unknown as typeof globalThis.WebSocket,
     },
   });
 }

@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { BRUTE_FORCE_LIMIT } from "@/config/security";
+import { levelForScore } from "@/lib/riskEngine";
 import {
   alertAdmins,
   clientIp,
@@ -1039,6 +1040,19 @@ export const applyRiskVerdict = createServerFn({ method: "POST" })
       longitude: visitor?.longitude ?? null,
     };
 
+    // Every decision branch carries the same RF verdict onto the visitor row,
+    // so the Live Access Monitor reflects real scores instead of the defaults.
+    await supabaseAdmin
+      .from("visitors")
+      .update({
+        risk_score: data.score,
+        risk_level: levelForScore(data.score),
+        risk_breakdown: data.breakdown as never,
+        risk_signals: data.top_signals,
+        access_decision: data.decision,
+      })
+      .eq("session_token", data.session_token);
+
     if (data.decision === "blocked") {
       await supabaseAdmin.from("blocked_ips").upsert(
         {
@@ -1067,7 +1081,6 @@ export const applyRiskVerdict = createServerFn({ method: "POST" })
           was_blocked: true,
           blocked_at: nowIso,
           block_reason: `AI auto-block: RF score ${data.score}/100`,
-          access_decision: "blocked",
         })
         .eq("session_token", data.session_token);
 
@@ -1109,7 +1122,6 @@ export const applyRiskVerdict = createServerFn({ method: "POST" })
         .update({
           in_honeypot: true,
           honeypot_entered_at: nowIso,
-          access_decision: "honeypot",
         })
         .eq("session_token", data.session_token);
     }
