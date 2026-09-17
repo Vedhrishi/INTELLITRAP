@@ -332,6 +332,50 @@ export async function hashSharePassword(password: string): Promise<string> {
     .join("");
 }
 
+/** SHA-256 hash used for share-flow OTP codes. Plaintext is never stored. */
+export async function hashOtpCode(code: string): Promise<string> {
+  const bytes = new TextEncoder().encode(`${code}intellitrap-otp-salt-2024`);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+/** Cryptographically random 6-digit numeric code. */
+export function generateOtpCode(): string {
+  const bytes = new Uint32Array(1);
+  crypto.getRandomValues(bytes);
+  return String(100000 + (bytes[0]! % 900000));
+}
+
+/** Sends the share-flow OTP by email via Resend's HTTP API. */
+export async function sendOtpEmail(to: string, code: string): Promise<{ ok: boolean }> {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.error("[otp] RESEND_API_KEY is not set — cannot send verification email.");
+    return { ok: false };
+  }
+  try {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "IntelliTrap <onboarding@resend.dev>",
+        to: [to],
+        subject: `${code} is your IntelliTrap verification code`,
+        text: `Your verification code is ${code}. It expires in 10 minutes. If you didn't request this, you can ignore this email.`,
+      }),
+    });
+    return { ok: response.ok };
+  } catch (err) {
+    console.error("[otp] Resend send failed", err);
+    return { ok: false };
+  }
+}
+
 /** Notifies every admin in-app when an IP is auto-blocked. */
 export async function alertAdmins(
   admin: Admin,

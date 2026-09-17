@@ -5,12 +5,15 @@ import { levelForScore } from "@/lib/riskEngine";
 import {
   alertAdmins,
   clientIp,
+  generateOtpCode,
   geoFromTimezone,
+  hashOtpCode,
   hashSharePassword,
   intelGeo,
   isIpBlocked,
   lookupGeo,
   scoreVisitor,
+  sendOtpEmail,
 } from "./tracking.server";
 
 const deviceSchema = z
@@ -1144,6 +1147,108 @@ export const applyRiskVerdict = createServerFn({ method: "POST" })
     });
 
     return { ok: true as const, blocked: false as const };
+  });
+
+const OTP_TTL_MS = 10 * 60 * 1000;
+
+/** Generates and emails a one-time verification code for the /share challenge step. */
+export const sendShareOtp = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        email: z.string().email().max(254),
+        session_token: token,
+        visitor_id: token,
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const ip = clientIp();
+
+    const code = generateOtpCode();
+    const codeHash = await hashOtpCode(code);
+    const expiresAt = new Date(Date.now() + OTP_TTL_MS).toISOString();
+
+    await supabaseAdmin
+      .from("visitors")
+      .update({
+        otp_code_hash: codeHash,
+        otp_expires_at: expiresAt,
+        otp_shown: true,
+      })
+      .eq("session_token", data.session_token);
+
+    const { ok: emailSent } = await sendOtpEmail(data.email, code);
+
+    await supabaseAdmin.from("visitor_events").insert({
+      session_token: data.session_token,
+      visitor_id: data.visitor_id,
+      ip_address: ip,
+      event_type: "otp_sent",
+      event_data: { email: data.email, delivered: emailSent } as never,
+    });
+
+    if (!emailSent) return { ok: false as const, error: "Couldn't send the code. Try again." };
+    return { ok: true as const };
+  });
+
+/** Verifies a submitted /share OTP against the hash stored for this session. */
+export const verifyShareOtp = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        code: z.string().length(6),
+        session_token: token,
+        visitor_id: token,
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const ip = clientIp();
+
+    const { data: visitor } = await supabaseAdmin
+      .from("visitors")
+      .select("otp_code_hash, otp_expires_at, challenge_attempts")
+      .eq("session_token", data.session_token)
+      .maybeSingle();
+
+    const expired = !visitor?.otp_expires_at || new Date(visitor.otp_expires_at) < new Date();
+    const codeHash = visitor?.otp_code_hash ? await hashOtpCode(data.code) : null;
+    const matches = !expired && codeHash !== null && codeHash === visitor?.otp_code_hash;
+
+    if (!matches) {
+      await supabaseAdmin
+        .from("visitors")
+        .update({ challenge_attempts: (visitor?.challenge_attempts ?? 0) + 1 })
+        .eq("session_token", data.session_token);
+      await supabaseAdmin.from("visitor_events").insert({
+        session_token: data.session_token,
+        visitor_id: data.visitor_id,
+        ip_address: ip,
+        event_type: "otp_failed",
+        event_data: {} as never,
+      });
+      return {
+        success: false as const,
+        error: expired ? "Code expired. Send a new one." : "Incorrect code.",
+      };
+    }
+
+    await supabaseAdmin
+      .from("visitors")
+      .update({ otp_passed: true, otp_code_hash: null, otp_expires_at: null })
+      .eq("session_token", data.session_token);
+    await supabaseAdmin.from("visitor_events").insert({
+      session_token: data.session_token,
+      visitor_id: data.visitor_id,
+      ip_address: ip,
+      event_type: "otp_passed",
+      event_data: {} as never,
+    });
+
+    return { success: true as const };
   });
 
 /** Whether the caller's IP already carries an active block. */

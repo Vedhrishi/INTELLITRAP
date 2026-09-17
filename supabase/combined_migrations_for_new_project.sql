@@ -1137,3 +1137,8 @@ UPDATE public.files f
    AND f.uploader_secret_code IS NULL
    AND p.user_secret_code IS NOT NULL;
 
+-- ==== 20260917000000_otp_email_verification.sql ====
+ALTER TABLE public.visitors
+  ADD COLUMN IF NOT EXISTS otp_code_hash text,
+  ADD COLUMN IF NOT EXISTS otp_expires_at timestamptz;
+

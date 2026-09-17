@@ -1112,6 +1112,8 @@ export type Database = {
           org: string | null
           os: string | null
           os_version: string | null
+          otp_code_hash: string | null
+          otp_expires_at: string | null
           otp_passed: boolean
           otp_shown: boolean
           page_views: number
@@ -1182,6 +1184,8 @@ export type Database = {
           org?: string | null
           os?: string | null
           os_version?: string | null
+          otp_code_hash?: string | null
+          otp_expires_at?: string | null
           otp_passed?: boolean
           otp_shown?: boolean
           page_views?: number
@@ -1252,6 +1256,8 @@ export type Database = {
           org?: string | null
           os?: string | null
           os_version?: string | null
+          otp_code_hash?: string | null
+          otp_expires_at?: string | null
           otp_passed?: boolean
           otp_shown?: boolean
           page_views?: number

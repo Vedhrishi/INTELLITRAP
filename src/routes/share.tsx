@@ -25,6 +25,8 @@ import {
   logHoneypotAction,
   applyRiskVerdict,
   checkSelfBlocked,
+  sendShareOtp,
+  verifyShareOtp,
 } from "@/lib/tracking/tracking.functions";
 import { formatFileSize } from "@/lib/share/format";
 import { behaviorTracker } from "@/lib/tracking/tracker";
@@ -143,7 +145,7 @@ function SharePage() {
   const [otpShake, setOtpShake] = useState(false);
   const [otpError, setOtpError] = useState(false);
   const [otpFailures, setOtpFailures] = useState(0);
-  const [demoOtp, setDemoOtp] = useState("");
+  const [otpSending, setOtpSending] = useState(false);
   const [invalidCodes, setInvalidCodes] = useState(0);
   const [rfResult, setRfResult] = useState<MlRiskResult | null>(null);
   const requestTimestamps = useRef<number[]>([]);
@@ -499,7 +501,7 @@ function SharePage() {
     setOtpSent(false);
     setOtpValues(Array(6).fill(""));
     setOtpFailures(0);
-    setDemoOtp("");
+    setOtpSending(false);
     setInvalidCodes(0);
     setRfResult(null);
     setSharedFiles([]);
@@ -508,27 +510,42 @@ function SharePage() {
   }
 
   async function sendOtp() {
-    if (resendCountdown > 0) return;
-    const code6 = String(randomInt(100000, 999999));
-    setDemoOtp(code6);
-    setOtpSent(true);
-    setResendCountdown(60);
-    await logEvent("otp_sent", { email });
-    toast.success(`Demo OTP: ${code6}`);
+    if (resendCountdown > 0 || !sessionToken || !visitorId || otpSending) return;
+    setOtpSending(true);
+    try {
+      const result = await sendShareOtp({
+        data: { email, session_token: sessionToken, visitor_id: visitorId },
+      });
+      if (!result.ok) {
+        toast.error(result.error ?? "Couldn't send the code. Try again.");
+        return;
+      }
+      setOtpSent(true);
+      setResendCountdown(60);
+      toast.success(`Verification code sent to ${email}.`);
+    } catch {
+      toast.error("Couldn't send the code. Try again.");
+    } finally {
+      setOtpSending(false);
+    }
   }
 
   async function verifyOtp(enteredCode: string) {
-    if (enteredCode === demoOtp) {
-      setOtpError(false);
-      await logEvent("otp_passed");
-      window.setTimeout(() => setShareState("granted"), 600);
-    } else {
+    if (!sessionToken || !visitorId) return;
+    try {
+      const result = await verifyShareOtp({
+        data: { code: enteredCode, session_token: sessionToken, visitor_id: visitorId },
+      });
+      if (result.success) {
+        setOtpError(false);
+        window.setTimeout(() => setShareState("granted"), 600);
+        return;
+      }
       const nextFailures = otpFailures + 1;
       setOtpFailures(nextFailures);
       setOtpError(true);
       setOtpShake(true);
       window.setTimeout(() => setOtpShake(false), 500);
-      await logEvent("otp_failed");
       if (nextFailures >= 3) {
         window.setTimeout(() => setShareState("honeypot"), 1000);
       } else {
@@ -537,6 +554,10 @@ function SharePage() {
           setOtpError(false);
         }, 600);
       }
+    } catch {
+      setOtpError(true);
+      setOtpShake(true);
+      window.setTimeout(() => setOtpShake(false), 500);
     }
   }
 
@@ -1037,14 +1058,16 @@ function SharePage() {
                     <button
                       type="button"
                       onClick={() => void sendOtp()}
-                      disabled={!email || resendCountdown > 0}
+                      disabled={!email || resendCountdown > 0 || otpSending}
                       className="shrink-0 rounded-md bg-amber-500 px-3 py-1.5 text-xs font-semibold text-black disabled:opacity-50"
                     >
-                      {resendCountdown > 0
-                        ? `Resend (${resendCountdown}s)`
-                        : otpSent
-                          ? "Resend Code"
-                          : "Send Code"}
+                      {otpSending
+                        ? "Sending..."
+                        : resendCountdown > 0
+                          ? `Resend (${resendCountdown}s)`
+                          : otpSent
+                            ? "Resend Code"
+                            : "Send Code"}
                     </button>
                   </div>
                   {otpSent ? (
