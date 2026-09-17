@@ -111,5 +111,9 @@
         "captcha_mfa": 22
       }
     }
+  },
+  "real_data_validation": {
+    "status": "not_yet_collected",
+    "note": "See ml/collect_real_sessions.md. This key will be populated once ml/real_attacker_sessions.csv and/or ml/real_legitimate_sessions.csv have rows."
   }
 }

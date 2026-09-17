@@ -1,0 +1,234 @@
+# Paper sections: methodology, results, limitations, future work
+
+Drafted for direct use/adaptation in a paper. Numbers in the Results section
+are pulled from `ml/metrics.json` as of this writing -- if you re-run
+`ml/train.py` or `ml/validate_real.py`, re-check this file against the
+updated `metrics.json` before submitting; do not let these numbers go stale.
+
+## Methodology
+
+### Starting point: a rule-based baseline
+
+IntelliTrap's original session risk-scoring engine (`src/lib/riskEngine.ts`)
+is a set of 15 hand-written decision trees, each a fixed if/else threshold
+over a subset of 13 behavioral and network features (failed login/code
+attempts, request rate, mouse-movement count, keystroke timing, proxy/
+hosting/suspicious-user-agent flags, off-hours access, prior blocks, time on
+page, scroll count, page views). Despite being called a "Random Forest" in
+the original code comments, no model was ever trained -- the 15 trees are
+fixed logic, not learned from data. This work replaces that engine with an
+actual trained classifier while keeping the original rule engine in place
+as an explicit, faithfully-reimplemented comparison baseline.
+
+### Synthetic training dataset
+
+No historical corpus of labeled attacker/legitimate sessions existed for
+this application (no production traffic logs, no red-team engagement data,
+no usable third-party dataset). We therefore generated a labeled synthetic
+dataset (`ml/generate_dataset.py`, 8,000 sessions) from a hand-designed
+generative process: 4 legitimate-user archetypes (casual desktop, mobile/
+touch, occasional password-typo, VPN user) and 4 attacker archetypes
+(credential-stuffing bot, content-scraper bot, a "careful" human attacker
+who deliberately mimics normal typing/mouse behavior, and a repeat
+offender), each sampling its 13 features from independent parametric
+distributions chosen to overlap across classes (e.g., mobile legitimate
+users have near-zero mouse-movement counts, matching bot-like behavior;
+the careful-attacker archetype has normal human keystroke/mouse timing).
+4% of labels were randomly flipped post-generation to simulate real-world
+label noise. **This dataset is synthetic, not collected traffic** -- see
+the header of `generate_dataset.py` for the full disclosure and the
+Limitations section below for what that means for interpreting results.
+
+### Model training
+
+A `sklearn.ensemble.RandomForestClassifier` (15 estimators, max depth 6,
+min 15 samples per leaf) was trained on an 80/20 stratified split of the
+synthetic dataset, with 5-fold stratified cross-validation on the training
+portion (`ml/train.py`). The tree count (15) was fixed to match the
+existing application's server-side validation schema, which expects
+exactly 15 per-tree votes (`tracking.functions.ts`'s `treeVotesSchema`),
+avoiding a database migration. `keystrokeAvgMs` (null for sessions with no
+keystroke telemetry, e.g. touch devices or fully scripted bots) was encoded
+as a sentinel value plus an explicit missing-value indicator feature rather
+than imputed, to preserve the "no keystroke telemetry at all" signal.
+
+The Python rule-engine baseline (`run_rule_engine` in `ml/train.py`) is a
+line-for-line reimplementation of all 15 original TypeScript decision
+trees, evaluated on the identical held-out test rows for a fair comparison.
+For the binary accuracy/precision/recall/F1/ROC-AUC comparison, its
+`granted` decision maps to legitimate (0) and `captcha_mfa`/`honeypot`/
+`blocked` all map to attacker (1); its 0-100 score is used as a
+pseudo-probability for ROC-AUC.
+
+### Deployment: trained model to dependency-free TypeScript
+
+The fitted forest is exported (`ml/export_to_json.py`) as plain JSON
+(`src/lib/model_forest.json`, 21.8 KB -- well under a 300 KB budget for
+client-side delivery) describing each tree's split structure and, at every
+node (not just leaves), the model's empirical P(attacker) for samples
+reaching that node. `src/lib/mlRiskEngine.ts` walks these trees with no
+runtime dependencies, reproducing the original engine's output shape
+(`score`, `level`, `decision`, `breakdown`, `topSignals`, `confidence`,
+`treeVotes`) plus a new `attackerProbability` field. `breakdown`/
+`topSignals` (the human-readable "why" explanation) are computed via the
+Saabas method -- attributing each split's change in P(attacker) to the
+feature it split on, summed along the decision path across all 15 trees --
+a real, model-derived explanation rather than a hand-written rule. The
+TypeScript implementation was verified against the Python model's output on
+held-out rows to 4 decimal places before deployment.
+
+### Real-session validation set
+
+Because a synthetic-only evaluation cannot demonstrate real-world
+generalization, we additionally collected a small set of genuinely-measured
+sessions against the live application (protocol in
+`ml/collect_real_sessions.md`):
+
+- **Attacker-like sessions** (target ~30-50): generated by a Playwright
+  script (`ml/simulate_attacker_sessions.js`) that drives real Chromium
+  against a local instance of the app. Every feature value is either ground
+  truth from the script's own deliberate actions (e.g. `failedPasswords` =
+  the number of wrong passwords it submitted) or a real wall-clock
+  measurement of real DOM events (e.g. `keystrokeAvgMs` from real `keydown`
+  event timestamps at bot typing speed, or `null` when the script sets
+  input values directly with no keyboard events at all). The script
+  alternates between these two interaction modes and between two attacker
+  behaviors (password brute-forcing against a real share vs. guessing
+  random wrong share codes), and deliberately does not attempt to solve the
+  app's CAPTCHA challenge that appears after 3 failed attempts.
+- **Legitimate sessions** (target ~30-50): collected manually by a human
+  team member browsing and unlocking a real share naturally (normal mouse
+  movement, natural typing pauses, occasional real typos), using a browser
+  console snippet (`ml/browser_console_logger.js`) that mirrors the
+  application's own behavioral-tracking logic (`src/lib/tracking/
+  tracker.ts`) to measure real mouse/keystroke/scroll events as the human
+  interacts, and self-reports the count of any genuine mistyped attempts.
+
+`ml/validate_real.py` loads both resulting CSVs, runs both the trained
+model and the Python rule-engine baseline against them, and reports results
+separately from the synthetic test-set numbers (`metrics.json`'s
+`real_data_validation` key), so the two are never conflated.
+
+## Results
+
+### Table 1: Synthetic test-set performance (n=1,600 held-out sessions)
+
+| Metric | Trained Random Forest | Rule-engine baseline |
+|---|---|---|
+| Accuracy | 96.5% | 76.9% |
+| Precision | 96.8% | 98.9% |
+| Recall | 94.4% | 43.4% |
+| F1 | 95.6% | 60.3% |
+| ROC-AUC | 96.8% | 96.9% |
+
+5-fold stratified cross-validation on the training split (trained model
+only): accuracy 95.3% ± 0.3%, precision 95.2% ± 0.9%, recall 93.2% ± 0.8%,
+F1 94.2% ± 0.4%, ROC-AUC 96.1% ± 0.4%. Low variance across folds indicates
+the result is not an artifact of one particular train/test split.
+
+Reading this table: the rule engine is nearly as good at *ranking* sessions
+by risk (ROC-AUC is essentially tied) but far worse at *deciding* where to
+draw the line -- 43.4% recall means it misses more than half of attackers
+in this synthetic distribution, concentrated in the "careful human
+attacker" archetype whose behavioral features don't cross any single fixed
+threshold. The trained model, calibrated from data rather than
+hand-guessed, recovers 94.4% of attackers at comparable precision.
+
+### Table 2: Real-data validation performance
+
+| Metric | Trained Random Forest | Rule-engine baseline |
+|---|---|---|
+| Accuracy | *pending* | *pending* |
+| Precision | *pending* | *pending* |
+| Recall | *pending* | *pending* |
+| F1 | *pending* | *pending* |
+| ROC-AUC | *pending* | *pending* |
+| n sessions (legit / attacker) | *pending* | *pending* |
+
+**As of this writing, this table is not yet populated.** The real-session
+collection protocol (`ml/collect_real_sessions.md`) had not been run when
+this document was drafted -- `ml/metrics.json`'s `real_data_validation` key
+currently reports `"status": "not_yet_collected"`. Run the protocol, then
+`python ml/validate_real.py`, and replace this table with the actual
+output before submission. **If real-data performance is meaningfully lower
+than Table 1's synthetic numbers, report that plainly here rather than
+omitting or softening it** -- a gap between synthetic and real performance
+is itself a legitimate, informative result for this paper, not a failure to
+hide.
+
+## Limitations
+
+- **The primary training data is synthetic.** `ml/dataset.csv`'s 8,000
+  sessions were generated from hand-designed parametric distributions
+  (`ml/generate_dataset.py`), not collected from real traffic. Table 1's
+  96.5% accuracy reflects how well the model recovers the archetype
+  structure we built into the simulator, not a measured real-world
+  detection rate. This is the central limitation of this work and the
+  reason Table 2 exists at all.
+- **The real validation set is small and non-independent.** Target size is
+  ~60-100 sessions (~30-50 per class), collected by the project team itself
+  rather than an independent party, against one specific instance of the
+  application. This is a proof-of-concept validation, not a statistically
+  powered evaluation -- it can show whether the model's synthetic-trained
+  behavior transfers at all to real interaction patterns, but it cannot
+  support strong generalization claims, and the team-collected nature
+  introduces obvious selection bias (we know what "legitimate" and
+  "attacker-like" are supposed to look like, which real independent traffic
+  would not be curated to match).
+- **The real attacker-like sessions are limited to early-stage probing.**
+  The Playwright collection script does not attempt to solve the
+  application's CAPTCHA, so it cannot represent sustained or
+  CAPTCHA-evading attack behavior -- only the first few requests of an
+  attack.
+- **Three of the model's 13 input features carry no signal in the current
+  production deployment.** Tracing `share.tsx`'s call to `buildFeatures()`
+  shows `isProxy`, `isHosting`, and `previousBlocks` are never actually
+  passed from the live client-side code path -- they silently default to
+  `false`/`false`/`0` for every real session today, regardless of the
+  visitor's actual IP reputation or block history. The server-side IP
+  check (`assessRisk()`) exists but runs as a separate signal merged in
+  afterward, not fed into the model. This means the model's real-world
+  discriminative power currently rests on the other 10 features only,
+  something both this project's training data and any real-data validation
+  inherit as a shared blind spot.
+- **No cross-session or cross-account correlation signal.** Each session is
+  scored in isolation. A coordinated, low-and-slow credential-stuffing
+  campaign distributing attempts across many sessions/IPs would not be
+  visible to this per-session model, unlike correlation-based approaches
+  (see `ml/RELATED_WORK.md`'s discussion of SynchroTrap).
+- **Single application, single deployment context.** All results (synthetic
+  and real) are specific to this one file-sharing application's threat
+  model and feature set; no claim is made about transfer to other systems.
+
+Read together: **this is a proof-of-concept demonstrating that a trained
+model measurably outperforms the hand-written rules it replaces on the
+data available to us, not a production-grade, independently-validated bot
+detector.**
+
+## Future Work
+
+- **Validate on a larger, independently-collected or public dataset.** The
+  most direct next step given the limitations above: either accumulate
+  real production traffic over time (once the model is live) with proper
+  human-reviewed labeling, or evaluate against an existing public bot/
+  session-anomaly dataset if one with a compatible feature set can be
+  identified, so results are not solely team-collected.
+- **Wire real IP-reputation and history signals into the model.** Since
+  `isProxy`/`isHosting`/`previousBlocks` currently reach the model as
+  constants, connecting the existing server-side `assessRisk()` signal
+  into the actual feature vector (rather than merging it in only as a
+  separate post-hoc override) could meaningfully improve real-world
+  performance without retraining architecture changes.
+- **Adversarial, evasion-aware attacker modeling.** Extend both the
+  synthetic archetypes and the real Playwright collection to include
+  attackers that deliberately mimic human mouse/keystroke timing (beyond
+  the current "careful human attacker" archetype), closer to the evasion
+  scenarios discussed in the bot-detection literature in
+  `ml/RELATED_WORK.md`.
+- **Cross-session/account correlation.** Add a signal layer that looks
+  across sessions from the same IP/visitor/time-window, rather than scoring
+  each session fully independently, to catch distributed low-and-slow
+  attacks.
+- **Periodic retraining pipeline.** Once real labeled traffic accumulates,
+  establish a retraining cadence and a held-out real-data test set that is
+  refreshed over time, rather than a one-time synthetic-to-real validation.

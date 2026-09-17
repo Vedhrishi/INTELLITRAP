@@ -20,6 +20,9 @@ dist-ssr
 .wrangler/
 .dev.vars
 
+__pycache__/
+supabase/.temp/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
