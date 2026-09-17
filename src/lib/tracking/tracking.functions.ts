@@ -1015,6 +1015,7 @@ export const applyRiskVerdict = createServerFn({ method: "POST" })
         tree_votes: treeVotesSchema,
         top_signals: z.array(z.string().max(80)).max(10).default([]),
         breakdown: z.record(z.string().max(80), z.number()).default({}),
+        attacker_probability: z.number().min(0).max(1).optional(),
       })
       .parse(input),
   )
@@ -1083,6 +1084,7 @@ export const applyRiskVerdict = createServerFn({ method: "POST" })
           top_signals: data.top_signals,
           confidence: data.confidence,
           breakdown: data.breakdown,
+          attacker_probability: data.attacker_probability,
         } as never,
       });
 
@@ -1125,6 +1127,7 @@ export const applyRiskVerdict = createServerFn({ method: "POST" })
         top_signals: data.top_signals,
         confidence: data.confidence,
         breakdown: data.breakdown,
+        attacker_probability: data.attacker_probability,
       } as never,
     });
 

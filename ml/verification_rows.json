@@ -1,0 +1,182 @@
+[
+  {
+    "features": {
+      "failedPasswords": 0,
+      "failedCodes": 1,
+      "requestsPerMinute": 5,
+      "mouseMovements": 120,
+      "keystrokeAvgMs": null,
+      "isProxy": false,
+      "isHosting": false,
+      "hasSuspiciousUA": false,
+      "isOffHoursIST": false,
+      "previousBlocks": 0,
+      "timeOnPageSeconds": 25.1,
+      "scrollEvents": 8,
+      "pageViews": 3
+    },
+    "expected_attackerProbability": 0.1223
+  },
+  {
+    "features": {
+      "failedPasswords": 1,
+      "failedCodes": 0,
+      "requestsPerMinute": 11,
+      "mouseMovements": 4,
+      "keystrokeAvgMs": null,
+      "isProxy": false,
+      "isHosting": true,
+      "hasSuspiciousUA": false,
+      "isOffHoursIST": false,
+      "previousBlocks": 2,
+      "timeOnPageSeconds": 3.0,
+      "scrollEvents": 1,
+      "pageViews": 2
+    },
+    "expected_attackerProbability": 0.9303
+  },
+  {
+    "features": {
+      "failedPasswords": 1,
+      "failedCodes": 0,
+      "requestsPerMinute": 35,
+      "mouseMovements": 1,
+      "keystrokeAvgMs": null,
+      "isProxy": false,
+      "isHosting": true,
+      "hasSuspiciousUA": false,
+      "isOffHoursIST": false,
+      "previousBlocks": 0,
+      "timeOnPageSeconds": 5.5,
+      "scrollEvents": 1,
+      "pageViews": 19
+    },
+    "expected_attackerProbability": 0.9563
+  },
+  {
+    "features": {
+      "failedPasswords": 0,
+      "failedCodes": 0,
+      "requestsPerMinute": 0,
+      "mouseMovements": 112,
+      "keystrokeAvgMs": null,
+      "isProxy": false,
+      "isHosting": false,
+      "hasSuspiciousUA": false,
+      "isOffHoursIST": false,
+      "previousBlocks": 0,
+      "timeOnPageSeconds": 16.0,
+      "scrollEvents": 13,
+      "pageViews": 3
+    },
+    "expected_attackerProbability": 0.0476
+  },
+  {
+    "features": {
+      "failedPasswords": 0,
+      "failedCodes": 0,
+      "requestsPerMinute": 2,
+      "mouseMovements": 91,
+      "keystrokeAvgMs": null,
+      "isProxy": false,
+      "isHosting": false,
+      "hasSuspiciousUA": false,
+      "isOffHoursIST": false,
+      "previousBlocks": 0,
+      "timeOnPageSeconds": 7.3,
+      "scrollEvents": 8,
+      "pageViews": 1
+    },
+    "expected_attackerProbability": 0.0432
+  },
+  {
+    "features": {
+      "failedPasswords": 6,
+      "failedCodes": 0,
+      "requestsPerMinute": 15,
+      "mouseMovements": 0,
+      "keystrokeAvgMs": 27.8,
+      "isProxy": true,
+      "isHosting": false,
+      "hasSuspiciousUA": true,
+      "isOffHoursIST": false,
+      "previousBlocks": 0,
+      "timeOnPageSeconds": 1.1,
+      "scrollEvents": 0,
+      "pageViews": 1
+    },
+    "expected_attackerProbability": 0.9591
+  },
+  {
+    "features": {
+      "failedPasswords": 5,
+      "failedCodes": 1,
+      "requestsPerMinute": 16,
+      "mouseMovements": 12,
+      "keystrokeAvgMs": 60.6,
+      "isProxy": false,
+      "isHosting": true,
+      "hasSuspiciousUA": true,
+      "isOffHoursIST": false,
+      "previousBlocks": 2,
+      "timeOnPageSeconds": 2.2,
+      "scrollEvents": 2,
+      "pageViews": 3
+    },
+    "expected_attackerProbability": 0.956
+  },
+  {
+    "features": {
+      "failedPasswords": 0,
+      "failedCodes": 0,
+      "requestsPerMinute": 2,
+      "mouseMovements": 15,
+      "keystrokeAvgMs": 286.5,
+      "isProxy": false,
+      "isHosting": false,
+      "hasSuspiciousUA": false,
+      "isOffHoursIST": false,
+      "previousBlocks": 0,
+      "timeOnPageSeconds": 46.3,
+      "scrollEvents": 7,
+      "pageViews": 1
+    },
+    "expected_attackerProbability": 0.0381
+  },
+  {
+    "features": {
+      "failedPasswords": 0,
+      "failedCodes": 0,
+      "requestsPerMinute": 2,
+      "mouseMovements": 185,
+      "keystrokeAvgMs": 274.5,
+      "isProxy": false,
+      "isHosting": false,
+      "hasSuspiciousUA": false,
+      "isOffHoursIST": false,
+      "previousBlocks": 0,
+      "timeOnPageSeconds": 11.4,
+      "scrollEvents": 13,
+      "pageViews": 1
+    },
+    "expected_attackerProbability": 0.0432
+  },
+  {
+    "features": {
+      "failedPasswords": 0,
+      "failedCodes": 0,
+      "requestsPerMinute": 4,
+      "mouseMovements": 250,
+      "keystrokeAvgMs": 261.0,
+      "isProxy": false,
+      "isHosting": false,
+      "hasSuspiciousUA": false,
+      "isOffHoursIST": false,
+      "previousBlocks": 0,
+      "timeOnPageSeconds": 15.0,
+      "scrollEvents": 10,
+      "pageViews": 3
+    },
+    "expected_attackerProbability": 0.0432
+  }
+]

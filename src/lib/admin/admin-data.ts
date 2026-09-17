@@ -390,6 +390,7 @@ export type MlAnalysis = {
   treeVotes: { granted: number; captcha_mfa: number; honeypot: number; blocked: number };
   breakdown: Record<string, number>;
   topSignals: string[];
+  attackerProbability: number | null;
   ip: string;
   at: string;
 };
@@ -435,6 +436,10 @@ export async function fetchLatestMlAnalysis(): Promise<MlAnalysis | null> {
           (item): item is string => typeof item === "string",
         )
       : [],
+    attackerProbability:
+      typeof payload["attacker_probability"] === "number"
+        ? (payload["attacker_probability"] as number)
+        : null,
     ip: row.ip_address,
     at: row.created_at,
   };

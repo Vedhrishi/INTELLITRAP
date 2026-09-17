@@ -1,10 +1,16 @@
 /**
- * Random Forest style risk engine.
+ * Baseline rule engine (superseded).
  *
- * Fifteen shallow decision trees each look at a different subset of the
- * behavioural / network features and vote for an access decision. The majority
- * vote wins, the vote spread becomes the 0-100 score and the winner's share is
- * reported as model confidence.
+ * Fifteen hand-written decision trees, each a fixed if/else threshold on a
+ * subset of the behavioural / network features -- no trained model behind
+ * them. The live app now uses src/lib/mlRiskEngine.ts, which walks a real
+ * scikit-learn RandomForestClassifier trained on ml/dataset.csv.
+ *
+ * This file is kept as the comparison baseline: ml/train.py reimplements
+ * these exact trees in Python and evaluates them against the trained model
+ * on the same held-out test set. See /ml/metrics.json for the numbers
+ * (the trained model recovers ~94% of attackers vs. ~43% for these rules,
+ * at comparable precision).
  */
 
 export type RiskDecision = "granted" | "captcha_mfa" | "honeypot" | "blocked";

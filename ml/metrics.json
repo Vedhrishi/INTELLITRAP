@@ -1,0 +1,115 @@
+{
+  "dataset": {
+    "source": "ml/dataset.csv (SYNTHETIC, see generate_dataset.py header)",
+    "n_total": 8000,
+    "n_train": 6400,
+    "n_test": 1600,
+    "label_balance_total": {
+      "0": 0.594875,
+      "1": 0.405125
+    }
+  },
+  "model": {
+    "type": "sklearn.ensemble.RandomForestClassifier",
+    "hyperparameters": {
+      "n_estimators": 15,
+      "max_depth": 6,
+      "min_samples_leaf": 15,
+      "random_state": 42
+    },
+    "features": [
+      "failedPasswords",
+      "failedCodes",
+      "requestsPerMinute",
+      "mouseMovements",
+      "keystrokeAvgMs",
+      "isProxy",
+      "isHosting",
+      "hasSuspiciousUA",
+      "isOffHoursIST",
+      "previousBlocks",
+      "timeOnPageSeconds",
+      "scrollEvents",
+      "pageViews",
+      "keystrokeMissing"
+    ],
+    "test_set_metrics": {
+      "accuracy": 0.965,
+      "precision": 0.9683544303797469,
+      "recall": 0.9444444444444444,
+      "f1": 0.95625,
+      "roc_auc": 0.9683909443406992,
+      "confusion_matrix": {
+        "labels": [
+          "legitimate (0)",
+          "attacker (1)"
+        ],
+        "matrix": [
+          [
+            932,
+            20
+          ],
+          [
+            36,
+            612
+          ]
+        ]
+      },
+      "cross_validation_5fold": {
+        "accuracy": {
+          "mean": 0.953125,
+          "std": 0.0033874192794810646
+        },
+        "precision": {
+          "mean": 0.9516889678425177,
+          "std": 0.009188964509214463
+        },
+        "recall": {
+          "mean": 0.9317331369354491,
+          "std": 0.0080129566873573
+        },
+        "f1": {
+          "mean": 0.9415456441445226,
+          "std": 0.004156447883485042
+        },
+        "roc_auc": {
+          "mean": 0.9610912144907171,
+          "std": 0.003759206171038655
+        }
+      }
+    }
+  },
+  "baseline_rule_engine": {
+    "type": "reimplementation of src/lib/riskEngine.ts (15 hand-written decision trees)",
+    "binary_mapping": "decision == 'granted' -> legitimate(0), else -> attacker(1); score/100 used as pseudo-probability for ROC-AUC",
+    "test_set_metrics": {
+      "accuracy": 0.76875,
+      "precision": 0.9894366197183099,
+      "recall": 0.43364197530864196,
+      "f1": 0.6030042918454935,
+      "roc_auc": 0.9686114028944911,
+      "confusion_matrix": {
+        "labels": [
+          "legitimate (0)",
+          "attacker (1)"
+        ],
+        "matrix": [
+          [
+            949,
+            3
+          ],
+          [
+            367,
+            281
+          ]
+        ]
+      },
+      "decision_breakdown": {
+        "granted": 1316,
+        "blocked": 174,
+        "honeypot": 88,
+        "captcha_mfa": 22
+      }
+    }
+  }
+}

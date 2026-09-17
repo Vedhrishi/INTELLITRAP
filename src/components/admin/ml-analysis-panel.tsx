@@ -30,7 +30,7 @@ export function MlAnalysisPanel() {
   return (
     <section className="glass overflow-hidden rounded-xl">
       <header className="flex items-center justify-between border-b border-border/60 px-4 py-3">
-        <h2 className="text-sm font-semibold">ML Analysis — Random Forest</h2>
+        <h2 className="text-sm font-semibold">ML Analysis — Trained Random Forest</h2>
         {data ? (
           <span className="font-mono text-[10px] text-muted-foreground">
             {data.ip} · {toIST(data.at)}
@@ -64,6 +64,11 @@ export function MlAnalysisPanel() {
               <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
                 {level} · {data.confidence}% conf.
               </span>
+              {data.attackerProbability !== null ? (
+                <span className="mt-1 font-mono text-[10px] text-muted-foreground">
+                  P(attacker) = {(data.attackerProbability * 100).toFixed(1)}%
+                </span>
+              ) : null}
             </div>
           </div>
 

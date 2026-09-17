@@ -28,13 +28,8 @@ import {
 } from "@/lib/tracking/tracking.functions";
 import { formatFileSize } from "@/lib/share/format";
 import { behaviorTracker } from "@/lib/tracking/tracker";
-import {
-  buildFeatures,
-  runRandomForest,
-  DECISION_SEVERITY,
-  type RiskResult,
-  type RiskDecision,
-} from "@/lib/riskEngine";
+import { buildFeatures, DECISION_SEVERITY, type RiskDecision } from "@/lib/riskEngine";
+import { runMlRiskEngine, type MlRiskResult } from "@/lib/mlRiskEngine";
 import { generateDecoySet, type GeneratedDecoy } from "@/lib/decoyGenerator";
 import { SecurityAnalysisPanel } from "@/components/share/security-analysis";
 import { AnimatedCheckmark } from "@/components/share/animated-checkmark";
@@ -150,7 +145,7 @@ function SharePage() {
   const [otpFailures, setOtpFailures] = useState(0);
   const [demoOtp, setDemoOtp] = useState("");
   const [invalidCodes, setInvalidCodes] = useState(0);
-  const [rfResult, setRfResult] = useState<RiskResult | null>(null);
+  const [rfResult, setRfResult] = useState<MlRiskResult | null>(null);
   const requestTimestamps = useRef<number[]>([]);
 
   const siteKey = import.meta.env["VITE_RECAPTCHA_SITE_KEY"] as string | undefined;
@@ -293,7 +288,7 @@ function SharePage() {
         userAgent: navigator.userAgent,
         requestTimestamps: requestTimestamps.current,
       });
-      const forest = runRandomForest(features);
+      const forest = runMlRiskEngine(features);
       setRfResult(forest);
 
       // The server verdict always wins when it is stricter — the client can
@@ -316,6 +311,7 @@ function SharePage() {
               tree_votes: forest.treeVotes,
               top_signals: forest.topSignals,
               breakdown: forest.breakdown,
+              attacker_probability: forest.attackerProbability,
             },
           });
         } catch {
@@ -1107,7 +1103,7 @@ function BlockedState({
   result,
 }: {
   sessionToken: string | null;
-  result: RiskResult | null;
+  result: MlRiskResult | null;
 }) {
   const particles = useRef(
     Array.from({ length: 20 }, () => ({
