@@ -239,12 +239,39 @@ export function generateDecoyFile(category?: string): GeneratedDecoy {
   };
 }
 
-/** A set of decoys, each from a different category. */
-export function generateDecoySet(count = 3): GeneratedDecoy[] {
+/** Signals that decide which lures are most credible for the current attacker. */
+export type DecoyHint = {
+  failedPasswords?: number;
+  failedCodes?: number;
+  requestsPerMinute?: number;
+};
+
+/**
+ * Lure categories ranked by attacker intent: password guessers are after
+ * credentials, code enumerators after bulk data, high-rate scanners after
+ * exportable archives. Falls back to random categories to fill the set.
+ */
+function preferredCategories(hint?: DecoyHint): string[] {
+  if (!hint) return [];
+  const preferred: string[] = [];
+  if ((hint.failedPasswords ?? 0) > 0) preferred.push("credentials", "source_code");
+  if ((hint.failedCodes ?? 0) > 0) preferred.push("customer_database", "employee_records");
+  if ((hint.requestsPerMinute ?? 0) > 10) preferred.push("source_code", "financial_data");
+  return [...new Set(preferred)];
+}
+
+/** A set of decoys, each from a different category, biased by attacker behaviour. */
+export function generateDecoySet(count = 3, hint?: DecoyHint): GeneratedDecoy[] {
   const used = new Set<string>();
   const result: GeneratedDecoy[] = [];
-  let attempts = 0;
 
+  for (const cat of preferredCategories(hint)) {
+    if (result.length >= count) break;
+    used.add(cat);
+    result.push(generateDecoyFile(cat));
+  }
+
+  let attempts = 0;
   while (result.length < count && attempts < 20) {
     const cat = randomFrom(CATEGORIES);
     if (!used.has(cat)) {

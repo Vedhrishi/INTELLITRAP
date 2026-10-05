@@ -3,14 +3,15 @@ import type { RuleAction } from "@/types/db";
 /**
  * Single source of truth for risk-score thresholds.
  * Nothing anywhere else may hardcode these numbers.
+ * Bands match levelForScore() in riskEngine.ts: 0-30 / 31-60 / 61-80 / 81-100.
  */
 export const RISK_THRESHOLDS = {
-  allowMax: 29,
-  challengeMin: 30,
-  challengeMax: 59,
-  trapMin: 60,
-  trapMax: 84,
-  blockMin: 85,
+  allowMax: 30,
+  challengeMin: 31,
+  challengeMax: 60,
+  trapMin: 61,
+  trapMax: 80,
+  blockMin: 81,
 } as const;
 
 export type RiskDecision = "allow" | "challenge" | "trap" | "block";

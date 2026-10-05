@@ -406,7 +406,12 @@ function SharePage() {
       try {
         // Decoys are generated locally, so the trap can never fail on an
         // empty template table.
-        const decoys = generateDecoySet(3);
+        const decoys = generateDecoySet(3, {
+          failedPasswords: failedAttempts,
+          failedCodes: invalidCodes,
+          requestsPerMinute: requestTimestamps.current.filter((t) => Date.now() - t < 60_000)
+            .length,
+        });
         if (cancelled) return;
         setDecoyItems(decoys.map(buildDecoyItem));
       } catch {

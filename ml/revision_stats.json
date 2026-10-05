@@ -1,0 +1,63 @@
+{
+  "n_total": 8000,
+  "n_train": 6400,
+  "n_test": 1600,
+  "class_counts_total": {
+    "legitimate": 4759,
+    "attacker": 3241
+  },
+  "class_counts_train": {
+    "legitimate": 3807,
+    "attacker": 2593
+  },
+  "class_counts_test": {
+    "legitimate": 952,
+    "attacker": 648
+  },
+  "scenario_counts_before_label_noise": {
+    "casual_legit": 2640,
+    "mobile_legit": 1200,
+    "credential_stuffing_bot": 1120,
+    "scraper_bot": 800,
+    "careful_human_attacker": 704,
+    "legit_password_typo": 576,
+    "repeat_offender": 576,
+    "legit_on_vpn": 384
+  },
+  "label_noise_rate": 0.04,
+  "keystroke_missing_fraction": 0.186375,
+  "severity_levels_test": {
+    "low": {
+      "n": 943,
+      "attacker_fraction": 0.032873806998939555
+    },
+    "medium": {
+      "n": 40,
+      "attacker_fraction": 0.375
+    },
+    "high": {
+      "n": 56,
+      "attacker_fraction": 0.9642857142857143
+    },
+    "critical": {
+      "n": 561,
+      "attacker_fraction": 0.9768270944741533
+    }
+  },
+  "gini_importance": {
+    "requestsPerMinute": 0.30583518079444444,
+    "scrollEvents": 0.16430691421509497,
+    "failedPasswords": 0.15566061920833654,
+    "timeOnPageSeconds": 0.1374450420236642,
+    "keystrokeAvgMs": 0.08413700904906077,
+    "previousBlocks": 0.05790828933903775,
+    "failedCodes": 0.051704483558123376,
+    "isHosting": 0.022497593154490757,
+    "mouseMovements": 0.009545421713618635,
+    "isProxy": 0.00559040229288911,
+    "pageViews": 0.002374289601317747,
+    "hasSuspiciousUA": 0.0018689154135550414,
+    "isOffHoursIST": 0.0008079540163248291,
+    "keystrokeMissing": 0.00031788562004165903
+  }
+}
