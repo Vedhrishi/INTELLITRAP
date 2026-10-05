@@ -16,9 +16,9 @@ const features = [
   },
   {
     icon: Radar,
-    title: "Detection rules",
+    title: "Threat signals",
     description:
-      "Tunable regex and heuristic rules catch injection, traversal, scanners and mass-download bursts.",
+      "Brute-force attempts, code enumeration, scraping bursts and automation tools raise the risk score through weighted behavioural and network signals.",
   },
   {
     icon: Binary,
@@ -30,7 +30,7 @@ const features = [
     icon: Bot,
     title: "AI analysis",
     description:
-      "Evidence bundles are classified into tactics, indicators and recommended actions in plain English.",
+      "A trained Random Forest scores every session and explains which signals pushed the score up.",
   },
   {
     icon: ScrollText,
