@@ -5,12 +5,12 @@ import { EmptyState } from "@/components/primitives/empty-state";
 import { RoleGuard } from "@/components/auth/role-guard";
 
 const title = "Security console";
-const description = "Admin-only threat monitoring and deception analytics for IntelliTrap.";
+const description = "Admin-only threat monitoring and deception analytics for IntelliTrap Batch2.";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   head: () => ({
     meta: [
-      { title: `${title} — IntelliTrap` },
+      { title: `${title} — IntelliTrap Batch2` },
       { name: "description", content: description },
       { property: "og:title", content: title },
       { property: "og:description", content: description },

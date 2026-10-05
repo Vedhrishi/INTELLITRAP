@@ -77,7 +77,7 @@ export function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
       toast.success("Check your email to confirm your account.");
       return;
     }
-    toast.success("Account created. Welcome to IntelliTrap.");
+    toast.success("Account created. Welcome to IntelliTrap Batch2.");
     onSuccess();
   });
 

@@ -15,7 +15,7 @@ const description = "Permanent, tamper-proof record of every administrative acti
 export const Route = createFileRoute("/_authenticated/admin/audit-log")({
   head: () => ({
     meta: [
-      { title: `${title} — IntelliTrap` },
+      { title: `${title} — IntelliTrap Batch2` },
       { name: "description", content: description },
       { property: "og:title", content: title },
       { property: "og:description", content: description },

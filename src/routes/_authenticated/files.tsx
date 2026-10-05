@@ -14,7 +14,7 @@ const description = "Upload, share and audit access to your secret-protected fil
 export const Route = createFileRoute("/_authenticated/files")({
   head: () => ({
     meta: [
-      { title: `${title} — IntelliTrap` },
+      { title: `${title} — IntelliTrap Batch2` },
       { name: "description", content: description },
       { property: "og:title", content: title },
       { property: "og:description", content: description },

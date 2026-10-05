@@ -18,7 +18,7 @@ export function AuthLayout({
   return (
     <div className="bg-gradient-hero flex min-h-screen flex-col px-4 py-8">
       <div className="mx-auto grid w-full max-w-md grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
-        <Link to="/" aria-label="IntelliTrap home" className="min-w-0">
+        <Link to="/" aria-label="IntelliTrap Batch2 home" className="min-w-0">
           <Logo />
         </Link>
         <ThemeToggle />

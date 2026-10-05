@@ -16,7 +16,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
       <header className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#7f1d1d]/40 bg-[#1e293b]/60 px-4 py-3">
         <div className="flex items-center gap-2">
           <Crown aria-hidden className="size-5 text-[#facc15]" />
-          <span className="text-sm font-semibold tracking-wide">IntelliTrap Admin</span>
+          <span className="text-sm font-semibold tracking-wide">IntelliTrap Batch2 Admin</span>
           <span className="flex items-center gap-1.5 rounded-full border border-red-500/50 bg-red-500/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-red-400 animate-pulse">
             <span className="size-1.5 rounded-full bg-red-500" />
             Admin Mode

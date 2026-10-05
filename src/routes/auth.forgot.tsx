@@ -12,8 +12,8 @@ import { useAuth } from "@/lib/auth/auth-context";
 import { useResendCooldown } from "@/lib/auth/use-resend-cooldown";
 import { reportAuthFailure } from "@/lib/auth/report-auth-failure";
 
-const title = "Reset your IntelliTrap password";
-const description = "Request a password reset link for your IntelliTrap account.";
+const title = "Reset your IntelliTrap Batch2 password";
+const description = "Request a password reset link for your IntelliTrap Batch2 account.";
 
 export const Route = createFileRoute("/auth/forgot")({
   head: () => ({

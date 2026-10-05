@@ -7,8 +7,8 @@ import { LoginForm } from "@/components/auth/login-form";
 import { RegisterForm } from "@/components/auth/register-form";
 import { useAuth } from "@/lib/auth/auth-context";
 
-const title = "Sign in to IntelliTrap";
-const description = "Access your encrypted workspace or create a new IntelliTrap account.";
+const title = "Sign in to IntelliTrap Batch2";
+const description = "Access your encrypted workspace or create a new IntelliTrap Batch2 account.";
 
 const searchSchema = z.object({
   redirect: z.string().startsWith("/").optional(),

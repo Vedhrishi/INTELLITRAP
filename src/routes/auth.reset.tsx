@@ -19,8 +19,8 @@ import { describeAuthError } from "@/lib/auth/auth-errors";
 import { reportAuthFailure } from "@/lib/auth/report-auth-failure";
 import { supabase } from "@/integrations/supabase/client";
 
-const title = "Choose a new IntelliTrap password";
-const description = "Set a new password for your IntelliTrap account.";
+const title = "Choose a new IntelliTrap Batch2 password";
+const description = "Set a new password for your IntelliTrap Batch2 account.";
 
 export const Route = createFileRoute("/auth/reset")({
   ssr: false,

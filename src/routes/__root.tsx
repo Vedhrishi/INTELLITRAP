@@ -81,7 +81,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "IntelliTrap" },
+      { title: "IntelliTrap Batch2" },
       { name: "description", content: "Secure cloud storage with an AI deception layer." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

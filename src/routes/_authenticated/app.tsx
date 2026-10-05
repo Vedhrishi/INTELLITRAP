@@ -8,12 +8,12 @@ import { useAuth } from "@/lib/auth/auth-context";
 import { DEFAULT_STORAGE_QUOTA_BYTES, formatBytes } from "@/config/security";
 
 const title = "Your workspace";
-const description = "Your encrypted files, shares and activity in IntelliTrap.";
+const description = "Your encrypted files, shares and activity in IntelliTrap Batch2.";
 
 export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({
     meta: [
-      { title: `${title} — IntelliTrap` },
+      { title: `${title} — IntelliTrap Batch2` },
       { name: "description", content: description },
       { property: "og:title", content: title },
       { property: "og:description", content: description },

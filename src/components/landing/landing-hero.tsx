@@ -35,7 +35,7 @@ export function LandingHero() {
           Secure cloud storage with an <span className="text-primary">AI deception layer</span>
         </h1>
         <p className="mx-auto mt-5 max-w-xl text-balance text-base text-muted-foreground sm:text-lg">
-          IntelliTrap stores your files with encryption, quotas and granular sharing — while
+          IntelliTrap Batch2 stores your files with encryption, quotas and granular sharing — while
           silently profiling every session and diverting attackers into a monitored honeypot.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">

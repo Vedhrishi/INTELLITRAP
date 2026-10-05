@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * IntelliTrap design system.
+ * IntelliTrap Batch2 design system.
  * Dark-first security-operations aesthetic. All values are HSL-based tokens.
  * Components must only ever use semantic tokens, never raw colours.
  */

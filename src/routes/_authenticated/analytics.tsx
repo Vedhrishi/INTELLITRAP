@@ -26,7 +26,7 @@ const description = "Traffic, risk distribution and deception outcomes at a glan
 export const Route = createFileRoute("/_authenticated/analytics")({
   head: () => ({
     meta: [
-      { title: `${title} — IntelliTrap` },
+      { title: `${title} — IntelliTrap Batch2` },
       { name: "description", content: description },
       { property: "og:title", content: title },
       { property: "og:description", content: description },

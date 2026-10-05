@@ -3,12 +3,12 @@ import { motion } from "framer-motion";
 import { ShieldX } from "lucide-react";
 
 const title = "Access denied";
-const description = "This IP address has been blocked from accessing IntelliTrap.";
+const description = "This IP address has been blocked from accessing IntelliTrap Batch2.";
 
 export const Route = createFileRoute("/blocked")({
   head: () => ({
     meta: [
-      { title: `${title} — IntelliTrap` },
+      { title: `${title} — IntelliTrap Batch2` },
       { name: "description", content: description },
       { property: "og:title", content: title },
       { property: "og:description", content: description },

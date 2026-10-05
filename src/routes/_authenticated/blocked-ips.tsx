@@ -13,7 +13,7 @@ const description = "Every active block, with the signals and score that trigger
 export const Route = createFileRoute("/_authenticated/blocked-ips")({
   head: () => ({
     meta: [
-      { title: `${title} — IntelliTrap` },
+      { title: `${title} — IntelliTrap Batch2` },
       { name: "description", content: description },
       { property: "og:title", content: title },
       { property: "og:description", content: description },

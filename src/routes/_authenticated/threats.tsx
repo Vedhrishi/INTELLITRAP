@@ -16,7 +16,7 @@ const description = "High and critical risk sessions, with today's most common a
 export const Route = createFileRoute("/_authenticated/threats")({
   head: () => ({
     meta: [
-      { title: `${title} — IntelliTrap` },
+      { title: `${title} — IntelliTrap Batch2` },
       { name: "description", content: description },
       { property: "og:title", content: title },
       { property: "og:description", content: description },

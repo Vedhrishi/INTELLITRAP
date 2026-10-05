@@ -1,4 +1,4 @@
-# IntelliTrap
+# IntelliTrap Batch2
 
 Secure cloud storage with an AI deception layer.
 
@@ -60,7 +60,7 @@ success. Severity is always communicated by glyph + text as well as colour.
 ## Honest scope limits
 
 Network firewalling, packet inspection, real IP-layer blocking and malware
-sandboxing are out of scope and are **not** simulated as real. IntelliTrap
+sandboxing are out of scope and are **not** simulated as real. IntelliTrap Batch2
 implements the application-layer equivalents only: request scoring, session
 diversion, application-level IP blocklisting, and MIME/magic-byte upload checks.
 

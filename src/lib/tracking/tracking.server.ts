@@ -363,9 +363,9 @@ export async function sendOtpEmail(to: string, code: string): Promise<{ ok: bool
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "IntelliTrap <onboarding@resend.dev>",
+        from: "IntelliTrap Batch2 <onboarding@resend.dev>",
         to: [to],
-        subject: `${code} is your IntelliTrap verification code`,
+        subject: `${code} is your IntelliTrap Batch2 verification code`,
         text: `Your verification code is ${code}. It expires in 10 minutes. If you didn't request this, you can ignore this email.`,
       }),
     });

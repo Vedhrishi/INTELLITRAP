@@ -3,7 +3,7 @@ import { LandingHero, LandingNav } from "@/components/landing/landing-hero";
 import { LandingFeatures } from "@/components/landing/landing-features";
 import { LandingFooter, LandingHow } from "@/components/landing/landing-sections";
 
-const title = "IntelliTrap — Secure Cloud Storage with an AI Deception Layer";
+const title = "IntelliTrap Batch2 — Secure Cloud Storage with an AI Deception Layer";
 const description =
   "Encrypted cloud file storage that profiles every session, scores risk in real time, and diverts attackers into a monitored AI-analysed honeypot.";
 

@@ -39,9 +39,9 @@ import { ProgressSteps, type ShareStep } from "@/components/share/progress-steps
 import { FileCard } from "@/components/share/file-card";
 import { OtpBoxes } from "@/components/share/otp-boxes";
 
-const title = "Secure File Access — IntelliTrap";
+const title = "Secure File Access — IntelliTrap Batch2";
 const description =
-  "Enter the secure share code and password to access a file protected by IntelliTrap.";
+  "Enter the secure share code and password to access a file protected by IntelliTrap Batch2.";
 
 export const Route = createFileRoute("/share")({
   head: () => ({
@@ -611,7 +611,7 @@ function SharePage() {
                 color: "transparent",
               }}
             >
-              IntelliTrap
+              IntelliTrap Batch2
             </h1>
             <p className="text-sm text-[#64748b]">Secure File Access</p>
           </div>

@@ -25,12 +25,12 @@ const VisitorMap = lazy(() => import("@/components/dashboard/LiveVisitorMap"));
 
 const title = "Live visitor intelligence";
 const description =
-  "Real-time visitor telemetry, risk scoring and honeypot activity across IntelliTrap.";
+  "Real-time visitor telemetry, risk scoring and honeypot activity across IntelliTrap Batch2.";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
-      { title: `${title} — IntelliTrap` },
+      { title: `${title} — IntelliTrap Batch2` },
       { name: "description", content: description },
       { property: "og:title", content: title },
       { property: "og:description", content: description },

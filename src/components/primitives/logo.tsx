@@ -8,7 +8,7 @@ export function Logo({ className, showText = true }: { className?: string; showT
         <ShieldCheck aria-hidden className="size-4.5" />
       </span>
       {showText ? (
-        <span className="truncate text-base font-semibold tracking-tight">IntelliTrap</span>
+        <span className="truncate text-base font-semibold tracking-tight">IntelliTrap Batch2</span>
       ) : null}
     </span>
   );

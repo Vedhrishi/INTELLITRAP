@@ -26,7 +26,7 @@ const description = "Live access telemetry, active honeypot sessions and auto-bl
 export const Route = createFileRoute("/_authenticated/admin/threat-intel")({
   head: () => ({
     meta: [
-      { title: `${title} — IntelliTrap` },
+      { title: `${title} — IntelliTrap Batch2` },
       { name: "description", content: description },
       { property: "og:title", content: title },
       { property: "og:description", content: description },

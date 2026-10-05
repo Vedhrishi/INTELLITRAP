@@ -13,7 +13,7 @@ const description = "Sessions diverted into the deception layer and what they to
 export const Route = createFileRoute("/_authenticated/honeypot")({
   head: () => ({
     meta: [
-      { title: `${title} — IntelliTrap` },
+      { title: `${title} — IntelliTrap Batch2` },
       { name: "description", content: description },
       { property: "og:title", content: title },
       { property: "og:description", content: description },

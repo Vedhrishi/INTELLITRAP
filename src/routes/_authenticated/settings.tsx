@@ -19,7 +19,7 @@ const description = "Manage your profile, appearance, and file sharing secret co
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
     meta: [
-      { title: `${title} — IntelliTrap` },
+      { title: `${title} — IntelliTrap Batch2` },
       { name: "description", content: description },
       { name: "robots", content: "noindex" },
     ],
