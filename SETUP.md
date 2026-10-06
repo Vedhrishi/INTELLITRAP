@@ -39,3 +39,13 @@ select id, 'admin' from auth.users where email = 'you@example.com'
 on conflict (user_id, role) do nothing;
 ```
 - For real email delivery, configure custom SMTP (e.g. Resend) under Project Settings > Authentication > SMTP.
+
+## Email setup (confirmation + OTP) using Gmail
+1. Google Account > Security > turn on 2-Step Verification, then create an **App password** (16 characters).
+2. Supabase > Project Settings > Authentication > **SMTP Settings**: enable custom SMTP.
+   Host `smtp.gmail.com`, port `465`, username = your Gmail address, password = the app password,
+   sender = your Gmail address, sender name `IntelliTrap Batch2`.
+3. Supabase > Authentication > Sign In / Providers > Email: turn **Confirm email** ON.
+4. Supabase > Authentication > URL Configuration: Site URL = your Vercel URL; add it (`/**`) under Redirect URLs.
+5. Vercel > Settings > Environment Variables: add `SMTP_USER` (Gmail address) and `SMTP_PASS` (app password), then redeploy.
+   The /share OTP email now uses this SMTP; without it the code falls back to Resend (test sender, owner-only).

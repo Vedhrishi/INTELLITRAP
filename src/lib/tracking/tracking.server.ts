@@ -348,11 +348,43 @@ export function generateOtpCode(): string {
   return String(100000 + (bytes[0]! % 900000));
 }
 
-/** Sends the share-flow OTP by email via Resend's HTTP API. */
+/**
+ * Sends the share-flow OTP by email. Uses SMTP (e.g. Gmail app password) when
+ * SMTP_USER/SMTP_PASS are set, because that can reach any recipient; otherwise
+ * falls back to Resend, whose onboarding sender only delivers to the Resend
+ * account owner until a domain is verified.
+ */
 export async function sendOtpEmail(to: string, code: string): Promise<{ ok: boolean }> {
+  const subject = `${code} is your IntelliTrap Batch2 verification code`;
+  const text = `Your verification code is ${code}. It expires in 10 minutes. If you didn't request this, you can ignore this email.`;
+
+  const smtpUser = process.env.SMTP_USER;
+  const smtpPass = process.env.SMTP_PASS;
+  if (smtpUser && smtpPass) {
+    try {
+      const nodemailer = await import("nodemailer");
+      const transport = nodemailer.createTransport({
+        host: process.env.SMTP_HOST ?? "smtp.gmail.com",
+        port: Number(process.env.SMTP_PORT ?? 465),
+        secure: Number(process.env.SMTP_PORT ?? 465) === 465,
+        auth: { user: smtpUser, pass: smtpPass },
+      });
+      await transport.sendMail({
+        from: process.env.SMTP_FROM ?? `IntelliTrap Batch2 <${smtpUser}>`,
+        to,
+        subject,
+        text,
+      });
+      return { ok: true };
+    } catch (err) {
+      console.error("[otp] SMTP send failed", err);
+      return { ok: false };
+    }
+  }
+
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
-    console.error("[otp] RESEND_API_KEY is not set — cannot send verification email.");
+    console.error("[otp] Neither SMTP_USER/SMTP_PASS nor RESEND_API_KEY is set.");
     return { ok: false };
   }
   try {
@@ -365,8 +397,8 @@ export async function sendOtpEmail(to: string, code: string): Promise<{ ok: bool
       body: JSON.stringify({
         from: "IntelliTrap Batch2 <onboarding@resend.dev>",
         to: [to],
-        subject: `${code} is your IntelliTrap Batch2 verification code`,
-        text: `Your verification code is ${code}. It expires in 10 minutes. If you didn't request this, you can ignore this email.`,
+        subject,
+        text,
       }),
     });
     return { ok: response.ok };
