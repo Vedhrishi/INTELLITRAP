@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { BRUTE_FORCE_LIMIT } from "@/config/security";
 import { levelForScore } from "@/lib/riskEngine";
+import { classifyPayload } from "@/lib/threatClassifier";
 import {
   alertAdmins,
   clientIp,
@@ -539,6 +540,30 @@ export const verifyFilePassword = createServerFn({ method: "POST" })
     const ip = clientIp();
     if (await isIpBlocked(supabaseAdmin, ip))
       return { success: false as const, blocked: true, error: "Access denied" };
+
+    // Payload-attack detection on the free-text inputs. Logged as a
+    // suspicious_behavior event so it feeds the same admin telemetry.
+    for (const [field, value] of [
+      ["secret_code", data.secret_code],
+      ["password", data.password],
+    ] as const) {
+      const threat = classifyPayload(value);
+      if (threat.category !== "none") {
+        await supabaseAdmin.from("visitor_events").insert({
+          session_token: data.session_token,
+          visitor_id: data.visitor_id,
+          ip_address: ip,
+          event_type: "suspicious_behavior",
+          page_path: "/share",
+          event_data: {
+            threat_category: threat.category,
+            reasons: threat.reasons,
+            field,
+          } as never,
+        });
+        break;
+      }
+    }
 
     const code = data.secret_code.trim().toUpperCase();
     let lookup = supabaseAdmin

