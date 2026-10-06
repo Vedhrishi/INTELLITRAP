@@ -25,3 +25,17 @@ Requires Node 20.19+ (22 recommended).
 ## 4. Paper / ML material
 See `ml/REVISION_RESPONSE.md`, `ml/REFERENCES_25.md`, `ml/figures/`.
 Regenerate: `python ml/generate_dataset.py && python ml/train.py && python ml/make_revision_assets.py`
+
+## Troubleshooting: confirmation email never arrives
+Supabase's built-in mail sender is heavily rate-limited and often blocked or spam-filtered.
+- Quick fix for demos: Authentication > Sign In / Providers > Email > turn off **Confirm email**.
+- Accounts created *before* that stay unconfirmed. Confirm them (and optionally grant admin) in the SQL editor:
+```sql
+update auth.users set email_confirmed_at = now()
+where email = 'you@example.com' and email_confirmed_at is null;
+
+insert into public.user_roles (user_id, role)
+select id, 'admin' from auth.users where email = 'you@example.com'
+on conflict (user_id, role) do nothing;
+```
+- For real email delivery, configure custom SMTP (e.g. Resend) under Project Settings > Authentication > SMTP.
