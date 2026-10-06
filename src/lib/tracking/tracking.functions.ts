@@ -9,6 +9,7 @@ import {
   generateOtpCode,
   geoFromTimezone,
   hashOtpCode,
+  safeEqual,
   hashSharePassword,
   intelGeo,
   isIpBlocked,
@@ -602,7 +603,7 @@ export const verifyFilePassword = createServerFn({ method: "POST" })
     }
 
     const inputHash = await hashSharePassword(data.password);
-    if (!file.file_password_hash || inputHash !== file.file_password_hash) {
+    if (!file.file_password_hash || !safeEqual(inputHash, file.file_password_hash)) {
       await supabaseAdmin.from("visitor_events").insert({
         session_token: data.session_token,
         visitor_id: data.visitor_id,
@@ -1175,6 +1176,9 @@ export const applyRiskVerdict = createServerFn({ method: "POST" })
   });
 
 const OTP_TTL_MS = 10 * 60 * 1000;
+const OTP_MAX_SENDS_PER_SESSION = 3;
+const OTP_MAX_SENDS_PER_IP_HOUR = 10;
+const OTP_MAX_ATTEMPTS = 5;
 
 /** Generates and emails a one-time verification code for the /share challenge step. */
 export const sendShareOtp = createServerFn({ method: "POST" })
@@ -1191,6 +1195,25 @@ export const sendShareOtp = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const ip = clientIp();
 
+    // Abuse limits: this endpoint sends real email, so cap it per session and per IP.
+    const [{ count: sessionSends }, { count: ipSends }] = await Promise.all([
+      supabaseAdmin
+        .from("visitor_events")
+        .select("id", { count: "exact", head: true })
+        .eq("session_token", data.session_token)
+        .eq("event_type", "otp_sent")
+        .gte("created_at", new Date(Date.now() - OTP_TTL_MS).toISOString()),
+      supabaseAdmin
+        .from("visitor_events")
+        .select("id", { count: "exact", head: true })
+        .eq("ip_address", ip)
+        .eq("event_type", "otp_sent")
+        .gte("created_at", new Date(Date.now() - 60 * 60 * 1000).toISOString()),
+    ]);
+    if ((sessionSends ?? 0) >= OTP_MAX_SENDS_PER_SESSION || (ipSends ?? 0) >= OTP_MAX_SENDS_PER_IP_HOUR) {
+      return { ok: false as const, error: "Too many codes requested. Please wait and try again." };
+    }
+
     const code = generateOtpCode();
     const codeHash = await hashOtpCode(code);
     const expiresAt = new Date(Date.now() + OTP_TTL_MS).toISOString();
@@ -1201,6 +1224,7 @@ export const sendShareOtp = createServerFn({ method: "POST" })
         otp_code_hash: codeHash,
         otp_expires_at: expiresAt,
         otp_shown: true,
+        challenge_attempts: 0,
       })
       .eq("session_token", data.session_token);
 
@@ -1239,9 +1263,25 @@ export const verifyShareOtp = createServerFn({ method: "POST" })
       .eq("session_token", data.session_token)
       .maybeSingle();
 
+    // Lock out guessing: after OTP_MAX_ATTEMPTS wrong tries the code is voided.
+    if ((visitor?.challenge_attempts ?? 0) >= OTP_MAX_ATTEMPTS) {
+      await supabaseAdmin
+        .from("visitors")
+        .update({ otp_code_hash: null, otp_expires_at: null })
+        .eq("session_token", data.session_token);
+      return {
+        success: false as const,
+        error: "Too many incorrect attempts. Send a new code.",
+      };
+    }
+
     const expired = !visitor?.otp_expires_at || new Date(visitor.otp_expires_at) < new Date();
     const codeHash = visitor?.otp_code_hash ? await hashOtpCode(data.code) : null;
-    const matches = !expired && codeHash !== null && codeHash === visitor?.otp_code_hash;
+    const matches =
+      !expired &&
+      codeHash !== null &&
+      !!visitor?.otp_code_hash &&
+      safeEqual(codeHash, visitor.otp_code_hash);
 
     if (!matches) {
       await supabaseAdmin

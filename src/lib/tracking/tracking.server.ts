@@ -323,6 +323,14 @@ export function scoreVisitor(input: {
   return { score, level: "critical", decision: "blocked", breakdown, signals };
 }
 
+/** Constant-time string comparison, so hash checks do not leak timing. */
+export function safeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i += 1) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
 /** SHA-256 hash used for shared-file passwords. Plaintext is never stored. */
 export async function hashSharePassword(password: string): Promise<string> {
   const bytes = new TextEncoder().encode(`${password}intellitrap-salt-2024`);
