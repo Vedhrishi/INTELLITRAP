@@ -421,6 +421,8 @@ function SharePage() {
     return () => {
       cancelled = true;
     };
+    // Failure counters are read when the honeypot opens, not subscribed to.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shareState, sessionToken, logEvent]);
 
   async function downloadRealFile() {
