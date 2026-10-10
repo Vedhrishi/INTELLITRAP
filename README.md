@@ -4,9 +4,22 @@ Secure cloud storage with an AI deception layer.
 
 ## Status
 
-**Phase 1 complete** — design system, shared primitives, app shell, landing page.
-Later phases (auth, schema/RLS, file product, threat detection, honeypot, admin
-console, AI reports) build on top of these foundations.
+Feature-complete: auth and roles, RLS-backed schema, file storage and OTP-protected sharing,
+behavioural risk scoring (RandomForest), honeypot diversion, threat classifier, admin console.
+The phase notes below record how it was built.
+
+## Quick start
+
+Needs Node 20.19+ (`.nvmrc` pins 22). See `SETUP.md` for the Supabase and Vercel setup.
+
+```bash
+npm ci && cp .env.example .env
+npm run dev        # http://localhost:3000
+npm run check      # typecheck + lint + tests + build (same as CI)
+```
+
+On Windows, if tests or the build report a missing rolldown binding, run
+`npm i --no-save --no-package-lock @rolldown/binding-win32-x64-msvc@<rolldown version>`.
 
 ## Stack notes / deviations from the brief
 
@@ -41,17 +54,17 @@ must only use semantic utilities (`bg-background`, `text-muted-foreground`,
 
 ## Shared primitives (`src/components`)
 
-| Primitive | Path |
-| --- | --- |
-| AppShell / Sidebar / TopBar | `layout/app-shell.tsx`, `layout/app-sidebar.tsx`, `layout/top-bar.tsx` |
-| PageHeader | `primitives/page-header.tsx` |
-| StatCard | `primitives/stat-card.tsx` |
-| DataTable (sort + search + paginate + skeleton + empty + error) | `primitives/data-table.tsx` |
-| EmptyState / ErrorState | `primitives/empty-state.tsx`, `primitives/error-state.tsx` |
-| ConfirmDialog | `primitives/confirm-dialog.tsx` |
-| SeverityBadge / StatusDot | `primitives/severity-badge.tsx`, `primitives/status-dot.tsx` |
-| CopyableCode / FileIcon | `primitives/copyable-code.tsx`, `primitives/file-icon.tsx` |
-| Timeline / ChartCard | `primitives/timeline.tsx`, `primitives/chart-card.tsx` |
+| Primitive                                                       | Path                                                                   |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| AppShell / Sidebar / TopBar                                     | `layout/app-shell.tsx`, `layout/app-sidebar.tsx`, `layout/top-bar.tsx` |
+| PageHeader                                                      | `primitives/page-header.tsx`                                           |
+| StatCard                                                        | `primitives/stat-card.tsx`                                             |
+| DataTable (sort + search + paginate + skeleton + empty + error) | `primitives/data-table.tsx`                                            |
+| EmptyState / ErrorState                                         | `primitives/empty-state.tsx`, `primitives/error-state.tsx`             |
+| ConfirmDialog                                                   | `primitives/confirm-dialog.tsx`                                        |
+| SeverityBadge / StatusDot                                       | `primitives/severity-badge.tsx`, `primitives/status-dot.tsx`           |
+| CopyableCode / FileIcon                                         | `primitives/copyable-code.tsx`, `primitives/file-icon.tsx`             |
+| Timeline / ChartCard                                            | `primitives/timeline.tsx`, `primitives/chart-card.tsx`                 |
 
 Every data surface is expected to render four explicit states: loading
 (skeletons), empty (illustrationless icon + CTA), error (message + retry), and
@@ -75,6 +88,7 @@ default `user` role on signup. RLS is enabled everywhere; users see only their o
 rows, admins see all.
 
 **Conventions chosen where the brief was silent**
+
 - Email confirmation is auto-confirm (signup signs the user straight in) and
   leaked-password protection (HIBP) is enabled.
 - `has_role` keeps `EXECUTE` for `authenticated` because RLS policies depend on it;
@@ -100,7 +114,7 @@ rows, admins see all.
 **Ownership vs. security split.** Content tables (`folders`, `files`,
 `file_shares`, `notifications`) are owner-scoped via `auth.uid()`. Security
 tables are **read-only** for staff (`admin`/`analyst` through `has_role()`) and
-have *no* user-facing insert policy: every write to `sessions`, `threat_events`,
+have _no_ user-facing insert policy: every write to `sessions`, `threat_events`,
 `attacker_profiles`, `honeypot_sessions`, `ai_reports` and `audit_log` must go
 through a server function using the service-role key. Never insert into these
 from the browser — if that looks necessary, a server function is missing.
@@ -108,6 +122,7 @@ from the browser — if that looks necessary, a server function is missing.
 append-only and tamper-evident.
 
 **Deviations, and why**
+
 - Every table also has explicit `GRANT`s (the Data API grants nothing by
   default on `public`); RLS still decides row visibility.
 - `audit insert only` uses `with check (auth.uid() is not null)` instead of
