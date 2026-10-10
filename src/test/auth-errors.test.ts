@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  backendCooldownSeconds,
-  describeAuthError,
-  maskEmail,
-} from "@/lib/auth/auth-errors";
+import { backendCooldownSeconds, describeAuthError, maskEmail } from "@/lib/auth/auth-errors";
 import { commonPasswordIssue, passwordScore, registerSchema } from "@/lib/auth/auth-schemas";
 import { formatCooldown } from "@/lib/auth/use-resend-cooldown";
 

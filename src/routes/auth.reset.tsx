@@ -98,7 +98,8 @@ function ResetPage() {
           <div className="flex items-start gap-3 rounded-lg border border-destructive/40 bg-destructive/10 p-4">
             <TriangleAlert aria-hidden className="mt-0.5 size-5 shrink-0 text-destructive" />
             <p className="text-sm text-muted-foreground">
-              This link has expired or was already used. Request a new one and open the newest email.
+              This link has expired or was already used. Request a new one and open the newest
+              email.
             </p>
           </div>
           <Button asChild className="w-full">

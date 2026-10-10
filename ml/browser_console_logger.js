@@ -71,7 +71,10 @@
       "human_manual",
     ].join(",");
 
-    console.log("%cCopy this line into ml/real_legitimate_sessions.csv:", "font-weight:bold;color:#22c55e");
+    console.log(
+      "%cCopy this line into ml/real_legitimate_sessions.csv:",
+      "font-weight:bold;color:#22c55e",
+    );
     console.log(row);
     return row;
   };

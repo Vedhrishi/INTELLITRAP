@@ -43,7 +43,11 @@ const PAYLOAD_RULES: { category: PayloadCategory; name: string; pattern: RegExp 
     pattern: /\b(sleep|benchmark|pg_sleep|waitfor\s+delay)\s*\(|waitfor\s+delay\s+'/i,
   },
   { category: "xss", name: "script tag", pattern: /<\s*script\b/i },
-  { category: "xss", name: "event handler", pattern: /\bon(error|load|click|mouseover|focus)\s*=/i },
+  {
+    category: "xss",
+    name: "event handler",
+    pattern: /\bon(error|load|click|mouseover|focus)\s*=/i,
+  },
   { category: "xss", name: "javascript uri", pattern: /javascript\s*:/i },
   {
     category: "xss",
@@ -90,11 +94,45 @@ export function classifyPayload(input: string): ThreatVerdict {
 }
 
 const EXECUTABLE_EXT = new Set([
-  "exe", "dll", "bat", "cmd", "com", "scr", "msi", "ps1", "vbs", "js", "jse", "wsf",
-  "sh", "jar", "apk", "hta", "cpl", "lnk", "php", "phtml", "jsp", "asp", "aspx",
+  "exe",
+  "dll",
+  "bat",
+  "cmd",
+  "com",
+  "scr",
+  "msi",
+  "ps1",
+  "vbs",
+  "js",
+  "jse",
+  "wsf",
+  "sh",
+  "jar",
+  "apk",
+  "hta",
+  "cpl",
+  "lnk",
+  "php",
+  "phtml",
+  "jsp",
+  "asp",
+  "aspx",
 ]);
 const DOCUMENT_EXT = new Set([
-  "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "csv", "png", "jpg", "jpeg", "gif", "zip",
+  "pdf",
+  "doc",
+  "docx",
+  "xls",
+  "xlsx",
+  "ppt",
+  "pptx",
+  "txt",
+  "csv",
+  "png",
+  "jpg",
+  "jpeg",
+  "gif",
+  "zip",
 ]);
 const MIME_BY_EXT: Record<string, string[]> = {
   pdf: ["application/pdf"],
@@ -131,6 +169,7 @@ export function classifyUpload(
     const inner = parts[parts.length - 2] ?? "";
     if (DOCUMENT_EXT.has(inner) && EXECUTABLE_EXT.has(ext)) reasons.push("double extension");
   }
+  // eslint-disable-next-line no-control-regex -- NUL / bidi override in a file name is the signal
   if (/[‮\u0000]/.test(file.name)) reasons.push("control character in name");
 
   const expected = MIME_BY_EXT[ext];

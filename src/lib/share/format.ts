@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { hashSharePasswordV2 } from "./password-hash";
 import { formatInTimeZone } from "date-fns-tz";
 
 export const IST = "Asia/Kolkata";
@@ -50,18 +51,8 @@ export function generateSecretCode(): string {
   return Array.from(bytes, (byte) => CODE_ALPHABET[byte % CODE_ALPHABET.length]).join("");
 }
 
-/**
- * SHA-256 hex digest — used for file passwords and demo OTP comparison.
- * Salted identically to hashSharePassword() in tracking.server.ts so uploaded
- * hashes match server-side verification.
- */
-export async function hashPassword(value: string): Promise<string> {
-  const digest = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(`${value}intellitrap-salt-2024`),
-  );
-  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
-}
+/** Salted PBKDF2 hash for a share password; see `password-hash.ts` for the format. */
+export const hashPassword = hashSharePasswordV2;
 
 export type PasswordStrength = { segments: 1 | 2 | 3 | 4; label: string; className: string };
 

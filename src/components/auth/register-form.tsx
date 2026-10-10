@@ -117,80 +117,80 @@ export function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
   return (
     <form onSubmit={onSubmit} className="space-y-4" noValidate>
       <fieldset disabled={isSubmitting} className="space-y-4 border-0 p-0">
-      <div className="space-y-2">
-        <Label htmlFor="register-name">Full name</Label>
-        <Input
-          id="register-name"
-          autoComplete="name"
-          placeholder="Ada Lovelace"
-          aria-invalid={Boolean(errors.fullName)}
-          {...register("fullName")}
-        />
-        {errors.fullName ? (
-          <p className="text-xs text-destructive">{errors.fullName.message}</p>
-        ) : null}
-      </div>
+        <div className="space-y-2">
+          <Label htmlFor="register-name">Full name</Label>
+          <Input
+            id="register-name"
+            autoComplete="name"
+            placeholder="Ada Lovelace"
+            aria-invalid={Boolean(errors.fullName)}
+            {...register("fullName")}
+          />
+          {errors.fullName ? (
+            <p className="text-xs text-destructive">{errors.fullName.message}</p>
+          ) : null}
+        </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="register-email">Email</Label>
-        <Input
-          id="register-email"
-          type="email"
-          autoComplete="email"
-          placeholder="you@company.com"
-          aria-invalid={Boolean(errors.email)}
-          {...register("email")}
-        />
-        {errors.email ? <p className="text-xs text-destructive">{errors.email.message}</p> : null}
-      </div>
+        <div className="space-y-2">
+          <Label htmlFor="register-email">Email</Label>
+          <Input
+            id="register-email"
+            type="email"
+            autoComplete="email"
+            placeholder="you@company.com"
+            aria-invalid={Boolean(errors.email)}
+            {...register("email")}
+          />
+          {errors.email ? <p className="text-xs text-destructive">{errors.email.message}</p> : null}
+        </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="register-password">Password</Label>
-        <PasswordInput
-          id="register-password"
-          autoComplete="new-password"
-          placeholder="••••••••"
-          aria-invalid={Boolean(errors.password)}
-          {...register("password")}
-        />
-        <PasswordStrength value={password} email={email} showIssue={!errors.password} />
-        {errors.password ? (
-          <p className="text-xs text-destructive">{errors.password.message}</p>
-        ) : null}
-      </div>
+        <div className="space-y-2">
+          <Label htmlFor="register-password">Password</Label>
+          <PasswordInput
+            id="register-password"
+            autoComplete="new-password"
+            placeholder="••••••••"
+            aria-invalid={Boolean(errors.password)}
+            {...register("password")}
+          />
+          <PasswordStrength value={password} email={email} showIssue={!errors.password} />
+          {errors.password ? (
+            <p className="text-xs text-destructive">{errors.password.message}</p>
+          ) : null}
+        </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="register-confirm">Confirm password</Label>
-        <PasswordInput
-          id="register-confirm"
-          autoComplete="new-password"
-          placeholder="••••••••"
-          aria-invalid={Boolean(errors.confirmPassword)}
-          {...register("confirmPassword")}
-        />
-        {errors.confirmPassword ? (
-          <p className="text-xs text-destructive">{errors.confirmPassword.message}</p>
-        ) : null}
-      </div>
+        <div className="space-y-2">
+          <Label htmlFor="register-confirm">Confirm password</Label>
+          <PasswordInput
+            id="register-confirm"
+            autoComplete="new-password"
+            placeholder="••••••••"
+            aria-invalid={Boolean(errors.confirmPassword)}
+            {...register("confirmPassword")}
+          />
+          {errors.confirmPassword ? (
+            <p className="text-xs text-destructive">{errors.confirmPassword.message}</p>
+          ) : null}
+        </div>
 
-      <div className="flex items-start gap-2">
-        <Checkbox
-          id="register-terms"
-          checked={Boolean(terms)}
-          onCheckedChange={(checked) =>
-            setValue("terms", (checked === true) as true, { shouldValidate: true })
-          }
-        />
-        <Label htmlFor="register-terms" className="text-sm font-normal text-muted-foreground">
-          I agree to the terms of service and acceptable-use policy.
-        </Label>
-      </div>
-      {errors.terms ? <p className="text-xs text-destructive">{errors.terms.message}</p> : null}
+        <div className="flex items-start gap-2">
+          <Checkbox
+            id="register-terms"
+            checked={Boolean(terms)}
+            onCheckedChange={(checked) =>
+              setValue("terms", (checked === true) as true, { shouldValidate: true })
+            }
+          />
+          <Label htmlFor="register-terms" className="text-sm font-normal text-muted-foreground">
+            I agree to the terms of service and acceptable-use policy.
+          </Label>
+        </div>
+        {errors.terms ? <p className="text-xs text-destructive">{errors.terms.message}</p> : null}
 
-      <Button type="submit" className="w-full" disabled={isSubmitting}>
-        {isSubmitting ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
-        {isSubmitting ? "Creating account…" : "Create account"}
-      </Button>
+        <Button type="submit" className="w-full" disabled={isSubmitting}>
+          {isSubmitting ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
+          {isSubmitting ? "Creating account…" : "Create account"}
+        </Button>
       </fieldset>
     </form>
   );

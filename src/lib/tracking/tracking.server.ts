@@ -117,9 +117,7 @@ async function fromIpApiCo(ip: string): Promise<GeoInfo | null> {
 
 /** ip-api.com over HTTPS (pro-style host also serves free https for json). */
 async function fromIpApiCom(ip: string): Promise<GeoInfo | null> {
-  const g = await getJson(
-    `https://get.geojs.io/v1/ip/geo/${ip}.json`,
-  );
+  const g = await getJson(`https://get.geojs.io/v1/ip/geo/${ip}.json`);
   if (!g) return null;
   const lat = num(g["latitude"]);
   const lon = num(g["longitude"]);
@@ -329,15 +327,6 @@ export function safeEqual(a: string, b: string): boolean {
   let diff = 0;
   for (let i = 0; i < a.length; i += 1) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return diff === 0;
-}
-
-/** SHA-256 hash used for shared-file passwords. Plaintext is never stored. */
-export async function hashSharePassword(password: string): Promise<string> {
-  const bytes = new TextEncoder().encode(`${password}intellitrap-salt-2024`);
-  const digest = await crypto.subtle.digest("SHA-256", bytes);
-  return Array.from(new Uint8Array(digest))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
 }
 
 /** SHA-256 hash used for share-flow OTP codes. Plaintext is never stored. */

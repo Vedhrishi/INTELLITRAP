@@ -67,15 +67,38 @@ if (!SHARE_CODE) {
 // Mirrors SUSPICIOUS_AGENTS in src/lib/riskEngine.ts, so hasSuspiciousUA is
 // computed the same way the real app would compute it.
 const SUSPICIOUS_AGENTS = [
-  "python", "curl", "wget", "scrapy", "headless", "phantom", "selenium",
-  "puppeteer", "postman", "httpie", "go-http", "java/", "libwww", "bot",
-  "crawler", "spider",
+  "python",
+  "curl",
+  "wget",
+  "scrapy",
+  "headless",
+  "phantom",
+  "selenium",
+  "puppeteer",
+  "postman",
+  "httpie",
+  "go-http",
+  "java/",
+  "libwww",
+  "bot",
+  "crawler",
+  "spider",
 ];
 
 const FEATURE_COLUMNS = [
-  "failedPasswords", "failedCodes", "requestsPerMinute", "mouseMovements",
-  "keystrokeAvgMs", "isProxy", "isHosting", "hasSuspiciousUA", "isOffHoursIST",
-  "previousBlocks", "timeOnPageSeconds", "scrollEvents", "pageViews",
+  "failedPasswords",
+  "failedCodes",
+  "requestsPerMinute",
+  "mouseMovements",
+  "keystrokeAvgMs",
+  "isProxy",
+  "isHosting",
+  "hasSuspiciousUA",
+  "isOffHoursIST",
+  "previousBlocks",
+  "timeOnPageSeconds",
+  "scrollEvents",
+  "pageViews",
 ];
 
 function randomWrongCode() {
@@ -187,7 +210,7 @@ async function runPasswordBruteForceSession(browser, index) {
   // A code can list multiple files -- pick the first if a chooser appears.
   await page.waitForTimeout(500);
   const fileChooserButtons = page.locator('button:has-text("·")');
-  if (await fileChooserButtons.count() > 0) {
+  if ((await fileChooserButtons.count()) > 0) {
     await fileChooserButtons.first().click({ force: true });
   }
 

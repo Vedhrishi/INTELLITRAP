@@ -22,7 +22,9 @@ describe("threatClassifier corpus", () => {
         miss.push(`${row.label} -> ${got}: ${row.text}`);
       }
     }
-    console.log("PAYLOAD " + JSON.stringify({ n: corpus.payloads.length, correct, tp, fp, fn, miss }));
+    console.log(
+      "PAYLOAD " + JSON.stringify({ n: corpus.payloads.length, correct, tp, fp, fn, miss }),
+    );
     expect(correct / corpus.payloads.length).toBeGreaterThan(0.9);
   });
 

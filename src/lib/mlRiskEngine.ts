@@ -21,7 +21,13 @@
  */
 
 import forestJson from "./model_forest.json";
-import { levelForScore, type RiskDecision, type RiskFeatures, type RiskResult, type TreeVotes } from "./riskEngine";
+import {
+  levelForScore,
+  type RiskDecision,
+  type RiskFeatures,
+  type RiskResult,
+  type TreeVotes,
+} from "./riskEngine";
 
 interface ForestTree {
   feature: number[];

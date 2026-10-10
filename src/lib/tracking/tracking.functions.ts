@@ -1,3 +1,4 @@
+import { verifySharePassword } from "@/lib/share/password-hash";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { BRUTE_FORCE_LIMIT } from "@/config/security";
@@ -10,7 +11,6 @@ import {
   geoFromTimezone,
   hashOtpCode,
   safeEqual,
-  hashSharePassword,
   intelGeo,
   isIpBlocked,
   lookupGeo,
@@ -602,8 +602,10 @@ export const verifyFilePassword = createServerFn({ method: "POST" })
       return { success: false as const, error: "This file has already been downloaded." };
     }
 
-    const inputHash = await hashSharePassword(data.password);
-    if (!file.file_password_hash || !safeEqual(inputHash, file.file_password_hash)) {
+    if (
+      !file.file_password_hash ||
+      !(await verifySharePassword(data.password, file.file_password_hash))
+    ) {
       await supabaseAdmin.from("visitor_events").insert({
         session_token: data.session_token,
         visitor_id: data.visitor_id,
@@ -669,7 +671,6 @@ export const verifyFilePassword = createServerFn({ method: "POST" })
       }
       return { success: false as const, error: "Incorrect password." };
     }
-
 
     // Correct password is not enough: a session the risk engine already sent to
     // the honeypot (or blocked) never receives a signed URL for the real file.
@@ -1210,7 +1211,10 @@ export const sendShareOtp = createServerFn({ method: "POST" })
         .eq("event_type", "otp_sent")
         .gte("created_at", new Date(Date.now() - 60 * 60 * 1000).toISOString()),
     ]);
-    if ((sessionSends ?? 0) >= OTP_MAX_SENDS_PER_SESSION || (ipSends ?? 0) >= OTP_MAX_SENDS_PER_IP_HOUR) {
+    if (
+      (sessionSends ?? 0) >= OTP_MAX_SENDS_PER_SESSION ||
+      (ipSends ?? 0) >= OTP_MAX_SENDS_PER_IP_HOUR
+    ) {
       return { ok: false as const, error: "Too many codes requested. Please wait and try again." };
     }
 
