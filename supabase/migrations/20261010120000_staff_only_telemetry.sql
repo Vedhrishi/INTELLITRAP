@@ -1,9 +1,6 @@
--- OPTIONAL hardening: restrict visitor telemetry to admins/analysts.
--- Migration 20260810191944 made these tables readable by ANY signed-in user so a
--- fresh demo account sees a populated dashboard. In production that exposes visitor
--- IPs, locations and block lists to every registered user. Run this in the Supabase
--- SQL editor to restore staff-only reads. Side effect: non-staff accounts will see
--- empty dashboards. To undo, re-run the 'authenticated read ...' policies from that migration.
+-- Restrict visitor telemetry (IPs, locations, blocks) to admins/analysts.
+-- Replaces the demo-friendly "any signed-in user can read" policies. Non-staff accounts will see
+-- empty dashboards. Rollback: re-create the "authenticated read ..." policies from migration 20260810191944.
 
 DROP POLICY IF EXISTS "authenticated read visitors" ON public.visitors;
 CREATE POLICY "staff read visitors" ON public.visitors FOR SELECT TO authenticated USING (private.is_staff());

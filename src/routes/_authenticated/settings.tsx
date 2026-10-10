@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { MfaSettings } from "@/components/auth/mfa-settings";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth/auth-context";
@@ -75,6 +76,7 @@ function SettingsPage() {
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="appearance">Appearance</TabsTrigger>
           <TabsTrigger value="secret-code">Secret Code</TabsTrigger>
+          <TabsTrigger value="security">Security</TabsTrigger>
         </TabsList>
         <TabsContent value="profile" className="mt-6">
           <ProfileTab />
@@ -84,6 +86,9 @@ function SettingsPage() {
         </TabsContent>
         <TabsContent value="secret-code" className="mt-6">
           <SecretCodeTab />
+        </TabsContent>
+        <TabsContent value="security" className="mt-6">
+          <MfaSettings />
         </TabsContent>
       </Tabs>
     </div>

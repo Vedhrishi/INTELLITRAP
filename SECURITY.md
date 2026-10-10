@@ -23,11 +23,17 @@ No system is "perfectly safe". This file lists what is protected, what was chang
 - Share passwords now use PBKDF2-HMAC-SHA256 with a random per-password salt (`src/lib/share/password-hash.ts`); legacy hashes are still accepted.
 - CI runs typecheck, lint, tests, build and `npm audit` on every push and PR.
 
+## Third hardening pass
+
+- Optional authenticator-app (TOTP) two-step verification: enrol under Settings > Security; `MfaGate` demands the code at sign-in. Requires MFA to be enabled in the Supabase auth settings. It is a UI gate; add `(auth.jwt()->>'aal') = 'aal2'` to sensitive RLS policies to enforce it in the database.
+- Visitor telemetry is staff-only via migration `20261010120000_staff_only_telemetry.sql`. **Apply it to your database** (SQL editor or `supabase db push`); until then the old open-read policies stay in force.
+- A `Content-Security-Policy-Report-Only` header logs violations without blocking. Watch the browser console, adjust the origins in `src/server.ts`, then promote it to an enforcing header.
+
 ## Known remaining risks
 
 - Shares created before the PBKDF2 change keep their old fixed-salt SHA-256 hash. They still verify but are not upgraded in place; re-share the file to get a PBKDF2 hash.
-- Visitor telemetry is readable by any signed-in user until the optional SQL above is run.
-- No full Content-Security-Policy yet (Google Maps and Supabase origins need to be allow-listed and tested).
+- The CSP is report-only and still allows inline scripts.
+- MFA is TOTP only (no passkeys yet) and not enforced at the database layer.
 - IP blocking is per address, so shared networks can be blocked together.
 - The project's `.env` is tracked in git (managed by Lovable); never put secret keys in it. Keep secrets only in Vercel environment variables.
 - Rotate the Supabase service-role key and database password if they were ever shared in chat, screenshots, or files.

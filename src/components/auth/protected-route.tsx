@@ -1,6 +1,7 @@
 import { useRef, type ReactNode } from "react";
 import { Navigate, useRouterState } from "@tanstack/react-router";
 import { Skeleton } from "@/components/ui/skeleton";
+import { MfaGate } from "./mfa-gate";
 import { useAuth } from "@/lib/auth/auth-context";
 
 function ShellSkeleton() {
@@ -43,5 +44,5 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
   if (loading) return <ShellSkeleton />;
   if (!user)
     return <Navigate to="/auth" search={{ redirect: intended.current ?? "/app" }} replace />;
-  return <>{children}</>;
+  return <MfaGate>{children}</MfaGate>;
 }

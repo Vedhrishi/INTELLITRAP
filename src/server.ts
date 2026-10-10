@@ -53,6 +53,21 @@ const SECURITY_HEADERS: Record<string, string> = {
   "strict-transport-security": "max-age=31536000; includeSubDomains",
   "content-security-policy":
     "frame-ancestors 'self' https://*.lovable.app https://*.lovable.dev https://lovable.dev",
+  // Report-only: logs violations in the browser console without blocking anything. Tighten
+  // script-src (nonces) and switch to the enforcing header once the console is clean.
+  "content-security-policy-report-only": [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' https://maps.googleapis.com https://www.google.com https://www.gstatic.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' https://fonts.gstatic.com data:",
+    "img-src 'self' data: blob: https://*.googleapis.com https://*.gstatic.com https://*.supabase.co",
+    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://maps.googleapis.com https://*.tile.openstreetmap.org",
+    "frame-src https://www.google.com",
+    "worker-src 'self' blob:",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+  ].join("; "),
 };
 
 function withSecurityHeaders(response: Response): Response {
