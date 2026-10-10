@@ -16,7 +16,7 @@ No system is "perfectly safe". This file lists what is protected, what was chang
 - Constant-time comparison for password and OTP hashes.
 - Security headers on every response (nosniff, referrer policy, permissions policy, HSTS, frame-ancestors).
 - `npm audit fix` applied: 0 known vulnerabilities in dependencies at the time of the change.
-- Optional `supabase/hardening_staff_only_telemetry.sql` limits visitor telemetry to staff.
+- Visitor telemetry limited to staff (see third pass below).
 
 ## Second hardening pass
 
