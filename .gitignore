@@ -37,3 +37,6 @@ supabase/.temp/
 # Local env and archives
 .env.local
 *.zip
+
+# Local environment files
+.env
