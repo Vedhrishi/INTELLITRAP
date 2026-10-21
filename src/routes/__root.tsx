@@ -84,6 +84,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "IntelliTrap Batch2" },
       { name: "description", content: "Secure cloud storage with an AI deception layer." },
       { property: "og:type", content: "website" },
+      { property: "og:title", content: "IntelliTrap Batch2" },
+      { property: "og:description", content: "Secure cloud storage with an AI deception layer." },
+      { name: "theme-color", content: "#0a0a0f" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
